@@ -133,6 +133,8 @@ BOARD_InitPins:
   - {pin_num: '64', peripheral: GPIO1, signal: 'GPIO, 6', pin_signal: P1_6/TRIG_IN2/LPSPI0_PCS1/LPUART2_RTS_B/CT_INP6/CT4_MAT0/FLEXIO0_D14/SmartDMA_PIO2/ADC0_A22,
     identifier: INPUT_KEY2, direction: INPUT}
   - {pin_num: '1', peripheral: GPIO1, signal: 'GPIO, 7', pin_signal: P1_7/WUU0_IN9/TRIG_OUT2/LPUART2_CTS_B/CT_INP7/CT4_MAT1/FLEXIO0_D15/SmartDMA_PIO3/ADC0_A23, direction: INPUT}
+  - {pin_num: '44', peripheral: SYSCON, signal: CLKOUT, pin_signal: P3_6/CLKOUT/LPSPI1_PCS3/LPUART3_RTS_B/CT4_MAT2/PWM0_A3/FLEXIO0_D14/PWM1_A0/SmartDMA_PIO6/FREQME_CLK_OUT1}
+  - {pin_num: '8', peripheral: SYSCON, signal: RESET, pin_signal: P1_29/RESET_B/SPC_LPREQ}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -337,6 +339,16 @@ void BOARD_InitPins(void)
 
                      /* Input Buffer Enable: Enables. */
                      | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    PORT1->PCR[29] = ((PORT1->PCR[29] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_MUX_MASK | PORT_PCR_IBE_MASK)))
+
+                      /* Pin Multiplex Control: PORT1_29 (pin 8) is configured as RESET_B. */
+                      | PORT_PCR_MUX(PORT1_PCR29_MUX_mux01)
+
+                      /* Input Buffer Enable: Enables. */
+                      | PORT_PCR_IBE(PCR_IBE_ibe1));
 
     /* PORT1_3 (pin 59) is configured as P1_3 */
     PORT_SetPinMux(BOARD_INITPINS_INPUT_KEY5_PORT, BOARD_INITPINS_INPUT_KEY5_PIN, kPORT_MuxAlt0);
@@ -557,6 +569,16 @@ void BOARD_InitPins(void)
 
                       /* Input Buffer Enable: Enables. */
                       | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    /* PORT3_6 (pin 44) is configured as CLKOUT */
+    PORT_SetPinMux(PORT3, 6U, kPORT_MuxAlt1);
+
+    PORT3->PCR[6] = ((PORT3->PCR[6] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_IBE_MASK)))
+
+                     /* Input Buffer Enable: Enables. */
+                     | PORT_PCR_IBE(PCR_IBE_ibe1));
 
     /* PORT3_8 (pin 42) is configured as LPSPI1_SDO */
     PORT_SetPinMux(BOARD_INITPINS_SPI_MISO_PORT, BOARD_INITPINS_SPI_MISO_PIN, kPORT_MuxAlt2);

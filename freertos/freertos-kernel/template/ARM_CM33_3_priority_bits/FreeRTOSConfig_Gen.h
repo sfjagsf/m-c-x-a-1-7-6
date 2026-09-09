@@ -56,11 +56,12 @@
 #define configUSE_PREEMPTION                    1
 #define configUSE_TICKLESS_IDLE                 0
 #define configCPU_CLOCK_HZ                      (SystemCoreClock)
-#define configTICK_RATE_HZ                      ((TickType_t)200)
-#define configMAX_PRIORITIES                    5
+#define configTICK_RATE_HZ                      ((TickType_t)1000)
+#define configMAX_PRIORITIES                    56
 #define configMINIMAL_STACK_SIZE                ((unsigned short)90)
 #define configMAX_TASK_NAME_LEN                 20
 #define configUSE_16_BIT_TICKS                  0
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION 0
 #define configIDLE_SHOULD_YIELD                 1
 #define configUSE_TASK_NOTIFICATIONS            1
 #define configUSE_MUTEXES                       1
@@ -69,7 +70,7 @@
 #define configUSE_ALTERNATIVE_API               0 /* Deprecated! */
 #define configQUEUE_REGISTRY_SIZE               8
 #define configUSE_QUEUE_SETS                    0
-#define configUSE_TIME_SLICING                  0
+#define configUSE_TIME_SLICING                  1
 #define configUSE_NEWLIB_REENTRANT              0
 #define configENABLE_BACKWARD_COMPATIBILITY     1
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 5
@@ -115,11 +116,12 @@
 #define INCLUDE_vTaskDelay                      1
 #define INCLUDE_xTaskGetSchedulerState          1
 #define INCLUDE_xTaskGetCurrentTaskHandle       1
-#define INCLUDE_uxTaskGetStackHighWaterMark     0
+#define INCLUDE_xSemaphoreGetMutexHolder         1
+#define INCLUDE_uxTaskGetStackHighWaterMark     1
 #define INCLUDE_xTaskGetIdleTaskHandle          0
-#define INCLUDE_eTaskGetState                   0
+#define INCLUDE_eTaskGetState                   1
 #define INCLUDE_xTimerPendFunctionCall          1
-#define INCLUDE_xTaskAbortDelay                 0
+#define INCLUDE_xTaskAbortDelay                 1
 #define INCLUDE_xTaskGetHandle                  0
 #define INCLUDE_xTaskResumeFromISR              1
 
@@ -148,7 +150,12 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 standard names. */
 #define vPortSVCHandler SVC_Handler
 #define xPortPendSVHandler PendSV_Handler
-#define xPortSysTickHandler SysTick_Handler
+/*
+ * CMSIS-FreeRTOS owns the public SysTick_Handler entry and delegates to the
+ * FreeRTOS port.  The MCUXpresso Cortex-M33 port names its tick routine
+ * SysTick_Handler directly, so remap that port symbol to avoid two handlers.
+ */
+#define SysTick_Handler xPortSysTickHandler
 
 
 /* Map the FreeRTOS printf() to the logging task printf. */

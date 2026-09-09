@@ -25,15 +25,16 @@ extern "C" {
  */
 void BOARD_InitBootPins(void);
 
-#define PCR_IBE_ibe0 0x00u         /*!<@brief Input Buffer Enable: Disables */
-#define PCR_IBE_ibe1 0x01u         /*!<@brief Input Buffer Enable: Enables */
-#define PCR_PFE_pfe1 0x01u         /*!<@brief Passive Filter Enable: Enables */
-#define PORT0_PCR0_MUX_mux01 0x01u /*!<@brief Pin Multiplex Control: Alternative 1 (chip-specific) */
-#define PORT0_PCR1_MUX_mux01 0x01u /*!<@brief Pin Multiplex Control: Alternative 1 (chip-specific) */
-#define PORT2_PCR2_MUX_mux00 0x00u /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
-#define PORT2_PCR4_MUX_mux00 0x00u /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
-#define PORT2_PCR5_MUX_mux00 0x00u /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
-#define PORT2_PCR6_MUX_mux00 0x00u /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
+#define PCR_IBE_ibe0 0x00u          /*!<@brief Input Buffer Enable: Disables */
+#define PCR_IBE_ibe1 0x01u          /*!<@brief Input Buffer Enable: Enables */
+#define PCR_PFE_pfe1 0x01u          /*!<@brief Passive Filter Enable: Enables */
+#define PORT0_PCR0_MUX_mux01 0x01u  /*!<@brief Pin Multiplex Control: Alternative 1 (chip-specific) */
+#define PORT0_PCR1_MUX_mux01 0x01u  /*!<@brief Pin Multiplex Control: Alternative 1 (chip-specific) */
+#define PORT1_PCR29_MUX_mux01 0x01u /*!<@brief Pin Multiplex Control: Alternative 1 (chip-specific) */
+#define PORT2_PCR2_MUX_mux00 0x00u  /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
+#define PORT2_PCR4_MUX_mux00 0x00u  /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
+#define PORT2_PCR5_MUX_mux00 0x00u  /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
+#define PORT2_PCR6_MUX_mux00 0x00u  /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
 
 /*! @name PORT1_8 (number 2), LCD_RS232_RX
   @{ */
