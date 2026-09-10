@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding= "UTF-8" ?>
+<configuration name="MCXA176" xsi:schemaLocation="http://mcuxpresso.nxp.com/XSD/mex_configuration_19 http://mcuxpresso.nxp.com/XSD/mex_configuration_19.xsd" uuid="cb0ec257-e7ca-4ef6-88fe-3351e872eec6" version="19" xmlns="http://mcuxpresso.nxp.com/XSD/mex_configuration_19" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <common>
+      <processor>MCXA176</processor>
+      <package>MCXA176VLL</package>
+      <mcu_data>ksdk2_0</mcu_data>
+      <cores selected="cm33_core0">
+         <core name="Cortex-M33" id="cm33_core0" description="M33 core"/>
+      </cores>
+      <description>Configuration imported from MCXA176_V6.3</description>
+   </common>
+   <preferences>
+      <validate_boot_init_only>true</validate_boot_init_only>
+      <generate_code_modified_registers_only>false</generate_code_modified_registers_only>
+      <update_include_paths>true</update_include_paths>
+      <enable_parallel_routing>true</enable_parallel_routing>
+      <generate_registers_defines>false</generate_registers_defines>
+   </preferences>
+   <tools>
+      <pins name="Pins" version="17.0" enabled="true" update_project_code="true">
+         <generated_project_files>
+            <file path="board/pin_mux.c" update_enabled="true"/>
+            <file path="board/pin_mux.h" update_enabled="true"/>
+         </generated_project_files>
+         <pins_profile>
+            <processor_version>26.03.20</processor_version>
+            <pin_labels>
+               <pin_label pin_num="1" pin_signal="P1_8/WUU0_IN10/FREQME_CLK_IN0/LPUART1_RXD/LPI2C2_SDA/CT_INP8/CT0_MAT2/FLEXIO0_D16/SmartDMA_PIO4/I3C0_SDA" label="LED" identifier="LED"/>
+               <pin_label pin_num="85" pin_signal="P0_18/LPI2C0_SCLS/CT0_MAT2/FLEXIO0_D2/SmartDMA_PIO8/CMP0_OUT/ADC0_A8" label="RS485_EN" identifier="RS485_EN"/>
+               <pin_label pin_num="59" pin_signal="P3_16/LPUART4_RTS_B/CT_INP8/FLEXIO0_D24/PWM1_A0/SmartDMA_PIO16" label="RS485_EN2" identifier="RS485_EN2"/>
+               <pin_label pin_num="41" pin_signal="P2_21/TRIG_IN9/LPSPI1_PCS3/CT2_MAT1/FLEXIO0_D29/SmartDMA_PIO23" label="ADC_PWR" identifier="ADC_PWR"/>
+               <pin_label pin_num="40" pin_signal="P2_20/TRIG_IN8/LPSPI1_PCS2/CT2_MAT0/FLEXIO0_D28/SmartDMA_PIO22" label="IO7" identifier="IO7"/>
+               <pin_label pin_num="50" pin_signal="P3_29/WUU0_IN27/TAMPER1/LPI2C3_HREQ/CT_INP3/CT3_MAT3/FLEXIO0_D29/SmartDMA_PIO29/ADC1_A22" label="IO3" identifier="IO1;IO3"/>
+               <pin_label pin_num="62" pin_signal="P3_13/LPUART2_CTS_B/LPUART3_RXD/CT1_MAT3/PWM0_X1/FLEXIO0_D21/PWM1_B2/SmartDMA_PIO13" label="IO2" identifier="IO2"/>
+               <pin_label pin_num="51" pin_signal="P3_28/WUU0_IN26/TRIG_IN11/LPI2C3_SDA/LPUART4_RXD/CT_INP12/CT3_MAT2/FLEXIO0_D28/PWM1_B3/SmartDMA_PIO28" label="I2C3_SDA" identifier="IO3;I2C3_SDA"/>
+               <pin_label pin_num="63" pin_signal="P3_12/LPUART2_RTS_B/LPUART3_TXD/CT1_MAT2/PWM0_X0/FLEXIO0_D20/PWM1_A2/SmartDMA_PIO12" label="LED_OUT" identifier="LED_OUT"/>
+               <pin_label pin_num="66" pin_signal="P3_11/WUU0_IN24/TRIG_IN6/LPSPI1_PCS0/LPUART1_CTS_B/CT1_MAT1/PWM0_B2/FLEXIO0_D19/SmartDMA_PIO11" label="RESET" identifier="RESET"/>
+               <pin_label pin_num="58" pin_signal="P3_17/LPUART4_CTS_B/CT_INP9/FLEXIO0_D25/PWM1_B0/SmartDMA_PIO17" label="IN5" identifier="IN5"/>
+               <pin_label pin_num="57" pin_signal="P3_18/TAMPER5/LPUART4_RXD/CT2_MAT0/PWM0_X0/FLEXIO0_D26/PWM1_X0/SmartDMA_PIO18" label="IN1" identifier="IN1"/>
+               <pin_label pin_num="90" pin_signal="P0_23/WUU0_IN5/LPUART0_CTS_B/CT_INP3/CT0_MAT1/FLEXIO0_D7/SmartDMA_PIO13/ADC0_A13" label="EN_15V" identifier="EN_15V"/>
+               <pin_label pin_num="53" pin_signal="P3_22/LPUART1_RTS_B/CT_INP10/FLEXIO0_D30/PWM1_X2/SmartDMA_PIO22" label="I2C3_WP" identifier="I2C3_WP"/>
+               <pin_label pin_num="54" pin_signal="P3_21/TRIG_OUT1/LPI2C3_SCL/LPUART1_TXD/CT2_MAT3/PWM0_X3/FLEXIO0_D29/PWM1_B3/SmartDMA_PIO21" label="IN7" identifier="IN7"/>
+               <pin_label pin_num="56" pin_signal="P3_19/TAMPER4/LPUART4_TXD/CT2_MAT1/PWM0_X1/FLEXIO0_D27/PWM1_X1/SmartDMA_PIO19" label="IN10" identifier="IN10"/>
+               <pin_label pin_num="55" pin_signal="P3_20/TRIG_OUT0/LPI2C3_SDA/LPUART1_RXD/CT2_MAT2/PWM0_X2/FLEXIO0_D28/PWM1_A3/SmartDMA_PIO20" label="IN6" identifier="IN6"/>
+               <pin_label pin_num="76" pin_signal="P0_0/TMS/SWDIO/LPUART0_RTS_B/LPSPI0_PCS0/CT_INP0/FLEXIO0_D0" label="SWDIO" identifier="SWDIO"/>
+               <pin_label pin_num="77" pin_signal="P0_1/TCLK/SWCLK/LPUART0_CTS_B/LPSPI0_SDI/CT_INP1/FLEXIO0_D1" label="SWCLK" identifier="SWCLK"/>
+               <pin_label pin_num="42" pin_signal="P2_23/TRIG_OUT5/CT2_MAT3/FLEXIO0_D31" label="IN4" identifier="IN4"/>
+               <pin_label pin_num="2" pin_signal="P1_9/FREQME_CLK_IN1/LPUART1_TXD/LPI2C2_SCL/CT_INP9/CT0_MAT3/FLEXIO0_D17/SmartDMA_PIO5/I3C0_SCL" label="ALM_IN_1" identifier="ALM_IN_1"/>
+               <pin_label pin_num="34" pin_signal="P2_12/WUU0_IN20/USB0_VBUS_DET/LPSPI1_SCK/LPUART1_RXD/CT4_MAT0/CT0_MAT0/FLEXIO0_D20/SmartDMA_PIO16/CAN0_RXD/ADC0_A5/OPAMP0_INP" label="SPI1_SCK" identifier="SPI1;SPI1_SCK"/>
+               <pin_label pin_num="35" pin_signal="P2_13/TRIG_IN8/LPSPI1_SDO/LPUART1_TXD/CT4_MAT1/CT0_MAT1/FLEXIO0_D21/SmartDMA_PIO17/CAN0_TXD/ADC1_A5/OPAMP0_INN" label="SPI1_MOSI" identifier="SPI_MOSI;SPI1_MOSI"/>
+               <pin_label pin_num="38" pin_signal="P2_17/TRIG_IN9/LPSPI1_PCS0/LPUART1_CTS_B/CT3_MAT1/CT0_MAT3/FLEXIO0_D25/SmartDMA_PIO20/ADC1_A6" label="SPI1_CS" identifier="SPI1_CS"/>
+               <pin_label pin_num="92" pin_signal="P1_1/TRIG_IN1/LPSPI0_SCK/LPI2C1_SCL/CT_INP5/CT0_MAT3/FLEXIO0_D9/ADC0_A17/CMP1_IN3" label="SPI0_SCK" identifier="SPI0_SCK"/>
+               <pin_label pin_num="94" pin_signal="P1_3/WUU0_IN7/TRIG_OUT1/LPSPI0_PCS0/LPI2C1_SCLS/CT1_MAT1/CT_INP1/FLEXIO0_D11/CAN0_RXD/ADC0_A19/CMP0_IN1" label="SPI0_CS" identifier="SPI_MOSI;SPI0_MOSI;SPI0_CS"/>
+               <pin_label pin_num="93" pin_signal="P1_2/TRIG_OUT0/LPSPI0_SDI/LPI2C1_SDAS/CT1_MAT0/CT_INP0/FLEXIO0_D10/CAN0_TXD/ADC0_A18" label="SPI0_MISO" identifier="SPI0_MISO"/>
+               <pin_label pin_num="91" pin_signal="P1_0/WUU0_IN6/LPTMR0_ALT3/TRIG_IN0/LPSPI0_SDO/LPI2C1_SDA/CT_INP4/CT0_MAT2/FLEXIO0_D8/ADC0_A16/CMP0_IN3" label="SPI0_MOSI" identifier="SPI0_MOSI"/>
+               <pin_label pin_num="5" pin_signal="P1_12/WUU0_IN12/LPI2C1_SDA/LPUART2_RXD/CT2_MAT2/FLEXIO0_D20/SmartDMA_PIO8/ADC1_A10" label="I2C1_SDA" identifier="I2C1_SDA"/>
+               <pin_label pin_num="6" pin_signal="P1_13/TRIG_IN3/LPI2C1_SCL/LPUART2_TXD/CT2_MAT3/FLEXIO0_D21/SmartDMA_PIO9/ADC1_A11" label="I2C1_SCL" identifier="I2C1_SCK;I2C1_SCL"/>
+               <pin_label pin_num="49" pin_signal="P3_30/TRIG_OUT6/LPI2C3_SCLS/LPUART4_RTS_B/CT0_MAT2/FLEXIO0_D30/PWM1_A0/SmartDMA_PIO30/ADC1_A21" label="IO1" identifier="IO1"/>
+               <pin_label pin_num="52" pin_signal="P3_27/WUU0_IN30/TRIG_OUT7/LPI2C3_SCL/LPUART4_TXD/CT_INP13/CT3_MAT1/FLEXIO0_D27/PWM1_A3/SmartDMA_PIO27" label="I2C3_SCL" identifier="I2C3_SCL"/>
+            </pin_labels>
+         </pins_profile>
+         <functions_list>
+            <function name="BOARD_InitPins">
+               <description>Configures pin routing and optionally pin electrical features.</description>
+               <options>
+                  <callFromInitBoot>true</callFromInitBoot>
+                  <coreID>cm33_core0</coreID>
+                  <enableClock>true</enableClock>
+               </options>
+               <dependencies>
+                  <dependency resourceType="Peripheral" resourceId="SWD" description="Peripheral SWD signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="LPSPI1" description="Peripheral LPSPI1 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="LPSPI0" description="Peripheral LPSPI0 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="LPI2C1" description="Peripheral LPI2C1 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="LPI2C3" description="Peripheral LPI2C3 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Pins initialization requires the COMMON Driver in the project." problem_level="2" source="Pins:BOARD_InitPins">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.port" description="Pins initialization requires the PORT Driver in the project." problem_level="2" source="Pins:BOARD_InitPins">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.gpio" description="Pins initialization requires the GPIO Driver in the project." problem_level="2" source="Pins:BOARD_InitPins">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+               </dependencies>
+               <pins>
+                  <pin peripheral="SWD" signal="SWCLK" pin_num="77" pin_signal="P0_1/TCLK/SWCLK/LPUART0_CTS_B/LPSPI0_SDI/CT_INP1/FLEXIO0_D1"/>
+                  <pin peripheral="SWD" signal="SWDIO" pin_num="76" pin_signal="P0_0/TMS/SWDIO/LPUART0_RTS_B/LPSPI0_PCS0/CT_INP0/FLEXIO0_D0"/>
+                  <pin peripheral="GPIO1" signal="GPIO, 8" pin_num="1" pin_signal="P1_8/WUU0_IN10/FREQME_CLK_IN0/LPUART1_RXD/LPI2C2_SDA/CT_INP8/CT0_MAT2/FLEXIO0_D16/SmartDMA_PIO4/I3C0_SDA">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="false"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO0" signal="GPIO, 18" pin_num="85" pin_signal="P0_18/LPI2C0_SCLS/CT0_MAT2/FLEXIO0_D2/SmartDMA_PIO8/CMP0_OUT/ADC0_A8">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 16" pin_num="59" pin_signal="P3_16/LPUART4_RTS_B/CT_INP8/FLEXIO0_D24/PWM1_A0/SmartDMA_PIO16">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO2" signal="GPIO, 21" pin_num="41" pin_signal="P2_21/TRIG_IN9/LPSPI1_PCS3/CT2_MAT1/FLEXIO0_D29/SmartDMA_PIO23">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO2" signal="GPIO, 20" pin_num="40" pin_signal="P2_20/TRIG_IN8/LPSPI1_PCS2/CT2_MAT0/FLEXIO0_D28/SmartDMA_PIO22">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="false"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 13" pin_num="62" pin_signal="P3_13/LPUART2_CTS_B/LPUART3_RXD/CT1_MAT3/PWM0_X1/FLEXIO0_D21/PWM1_B2/SmartDMA_PIO13">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="false"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 12" pin_num="63" pin_signal="P3_12/LPUART2_RTS_B/LPUART3_TXD/CT1_MAT2/PWM0_X0/FLEXIO0_D20/PWM1_A2/SmartDMA_PIO12">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="false"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 11" pin_num="66" pin_signal="P3_11/WUU0_IN24/TRIG_IN6/LPSPI1_PCS0/LPUART1_CTS_B/CT1_MAT1/PWM0_B2/FLEXIO0_D19/SmartDMA_PIO11">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 17" pin_num="58" pin_signal="P3_17/LPUART4_CTS_B/CT_INP9/FLEXIO0_D25/PWM1_B0/SmartDMA_PIO17">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="gpio_per_interrupt" value="kGPIO_InterruptStatusFlagDisabled"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 22" pin_num="53" pin_signal="P3_22/LPUART1_RTS_B/CT_INP10/FLEXIO0_D30/PWM1_X2/SmartDMA_PIO22">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 21" pin_num="54" pin_signal="P3_21/TRIG_OUT1/LPI2C3_SCL/LPUART1_TXD/CT2_MAT3/PWM0_X3/FLEXIO0_D29/PWM1_B3/SmartDMA_PIO21">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="gpio_per_interrupt" value="kGPIO_InterruptStatusFlagDisabled"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 20" pin_num="55" pin_signal="P3_20/TRIG_OUT0/LPI2C3_SDA/LPUART1_RXD/CT2_MAT2/PWM0_X2/FLEXIO0_D28/PWM1_A3/SmartDMA_PIO20">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="gpio_per_interrupt" value="kGPIO_InterruptStatusFlagDisabled"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 19" pin_num="56" pin_signal="P3_19/TAMPER4/LPUART4_TXD/CT2_MAT1/PWM0_X1/FLEXIO0_D27/PWM1_X1/SmartDMA_PIO19">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="gpio_per_interrupt" value="kGPIO_InterruptStatusFlagDisabled"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 18" pin_num="57" pin_signal="P3_18/TAMPER5/LPUART4_RXD/CT2_MAT0/PWM0_X0/FLEXIO0_D26/PWM1_X0/SmartDMA_PIO18">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="gpio_per_interrupt" value="kGPIO_InterruptStatusFlagDisabled"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO0" signal="GPIO, 23" pin_num="90" pin_signal="P0_23/WUU0_IN5/LPUART0_CTS_B/CT_INP3/CT0_MAT1/FLEXIO0_D7/SmartDMA_PIO13/ADC0_A13">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO2" signal="GPIO, 23" pin_num="42" pin_signal="P2_23/TRIG_OUT5/CT2_MAT3/FLEXIO0_D31">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="gpio_per_interrupt" value="kGPIO_InterruptStatusFlagDisabled"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="LPSPI1" signal="SCK" pin_num="34" pin_signal="P2_12/WUU0_IN20/USB0_VBUS_DET/LPSPI1_SCK/LPUART1_RXD/CT4_MAT0/CT0_MAT0/FLEXIO0_D20/SmartDMA_PIO16/CAN0_RXD/ADC0_A5/OPAMP0_INP">
+                     <pin_features>
+                        <pin_feature name="identifier" value="SPI1_SCK"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="LPSPI1" signal="OUT" pin_num="35" pin_signal="P2_13/TRIG_IN8/LPSPI1_SDO/LPUART1_TXD/CT4_MAT1/CT0_MAT1/FLEXIO0_D21/SmartDMA_PIO17/CAN0_TXD/ADC1_A5/OPAMP0_INN">
+                     <pin_features>
+                        <pin_feature name="identifier" value="SPI1_MOSI"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="LPSPI1" signal="PCS0" pin_num="38" pin_signal="P2_17/TRIG_IN9/LPSPI1_PCS0/LPUART1_CTS_B/CT3_MAT1/CT0_MAT3/FLEXIO0_D25/SmartDMA_PIO20/ADC1_A6"/>
+                  <pin peripheral="LPSPI0" signal="OUT" pin_num="91" pin_signal="P1_0/WUU0_IN6/LPTMR0_ALT3/TRIG_IN0/LPSPI0_SDO/LPI2C1_SDA/CT_INP4/CT0_MAT2/FLEXIO0_D8/ADC0_A16/CMP0_IN3"/>
+                  <pin peripheral="LPSPI0" signal="SCK" pin_num="92" pin_signal="P1_1/TRIG_IN1/LPSPI0_SCK/LPI2C1_SCL/CT_INP5/CT0_MAT3/FLEXIO0_D9/ADC0_A17/CMP1_IN3"/>
+                  <pin peripheral="LPSPI0" signal="IN" pin_num="93" pin_signal="P1_2/TRIG_OUT0/LPSPI0_SDI/LPI2C1_SDAS/CT1_MAT0/CT_INP0/FLEXIO0_D10/CAN0_TXD/ADC0_A18"/>
+                  <pin peripheral="LPSPI0" signal="PCS0" pin_num="94" pin_signal="P1_3/WUU0_IN7/TRIG_OUT1/LPSPI0_PCS0/LPI2C1_SCLS/CT1_MAT1/CT_INP1/FLEXIO0_D11/CAN0_RXD/ADC0_A19/CMP0_IN1">
+                     <pin_features>
+                        <pin_feature name="identifier" value="SPI0_CS"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="LPI2C1" signal="SDA" pin_num="5" pin_signal="P1_12/WUU0_IN12/LPI2C1_SDA/LPUART2_RXD/CT2_MAT2/FLEXIO0_D20/SmartDMA_PIO8/ADC1_A10"/>
+                  <pin peripheral="LPI2C1" signal="SCL" pin_num="6" pin_signal="P1_13/TRIG_IN3/LPI2C1_SCL/LPUART2_TXD/CT2_MAT3/FLEXIO0_D21/SmartDMA_PIO9/ADC1_A11">
+                     <pin_features>
+                        <pin_feature name="identifier" value="I2C1_SCL"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="LPI2C3" signal="SCL" pin_num="52" pin_signal="P3_27/WUU0_IN30/TRIG_OUT7/LPI2C3_SCL/LPUART4_TXD/CT_INP13/CT3_MAT1/FLEXIO0_D27/PWM1_A3/SmartDMA_PIO27"/>
+                  <pin peripheral="GPIO3" signal="GPIO, 29" pin_num="50" pin_signal="P3_29/WUU0_IN27/TAMPER1/LPI2C3_HREQ/CT_INP3/CT3_MAT3/FLEXIO0_D29/SmartDMA_PIO29/ADC1_A22">
+                     <pin_features>
+                        <pin_feature name="identifier" value="IO3"/>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 30" pin_num="49" pin_signal="P3_30/TRIG_OUT6/LPI2C3_SCLS/LPUART4_RTS_B/CT0_MAT2/FLEXIO0_D30/PWM1_A0/SmartDMA_PIO30/ADC1_A21">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="LPI2C3" signal="SDA" pin_num="51" pin_signal="P3_28/WUU0_IN26/TRIG_IN11/LPI2C3_SDA/LPUART4_RXD/CT_INP12/CT3_MAT2/FLEXIO0_D28/PWM1_B3/SmartDMA_PIO28">
+                     <pin_features>
+                        <pin_feature name="identifier" value="I2C3_SDA"/>
+                     </pin_features>
+                  </pin>
+               </pins>
+            </function>
+         </functions_list>
+      </pins>
+      <clocks name="Clocks" version="20.0" enabled="true" update_project_code="true">
+         <generated_project_files>
+            <file path="board/clock_config.c" update_enabled="true"/>
+            <file path="board/clock_config.h" update_enabled="true"/>
+         </generated_project_files>
+         <clocks_profile>
+            <processor_version>26.03.20</processor_version>
+         </clocks_profile>
+         <clock_configurations>
+            <clock_configuration name="BOARD_BootClockFRO12M" id_prefix="" prefix_user_defined="false">
+               <description></description>
+               <options/>
+               <dependencies>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Clocks initialization requires the COMMON Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFRO12M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.clock" description="Clocks initialization requires the CLOCK Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFRO12M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.mcx_spc" description="Clocks initialization requires the MCX_SPC Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFRO12M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+               </dependencies>
+               <clock_sources/>
+               <clock_outputs>
+                  <clock_output id="BUS_clock.outFreq" value="22.5 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_45M_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CPU_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_reference_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_target_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_DIV_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_DIV_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="MAIN_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="Slow_clock.outFreq" value="7.5 MHz" locked="false" accuracy=""/>
+                  <clock_output id="System_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="TRACE_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="UTICK0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="WWDT0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+               </clock_outputs>
+               <clock_settings>
+                  <setting id="VDD_CORE" value="voltage_1v2" locked="false"/>
+                  <setting id="FROHFDIV_SYSCON_FROHFDIV_HALT" value="RUN" locked="false"/>
+                  <setting id="FROLFDIV_SYSCON_FROLFDIV_HALT" value="RUN" locked="false"/>
+               </clock_settings>
+               <called_from_default_init>false</called_from_default_init>
+            </clock_configuration>
+            <clock_configuration name="BOARD_BootClockFROHF45M" id_prefix="" prefix_user_defined="false">
+               <description></description>
+               <options/>
+               <dependencies>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Clocks initialization requires the COMMON Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF45M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.clock" description="Clocks initialization requires the CLOCK Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF45M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.mcx_spc" description="Clocks initialization requires the MCX_SPC Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF45M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+               </dependencies>
+               <clock_sources/>
+               <clock_outputs>
+                  <clock_output id="BUS_clock.outFreq" value="22.5 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_45M_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CPU_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_reference_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_target_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_DIV_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_DIV_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="MAIN_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="Slow_clock.outFreq" value="7.5 MHz" locked="false" accuracy=""/>
+                  <clock_output id="System_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="TRACE_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="UTICK0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="WWDT0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+               </clock_outputs>
+               <clock_settings>
+                  <setting id="VDD_CORE" value="voltage_1v2" locked="false"/>
+                  <setting id="FROHFDIV_SYSCON_FROHFDIV_HALT" value="RUN" locked="false"/>
+                  <setting id="FROLFDIV_SYSCON_FROLFDIV_HALT" value="RUN" locked="false"/>
+               </clock_settings>
+               <called_from_default_init>false</called_from_default_init>
+            </clock_configuration>
+            <clock_configuration name="BOARD_BootClockFROHF60M" id_prefix="" prefix_user_defined="false">
+               <description></description>
+               <options/>
+               <dependencies>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Clocks initialization requires the COMMON Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF60M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.clock" description="Clocks initialization requires the CLOCK Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF60M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.mcx_spc" description="Clocks initialization requires the MCX_SPC Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF60M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+               </dependencies>
+               <clock_sources/>
+               <clock_outputs>
+                  <clock_output id="BUS_clock.outFreq" value="22.5 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_45M_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CPU_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_reference_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_target_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_DIV_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_DIV_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="MAIN_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="Slow_clock.outFreq" value="7.5 MHz" locked="false" accuracy=""/>
+                  <clock_output id="System_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="TRACE_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="UTICK0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="WWDT0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+               </clock_outputs>
+               <clock_settings>
+                  <setting id="VDD_CORE" value="voltage_1v2" locked="false"/>
+                  <setting id="FROHFDIV_SYSCON_FROHFDIV_HALT" value="RUN" locked="false"/>
+                  <setting id="FROLFDIV_SYSCON_FROLFDIV_HALT" value="RUN" locked="false"/>
+               </clock_settings>
+               <called_from_default_init>false</called_from_default_init>
+            </clock_configuration>
+            <clock_configuration name="BOARD_BootClockFROHF90M" id_prefix="" prefix_user_defined="false">
+               <description></description>
+               <options/>
+               <dependencies>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Clocks initialization requires the COMMON Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF90M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.clock" description="Clocks initialization requires the CLOCK Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF90M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.mcx_spc" description="Clocks initialization requires the MCX_SPC Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF90M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+               </dependencies>
+               <clock_sources/>
+               <clock_outputs>
+                  <clock_output id="BUS_clock.outFreq" value="22.5 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_45M_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CPU_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_reference_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_target_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_DIV_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_DIV_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="MAIN_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="Slow_clock.outFreq" value="7.5 MHz" locked="false" accuracy=""/>
+                  <clock_output id="System_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="TRACE_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="UTICK0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="WWDT0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+               </clock_outputs>
+               <clock_settings>
+                  <setting id="VDD_CORE" value="voltage_1v2" locked="false"/>
+                  <setting id="FROHFDIV_SYSCON_FROHFDIV_HALT" value="RUN" locked="false"/>
+                  <setting id="FROLFDIV_SYSCON_FROLFDIV_HALT" value="RUN" locked="false"/>
+               </clock_settings>
+               <called_from_default_init>false</called_from_default_init>
+            </clock_configuration>
+            <clock_configuration name="BOARD_BootClockFROHF180M" id_prefix="" prefix_user_defined="false">
+               <description></description>
+               <options/>
+               <dependencies>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Clocks initialization requires the COMMON Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF180M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.clock" description="Clocks initialization requires the CLOCK Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF180M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.mcx_spc" description="Clocks initialization requires the MCX_SPC Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockFROHF180M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+               </dependencies>
+               <clock_sources/>
+               <clock_outputs>
+                  <clock_output id="BUS_clock.outFreq" value="90 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_45M_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CPU_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_reference_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_target_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_DIV_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_DIV_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="MAIN_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="Slow_clock.outFreq" value="30 MHz" locked="false" accuracy=""/>
+                  <clock_output id="System_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="TRACE_clock.outFreq" value="20 MHz" locked="false" accuracy=""/>
+                  <clock_output id="UTICK0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="WWDT0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+               </clock_outputs>
+               <clock_settings>
+                  <setting id="VDD_CORE" value="voltage_1v2" locked="false"/>
+                  <setting id="FROHFDIV_SYSCON_FROHFDIV_HALT" value="RUN" locked="false"/>
+                  <setting id="FROLFDIV_SYSCON_FROLFDIV_HALT" value="RUN" locked="false"/>
+                  <setting id="MRCC.TRACE_CLKDIV.scale" value="9" locked="false"/>
+                  <setting id="SCG.FREQ_SEL.scale" value="1" locked="true"/>
+               </clock_settings>
+               <called_from_default_init>true</called_from_default_init>
+            </clock_configuration>
+            <clock_configuration name="BOARD_BootClockPLL180M" id_prefix="" prefix_user_defined="false">
+               <description></description>
+               <options/>
+               <dependencies>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Clocks initialization requires the COMMON Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockPLL180M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.clock" description="Clocks initialization requires the CLOCK Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockPLL180M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.mcx_spc" description="Clocks initialization requires the MCX_SPC Driver in the project." problem_level="2" source="Clocks:BOARD_BootClockPLL180M">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+               </dependencies>
+               <clock_sources/>
+               <clock_outputs>
+                  <clock_output id="BUS_clock.outFreq" value="22.5 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK_45M_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CPU_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_reference_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FREQME_target_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_DIV_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_12M_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_DIV_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FRO_HF_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="MAIN_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="PLL1_DIV_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="PLL1_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="Slow_clock.outFreq" value="7.5 MHz" locked="false" accuracy=""/>
+                  <clock_output id="System_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="TRACE_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
+                  <clock_output id="UTICK0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+                  <clock_output id="WWDT0_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
+               </clock_outputs>
+               <clock_settings>
+                  <setting id="PLL_MODE" value="Normal" locked="false"/>
+                  <setting id="VDD_CORE" value="voltage_1v2" locked="false"/>
+                  <setting id="FROHFDIV_SYSCON_FROHFDIV_HALT" value="RUN" locked="false"/>
+                  <setting id="FROLFDIV_SYSCON_FROLFDIV_HALT" value="RUN" locked="false"/>
+                  <setting id="PLL1CLKDIV_SYSCON_PLL1CLKDIV_HALT" value="RUN" locked="false"/>
+                  <setting id="SCG.MDIV.scale" value="8" locked="false"/>
+                  <setting id="SCG.PLL1_CLKSEL.sel" value="SCG.CLK_45M_clock" locked="false"/>
+               </clock_settings>
+               <called_from_default_init>false</called_from_default_init>
+            </clock_configuration>
+         </clock_configurations>
+      </clocks>
+      <dcdx name="DCDx" version="4.0" enabled="false" update_project_code="true">
+         <generated_project_files/>
+         <dcdx_profile>
+            <processor_version>N/A</processor_version>
+         </dcdx_profile>
+         <dcdx_configurations/>
+      </dcdx>
+      <periphs name="Peripherals" version="15.0" enabled="true" update_project_code="true">
+         <generated_project_files>
+            <file path="board/peripherals.c" update_enabled="true"/>
+            <file path="board/peripherals.h" update_enabled="true"/>
+         </generated_project_files>
+         <peripherals_profile>
+            <processor_version>26.03.20</processor_version>
+         </peripherals_profile>
+         <functional_groups>
+            <functional_group name="BOARD_InitPeripherals" uuid="6576fcf0-725b-4cb8-8eca-6e744b74bee8" called_from_default_init="true" id_prefix="" core="cm33_core0">
+               <description></description>
+               <options/>
+               <dependencies/>
+               <instances>
+                  <instance name="NVIC" uuid="f9d970ff-8e91-4728-af1f-06d28b1b9ac4" type="nvic" type_id="nvic" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="nvic">
+                        <array name="interrupt_table"/>
+                        <array name="interrupts"/>
+                     </config_set>
+                  </instance>
+               </instances>
+            </functional_group>
+         </functional_groups>
+         <components>
+            <component name="system" uuid="12d4b7f3-c579-4451-aa8a-d7733f66c048" type_id="system">
+               <config_set_global name="global_system_definitions">
+                  <setting name="user_definitions" value=""/>
+                  <setting name="user_includes" value=""/>
+                  <setting name="global_init" value=""/>
+               </config_set_global>
+            </component>
+            <component name="uart_cmsis_common" uuid="6406f8fd-0ef7-4464-b796-6b6c081dcf11" type_id="uart_cmsis_common">
+               <config_set_global name="global_USART_CMSIS_common" quick_selection="default"/>
+            </component>
+            <component name="msg" uuid="c5b7fdfa-5dd3-4448-b6a9-227b3e16d95f" type_id="msg">
+               <config_set_global name="global_messages"/>
+            </component>
+            <component name="gpio_adapter_common" uuid="08cd0c1a-3303-4526-bf72-e9e46f403997" type_id="gpio_adapter_common">
+               <config_set_global name="global_gpio_adapter_common" quick_selection="default"/>
+            </component>
+            <component name="generic_uart" uuid="37e65b2a-a990-4fe7-b996-760c2b3c62f3" type_id="generic_uart">
+               <config_set_global name="global_uart"/>
+            </component>
+            <component name="generic_enet" uuid="b3b3cafd-85c5-490a-89db-92890455b6b8" type_id="generic_enet">
+               <config_set_global name="global_enet"/>
+            </component>
+            <component name="generic_can" uuid="440a43e6-de5a-46bd-afb5-507e7aee5e10" type_id="generic_can">
+               <config_set_global name="global_can"/>
+            </component>
+         </components>
+      </periphs>
+      <tee name="TEE" version="12.0" enabled="false" update_project_code="true">
+         <generated_project_files/>
+         <tee_profile>
+            <processor_version>N/A</processor_version>
+         </tee_profile>
+      </tee>
+   </tools>
+</configuration>
