@@ -10,10 +10,109 @@
  * Included files
  **********************************************************************************************************************/
 #include "fsl_common.h"
+#include "fsl_adapter_gpio.h"
+#include "pin_mux.h"
+#include "fsl_crc.h"
 
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
+
+/***********************************************************************************************************************
+ * Definitions
+ **********************************************************************************************************************/
+/* Definitions for BOARD_InitPeripherals functional group */
+/* GPIO, 18 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_RS485_EN_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_RS485_EN_PIN_LEVEL 1U
+/* GPIO, 23 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_EN_15V_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_EN_15V_PIN_LEVEL 1U
+/* GPIO, 8 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_LED_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_LED_PIN_LEVEL 0U
+/* GPIO, 20 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_IO7_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_IO7_PIN_LEVEL 1U
+/* GPIO, 21 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_ADC_PWR_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_ADC_PWR_PIN_LEVEL 1U
+/* GPIO, 23 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_IN4_PIN_DIRECTION kHAL_GpioDirectionIn
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_IN4_PIN_LEVEL 0U
+/* GPIO, 11 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_RESET_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_RESET_PIN_LEVEL 0U
+/* GPIO, 12 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_LED_OUT_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_LED_OUT_PIN_LEVEL 0U
+/* GPIO, 13 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_IO2_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_IO2_PIN_LEVEL 0U
+/* GPIO, 16 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_RS485_EN2_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_RS485_EN2_PIN_LEVEL 1U
+/* GPIO, 22 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_I2C3_WP_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_I2C3_WP_PIN_LEVEL 1U
+/* GPIO, 29 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_IO3_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_IO3_PIN_LEVEL 0U
+/* GPIO, 30 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_IO1_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_IO1_PIN_LEVEL 0U
+/* CRC base */
+#define CRC0_PERIPHERAL CRC0
+
+/***********************************************************************************************************************
+ * Global variables
+ **********************************************************************************************************************/
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_RS485_EN_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_EN_15V_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_LED_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO7_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_ADC_PWR_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN4_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_RESET_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_LED_OUT_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO2_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_RS485_EN2_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_I2C3_WP_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO3_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO1_handle);
+extern const crc_config_t CRC0_config;
+
+/***********************************************************************************************************************
+ * Global functions
+ **********************************************************************************************************************/
+/* Get GPIO pin configuration */
+hal_gpio_pin_config_t createAdapterGpioPinConfig(GPIO_Type *port, uint8_t pin, hal_gpio_direction_t direction, uint8_t level);
 
 /***********************************************************************************************************************
  * Initialization functions

@@ -22,7 +22,7 @@ product: Clocks v20.0
 processor: MCXA176
 package_id: MCXA176VLL
 mcu_data: ksdk2_0
-processor_version: 26.03.20
+processor_version: 26.06.20
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 

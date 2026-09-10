@@ -10,7 +10,7 @@ product: Peripherals v15.0
 processor: MCXA176
 package_id: MCXA176VLL
 mcu_data: ksdk2_0
-processor_version: 26.03.20
+processor_version: 26.06.20
 functionalGroups:
 - name: BOARD_InitPeripherals
   UUID: 6576fcf0-725b-4cb8-8eca-6e744b74bee8
@@ -41,6 +41,10 @@ component:
 - type: 'gpio_adapter_common'
 - type_id: 'gpio_adapter_common'
 - global_gpio_adapter_common:
+  - commonSetting:
+    - HAL_GPIO_CONFLICT_CHECK_ENABLE: 'true'
+    - HAL_GPIO_ISR_PRIORITY: '3'
+    - HAL_GpioPreInit: 'true'
   - quick_selection: 'default'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -78,11 +82,330 @@ static void NVIC_init(void) {
 } */
 
 /***********************************************************************************************************************
+ * GPIO0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'GPIO0'
+- type: 'gpio_adapter'
+- mode: 'GPIO'
+- custom_name_enabled: 'false'
+- type_id: 'gpio_adapter_1.0.1'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'GPIO0'
+- config_sets:
+  - fsl_adapter_gpio:
+    - signalsFilter: 'default boot'
+    - gpioSignalsParameters:
+      - 0: []
+      - 1: []
+    - gpioPinsOverView:
+      - 0: []
+      - 1: []
+    - gpioPinsConfig: []
+    - globalCfg: []
+    - differentPeripheralsAdd: []
+    - quick_selection: 'QuickSelection1'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+/* Get GPIO pin configuration */
+hal_gpio_pin_config_t createAdapterGpioPinConfig(GPIO_Type *port, uint8_t pin, hal_gpio_direction_t direction, uint8_t level){
+  hal_gpio_pin_config_t temp;
+  /* Array of GPIO peripheral base address. */
+  static GPIO_Type *const s_gpioBases[] = GPIO_BASE_PTRS;
+  uint8_t portInd;
+  /* Find the port index from base address mappings. */
+  for (portInd = 0U; portInd < ARRAY_SIZE(s_gpioBases); portInd++)
+  {    if (s_gpioBases[portInd] == port)
+    {
+      break;
+    }
+  }
+  
+  assert(portInd < ARRAY_SIZE(s_gpioBases));
+  
+  temp.direction = direction;
+  temp.level = level;
+  temp.port = portInd;
+  temp.pin = pin;
+  
+  return temp;
+};
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_RS485_EN_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_EN_15V_handle);
+
+static void GPIO0_init(void) {
+  /* GPIO adapter initialization */
+  static hal_gpio_pin_config_t gpioPinConfig;
+  hal_gpio_status_t status;
+  (void)status; // suppress warning in the run configuration
+  /* GPIO, 18 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_RS485_EN_GPIO, BOARD_INITPINS_RS485_EN_PIN, BOARD_INITPINS_RS485_EN_PIN_DIRECTION, BOARD_INITPINS_RS485_EN_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_RS485_EN_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 23 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_EN_15V_GPIO, BOARD_INITPINS_EN_15V_PIN, BOARD_INITPINS_EN_15V_PIN_DIRECTION, BOARD_INITPINS_EN_15V_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_EN_15V_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+}
+
+/***********************************************************************************************************************
+ * GPIO1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'GPIO1'
+- type: 'gpio_adapter'
+- mode: 'GPIO'
+- custom_name_enabled: 'false'
+- type_id: 'gpio_adapter_1.0.1'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'GPIO1'
+- config_sets:
+  - fsl_adapter_gpio:
+    - signalsFilter: 'default boot'
+    - gpioSignalsParameters:
+      - 0: []
+    - gpioPinsOverView:
+      - 0: []
+    - gpioPinsConfig: []
+    - globalCfg: []
+    - differentPeripheralsAdd: []
+    - quick_selection: 'QuickSelection1'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_LED_handle);
+
+static void GPIO1_init(void) {
+  /* GPIO adapter initialization */
+  static hal_gpio_pin_config_t gpioPinConfig;
+  hal_gpio_status_t status;
+  (void)status; // suppress warning in the run configuration
+  /* GPIO, 8 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_LED_GPIO, BOARD_INITPINS_LED_PIN, BOARD_INITPINS_LED_PIN_DIRECTION, BOARD_INITPINS_LED_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_LED_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+}
+
+/***********************************************************************************************************************
+ * GPIO2 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'GPIO2'
+- type: 'gpio_adapter'
+- mode: 'GPIO'
+- custom_name_enabled: 'false'
+- type_id: 'gpio_adapter_1.0.1'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'GPIO2'
+- config_sets:
+  - fsl_adapter_gpio:
+    - signalsFilter: 'default boot'
+    - gpioSignalsParameters:
+      - 0: []
+      - 1: []
+      - 2: []
+    - gpioPinsOverView:
+      - 0: []
+      - 1: []
+      - 2: []
+    - gpioPinsConfig: []
+    - globalCfg: []
+    - differentPeripheralsAdd: []
+    - quick_selection: 'QuickSelection1'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO7_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_ADC_PWR_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN4_handle);
+
+static void GPIO2_init(void) {
+  /* GPIO adapter initialization */
+  static hal_gpio_pin_config_t gpioPinConfig;
+  hal_gpio_status_t status;
+  (void)status; // suppress warning in the run configuration
+  /* GPIO, 20 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_IO7_GPIO, BOARD_INITPINS_IO7_PIN, BOARD_INITPINS_IO7_PIN_DIRECTION, BOARD_INITPINS_IO7_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_IO7_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 21 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_ADC_PWR_GPIO, BOARD_INITPINS_ADC_PWR_PIN, BOARD_INITPINS_ADC_PWR_PIN_DIRECTION, BOARD_INITPINS_ADC_PWR_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_ADC_PWR_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 23 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_IN4_GPIO, BOARD_INITPINS_IN4_PIN, BOARD_INITPINS_IN4_PIN_DIRECTION, BOARD_INITPINS_IN4_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_IN4_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+}
+
+/***********************************************************************************************************************
+ * GPIO3 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'GPIO3'
+- type: 'gpio_adapter'
+- mode: 'GPIO'
+- custom_name_enabled: 'false'
+- type_id: 'gpio_adapter_1.0.1'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'GPIO3'
+- config_sets:
+  - fsl_adapter_gpio:
+    - signalsFilter: 'default boot'
+    - gpioSignalsParameters:
+      - 0: []
+      - 1: []
+      - 2: []
+      - 3: []
+      - 4: []
+      - 5: []
+      - 6: []
+    - gpioPinsOverView:
+      - 0: []
+      - 1: []
+      - 2: []
+      - 3: []
+      - 4: []
+      - 5: []
+      - 6: []
+    - gpioPinsConfig: []
+    - globalCfg: []
+    - differentPeripheralsAdd: []
+    - quick_selection: 'QuickSelection1'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_RESET_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_LED_OUT_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO2_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_RS485_EN2_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_I2C3_WP_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO3_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO1_handle);
+
+static void GPIO3_init(void) {
+  /* GPIO adapter initialization */
+  static hal_gpio_pin_config_t gpioPinConfig;
+  hal_gpio_status_t status;
+  (void)status; // suppress warning in the run configuration
+  /* GPIO, 11 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_RESET_GPIO, BOARD_INITPINS_RESET_PIN, BOARD_INITPINS_RESET_PIN_DIRECTION, BOARD_INITPINS_RESET_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_RESET_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 12 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_LED_OUT_GPIO, BOARD_INITPINS_LED_OUT_PIN, BOARD_INITPINS_LED_OUT_PIN_DIRECTION, BOARD_INITPINS_LED_OUT_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_LED_OUT_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 13 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_IO2_GPIO, BOARD_INITPINS_IO2_PIN, BOARD_INITPINS_IO2_PIN_DIRECTION, BOARD_INITPINS_IO2_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_IO2_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 16 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_RS485_EN2_GPIO, BOARD_INITPINS_RS485_EN2_PIN, BOARD_INITPINS_RS485_EN2_PIN_DIRECTION, BOARD_INITPINS_RS485_EN2_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_RS485_EN2_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 22 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_I2C3_WP_GPIO, BOARD_INITPINS_I2C3_WP_PIN, BOARD_INITPINS_I2C3_WP_PIN_DIRECTION, BOARD_INITPINS_I2C3_WP_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_I2C3_WP_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 29 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_IO3_GPIO, BOARD_INITPINS_IO3_PIN, BOARD_INITPINS_IO3_PIN_DIRECTION, BOARD_INITPINS_IO3_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_IO3_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 30 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_IO1_GPIO, BOARD_INITPINS_IO1_PIN, BOARD_INITPINS_IO1_PIN_DIRECTION, BOARD_INITPINS_IO1_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_IO1_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+}
+
+/***********************************************************************************************************************
+ * GPIO4 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'GPIO4'
+- type: 'gpio_adapter'
+- mode: 'GPIO'
+- custom_name_enabled: 'false'
+- type_id: 'gpio_adapter_1.0.1'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'GPIO4'
+- config_sets:
+  - fsl_adapter_gpio:
+    - signalsFilter: 'default boot'
+    - gpioSignalsParameters: []
+    - gpioPinsOverView: []
+    - globalCfg: []
+    - differentPeripheralsAdd: []
+    - quick_selection: 'QuickSelection1'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+
+static void GPIO4_init(void) {
+  /* GPIO adapter initialization */
+}
+
+/***********************************************************************************************************************
+ * CRC0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'CRC0'
+- type: 'crc'
+- mode: 'General'
+- custom_name_enabled: 'false'
+- type_id: 'crc_2.0.1'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'CRC0'
+- config_sets:
+  - fsl_crc:
+    - config:
+      - polynomial: '0x04C11DB7'
+      - seed: '0xFFFFFFFF'
+      - reflectIn: 'true'
+      - reflectOut: 'true'
+      - complementChecksum: 'false'
+      - crcBits: 'kCrcBits32'
+      - crcResult: 'kCrcFinalChecksum'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const crc_config_t CRC0_config = {
+  .polynomial = 0x4C11DB7UL,
+  .seed = 0xFFFFFFFFUL,
+  .reflectIn = true,
+  .reflectOut = true,
+  .complementChecksum = false,
+  .crcBits = kCrcBits32,
+  .crcResult = kCrcFinalChecksum
+};
+
+static void CRC0_init(void) {
+  CRC_Init(CRC0_PERIPHERAL, &CRC0_config);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
 {
+  /* Global initialization */
+  /* GPIO adapter pre-initialization */
+  HAL_GpioPreInit();
+
   /* Initialize components */
+  GPIO0_init();
+  GPIO1_init();
+  GPIO2_init();
+  GPIO3_init();
+  GPIO4_init();
+  CRC0_init();
 }
 
 /***********************************************************************************************************************
