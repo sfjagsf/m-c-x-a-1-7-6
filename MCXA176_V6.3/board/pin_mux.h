@@ -25,6 +25,7 @@ extern "C" {
  */
 void BOARD_InitBootPins(void);
 
+#define PCR_IBE_ibe0 0x00u          /*!<@brief Input Buffer Enable: Disables */
 #define PCR_IBE_ibe1 0x01u          /*!<@brief Input Buffer Enable: Enables */
 #define PCR_PS_ps1 0x01u            /*!<@brief Pull Select: Enables internal pullup resistor */
 #define PORT0_PCR0_MUX_mux01 0x01u  /*!<@brief Pin Multiplex Control: Alternative 1 (chip-specific) */
@@ -389,6 +390,24 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_EN_15V_PIN 23U                   /*!<@brief PORT pin number */
 #define BOARD_INITPINS_EN_15V_PIN_MASK (1U << 23U)      /*!<@brief PORT pin mask */
                                                         /* @} */
+
+/*! @name PORT1_31 (number 11), OSC_IN
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_OSC_IN_PORT PORT1                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_OSC_IN_PIN 31U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_OSC_IN_PIN_MASK (1U << 31U)      /*!<@brief PORT pin mask */
+                                                        /* @} */
+
+/*! @name PORT1_30 (number 10), OSC_OUT
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_OSC_OUT_PORT PORT1                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_OSC_OUT_PIN 30U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_OSC_OUT_PIN_MASK (1U << 30U)      /*!<@brief PORT pin mask */
+                                                         /* @} */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

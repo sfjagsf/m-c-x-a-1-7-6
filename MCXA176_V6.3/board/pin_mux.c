@@ -46,6 +46,8 @@ pin_labels:
 - {pin_num: '6', pin_signal: P1_13/TRIG_IN3/LPI2C1_SCL/LPUART2_TXD/CT2_MAT3/FLEXIO0_D21/SmartDMA_PIO9/ADC1_A11, label: I2C1_SCL, identifier: I2C1_SCK;I2C1_SCL}
 - {pin_num: '49', pin_signal: P3_30/TRIG_OUT6/LPI2C3_SCLS/LPUART4_RTS_B/CT0_MAT2/FLEXIO0_D30/PWM1_A0/SmartDMA_PIO30/ADC1_A21, label: IO1, identifier: IO1}
 - {pin_num: '52', pin_signal: P3_27/WUU0_IN30/TRIG_OUT7/LPI2C3_SCL/LPUART4_TXD/CT_INP13/CT3_MAT1/FLEXIO0_D27/PWM1_A3/SmartDMA_PIO27, label: I2C3_SCL, identifier: I2C3_SCL}
+- {pin_num: '11', pin_signal: P1_31/TRIG_IN4/LPI2C0_SCL/CT_INP17/FLEXIO0_D31/I3C0_SCL/EXTAL48M, label: OSC_IN, identifier: OSC_IN}
+- {pin_num: '10', pin_signal: P1_30/TRIG_OUT3/LPI2C0_SDA/CT_INP16/FLEXIO0_D30/I3C0_SDA/XTAL48M, label: OSC_OUT, identifier: OSC_OUT}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -119,6 +121,8 @@ BOARD_InitPins:
   - {pin_num: '58', peripheral: SmartDMA0, signal: 'SMARTDMA_PIO, 17', pin_signal: P3_17/LPUART4_CTS_B/CT_INP9/FLEXIO0_D25/PWM1_B0/SmartDMA_PIO17, pull_select: up}
   - {pin_num: '90', peripheral: GPIO0, signal: 'GPIO, 23', pin_signal: P0_23/WUU0_IN5/LPUART0_CTS_B/CT_INP3/CT0_MAT1/FLEXIO0_D7/SmartDMA_PIO13/ADC0_A13, direction: OUTPUT,
     gpio_init_state: 'true'}
+  - {pin_num: '11', peripheral: SCG0, signal: EXTAL, pin_signal: P1_31/TRIG_IN4/LPI2C0_SCL/CT_INP17/FLEXIO0_D31/I3C0_SCL/EXTAL48M}
+  - {pin_num: '10', peripheral: SCG0, signal: XTAL, pin_signal: P1_30/TRIG_OUT3/LPI2C0_SDA/CT_INP16/FLEXIO0_D30/I3C0_SDA/XTAL48M}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -271,6 +275,26 @@ void BOARD_InitPins(void)
 
                      /* Input Buffer Enable: Enables. */
                      | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    /* PORT1_30 (pin 10) is configured as XTAL48M */
+    PORT_SetPinMux(BOARD_INITPINS_OSC_OUT_PORT, BOARD_INITPINS_OSC_OUT_PIN, kPORT_MuxAlt0);
+
+    PORT1->PCR[30] = ((PORT1->PCR[30] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_IBE_MASK)))
+
+                      /* Input Buffer Enable: Disables. */
+                      | PORT_PCR_IBE(PCR_IBE_ibe0));
+
+    /* PORT1_31 (pin 11) is configured as EXTAL48M */
+    PORT_SetPinMux(BOARD_INITPINS_OSC_IN_PORT, BOARD_INITPINS_OSC_IN_PIN, kPORT_MuxAlt0);
+
+    PORT1->PCR[31] = ((PORT1->PCR[31] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_IBE_MASK)))
+
+                      /* Input Buffer Enable: Disables. */
+                      | PORT_PCR_IBE(PCR_IBE_ibe0));
 
     /* PORT1_8 (pin 1) is configured as P1_8 */
     PORT_SetPinMux(BOARD_INITPINS_LED_PORT, BOARD_INITPINS_LED_PIN, kPORT_MuxAlt0);

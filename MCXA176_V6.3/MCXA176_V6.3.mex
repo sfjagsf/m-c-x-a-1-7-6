@@ -57,6 +57,8 @@
                <pin_label pin_num="6" pin_signal="P1_13/TRIG_IN3/LPI2C1_SCL/LPUART2_TXD/CT2_MAT3/FLEXIO0_D21/SmartDMA_PIO9/ADC1_A11" label="I2C1_SCL" identifier="I2C1_SCK;I2C1_SCL"/>
                <pin_label pin_num="49" pin_signal="P3_30/TRIG_OUT6/LPI2C3_SCLS/LPUART4_RTS_B/CT0_MAT2/FLEXIO0_D30/PWM1_A0/SmartDMA_PIO30/ADC1_A21" label="IO1" identifier="IO1"/>
                <pin_label pin_num="52" pin_signal="P3_27/WUU0_IN30/TRIG_OUT7/LPI2C3_SCL/LPUART4_TXD/CT_INP13/CT3_MAT1/FLEXIO0_D27/PWM1_A3/SmartDMA_PIO27" label="I2C3_SCL" identifier="I2C3_SCL"/>
+               <pin_label pin_num="11" pin_signal="P1_31/TRIG_IN4/LPI2C0_SCL/CT_INP17/FLEXIO0_D31/I3C0_SCL/EXTAL48M" label="OSC_IN" identifier="OSC_IN"/>
+               <pin_label pin_num="10" pin_signal="P1_30/TRIG_OUT3/LPI2C0_SDA/CT_INP16/FLEXIO0_D30/I3C0_SDA/XTAL48M" label="OSC_OUT" identifier="OSC_OUT"/>
             </pin_labels>
          </pins_profile>
          <functions_list>
@@ -94,6 +96,11 @@
                      </feature>
                   </dependency>
                   <dependency resourceType="Peripheral" resourceId="SmartDMA0" description="Peripheral SmartDMA0 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="SCG0" description="Peripheral SCG0 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
                      <feature name="initialized" evaluation="equal">
                         <data>true</data>
                      </feature>
@@ -250,6 +257,8 @@
                         <pin_feature name="gpio_init_state" value="true"/>
                      </pin_features>
                   </pin>
+                  <pin peripheral="SCG0" signal="EXTAL" pin_num="11" pin_signal="P1_31/TRIG_IN4/LPI2C0_SCL/CT_INP17/FLEXIO0_D31/I3C0_SCL/EXTAL48M"/>
+                  <pin peripheral="SCG0" signal="XTAL" pin_num="10" pin_signal="P1_30/TRIG_OUT3/LPI2C0_SDA/CT_INP16/FLEXIO0_D30/I3C0_SDA/XTAL48M"/>
                </pins>
             </function>
          </functions_list>
