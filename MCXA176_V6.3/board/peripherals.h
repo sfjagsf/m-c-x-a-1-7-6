@@ -9,10 +9,14 @@
 /***********************************************************************************************************************
  * Included files
  **********************************************************************************************************************/
+#include "fsl_edma.h"
+#include "stdlib.h"
 #include "fsl_common.h"
 #include "fsl_adapter_gpio.h"
 #include "pin_mux.h"
 #include "fsl_crc.h"
+#include "fsl_ctimer.h"
+#include "fsl_clock.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -22,6 +26,22 @@ extern "C" {
  * Definitions
  **********************************************************************************************************************/
 /* Definitions for BOARD_InitPeripherals functional group */
+/* Used DMA device. */
+#define DMA0_DMA_BASEADDR (EDMA_Type *)DMA0
+
+  /* Channel CH7 definitions */
+/* DMA0 eDMA source request. */
+#define DMA0_CH7_DMA_REQUEST kDma0RequestMuxCtimer4M0
+/* Selected eDMA channel number. */
+#define DMA0_CH7_DMA_CHANNEL 7
+/* TCD pool size */
+#define DMA0_CH7_TCD_SIZE 1
+/* DMA0 interrupt vector ID (number). */
+#define DMA0_DMA_CH_INT_DONE_7_IRQN DMA_CH7_IRQn
+/* DMA0 interrupt vector priority. */
+#define DMA0_DMA_CH_INT_DONE_7_IRQ_PRIORITY 5
+/* Transfer structure index 0 definition */
+#define DMA0_CH7_TRANSFER0_CONFIG DMA0_CH7_Transfers_config[0]
 /* GPIO, 18 signal defines */
 /* Definition of the pin direction */
 #define BOARD_INITPINS_RS485_EN_PIN_DIRECTION kHAL_GpioDirectionOut
@@ -72,6 +92,31 @@ extern "C" {
 #define BOARD_INITPINS_RS485_EN2_PIN_DIRECTION kHAL_GpioDirectionOut
 /* Definition of the pin level after initialization */
 #define BOARD_INITPINS_RS485_EN2_PIN_LEVEL 1U
+/* GPIO, 17 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_IN5_PIN_DIRECTION kHAL_GpioDirectionIn
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_IN5_PIN_LEVEL 0U
+/* GPIO, 18 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_IN1_PIN_DIRECTION kHAL_GpioDirectionIn
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_IN1_PIN_LEVEL 0U
+/* GPIO, 19 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_IN10_PIN_DIRECTION kHAL_GpioDirectionIn
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_IN10_PIN_LEVEL 0U
+/* GPIO, 20 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_IN6_PIN_DIRECTION kHAL_GpioDirectionIn
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_IN6_PIN_LEVEL 0U
+/* GPIO, 21 signal defines */
+/* Definition of the pin direction */
+#define BOARD_INITPINS_IN7_PIN_DIRECTION kHAL_GpioDirectionIn
+/* Definition of the pin level after initialization */
+#define BOARD_INITPINS_IN7_PIN_LEVEL 0U
 /* GPIO, 22 signal defines */
 /* Definition of the pin direction */
 #define BOARD_INITPINS_I2C3_WP_PIN_DIRECTION kHAL_GpioDirectionOut
@@ -89,10 +134,26 @@ extern "C" {
 #define BOARD_INITPINS_IO1_PIN_LEVEL 0U
 /* CRC base */
 #define CRC0_PERIPHERAL CRC0
+/* Definition of peripheral ID */
+#define CTIMER4_PERIPHERAL CTIMER4
+/* Timer tick frequency in Hz (input frequency of the timer) */
+#define CTIMER4_TICK_FREQ 1000000UL
+/* Timer tick period in ns (input period of the timer) */
+#define CTIMER4_TICK_PERIOD 1000UL
+/* Definition of PWM period channel. */
+#define CTIMER4_PWM_PERIOD_CH kCTIMER_Match_0
+/* Definition of channel 0 ID */
+#define CTIMER4_MATCH_0_CHANNEL kCTIMER_Match_0
 
 /***********************************************************************************************************************
  * Global variables
  **********************************************************************************************************************/
+extern edma_config_t DMA0_config;
+/* Destination address extern definition */
+extern volatile uint32_t g_gpio3SampleBuf[8];
+extern edma_handle_t DMA0_CH7_Handle;
+/* Transactional transfer configurations */
+extern edma_transfer_config_t DMA0_CH7_Transfers_config[1];
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_RS485_EN_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_EN_15V_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_LED_handle);
@@ -103,16 +164,29 @@ extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_RESET_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_LED_OUT_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO2_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_RS485_EN2_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN5_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN1_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN10_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN6_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN7_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_I2C3_WP_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO3_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO1_handle);
 extern const crc_config_t CRC0_config;
+extern const ctimer_config_t CTIMER4_config;
+extern const ctimer_match_config_t CTIMER4_Match_0_config;
 
 /***********************************************************************************************************************
  * Global functions
  **********************************************************************************************************************/
 /* Get GPIO pin configuration */
 hal_gpio_pin_config_t createAdapterGpioPinConfig(GPIO_Type *port, uint8_t pin, hal_gpio_direction_t direction, uint8_t level);
+
+/***********************************************************************************************************************
+ * Callback functions
+ **********************************************************************************************************************/
+/* eDMA callback function for the 7 channel.*/
+extern void GpioDmaFilterDmaCallback(edma_handle_t*, void*, bool, uint32_t);
 
 /***********************************************************************************************************************
  * Initialization functions

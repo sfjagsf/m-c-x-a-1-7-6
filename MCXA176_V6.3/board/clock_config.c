@@ -957,16 +957,32 @@ void BOARD_BootClockFROHF90M(void)
 name: BOARD_BootClockFROHF180M
 called_from_default_init: true
 outputs:
+- {id: ADC_clock.outFreq, value: 60 MHz}
 - {id: BUS_clock.outFreq, value: 90 MHz}
 - {id: CLK_1M_clock.outFreq, value: 1 MHz}
 - {id: CLK_45M_clock.outFreq, value: 45 MHz}
 - {id: CPU_clock.outFreq, value: 180 MHz}
+- {id: CTIMER0_clock.outFreq, value: 180 MHz}
+- {id: CTIMER1_clock.outFreq, value: 180 MHz}
+- {id: CTIMER2_clock.outFreq, value: 12 MHz}
+- {id: CTIMER3_clock.outFreq, value: 180 MHz}
+- {id: CTIMER4_clock.outFreq, value: 180 MHz}
+- {id: DAC0_clock.outFreq, value: 45 MHz}
 - {id: FREQME_reference_clock.outFreq, value: 12 MHz}
 - {id: FREQME_target_clock.outFreq, value: 12 MHz}
 - {id: FRO_12M_DIV_clock.outFreq, value: 12 MHz}
 - {id: FRO_12M_clock.outFreq, value: 12 MHz}
 - {id: FRO_HF_DIV_clock.outFreq, value: 180 MHz}
 - {id: FRO_HF_clock.outFreq, value: 180 MHz}
+- {id: LPI2C0_clock.outFreq, value: 20 MHz}
+- {id: LPI2C3_clock.outFreq, value: 20 MHz}
+- {id: LPSPI0_clock.outFreq, value: 11.25 MHz}
+- {id: LPSPI1_clock.outFreq, value: 20 MHz}
+- {id: LPUART0_clock.outFreq, value: 180 MHz}
+- {id: LPUART1_clock.outFreq, value: 180 MHz}
+- {id: LPUART2_clock.outFreq, value: 180 MHz}
+- {id: LPUART3_clock.outFreq, value: 180 MHz}
+- {id: LPUART4_clock.outFreq, value: 180 MHz}
 - {id: MAIN_clock.outFreq, value: 180 MHz}
 - {id: Slow_clock.outFreq, value: 30 MHz}
 - {id: System_clock.outFreq, value: 180 MHz}
@@ -975,10 +991,49 @@ outputs:
 - {id: WWDT0_clock.outFreq, value: 1 MHz}
 settings:
 - {id: VDD_CORE, value: voltage_1v2}
+- {id: ADC_CLKDIV_MRCC0_MRCC_ADC_CLKDIV_HALT, value: 'ON'}
+- {id: CTIMER0_CLKDIV_MRCC0_MRCC_CTIMER0_CLKDIV_HALT, value: 'ON'}
+- {id: CTIMER1_CLKDIV_MRCC0_MRCC_CTIMER1_CLKDIV_HALT, value: 'ON'}
+- {id: CTIMER2_CLKDIV_MRCC0_MRCC_CTIMER2_CLKDIV_HALT, value: 'ON'}
+- {id: CTIMER3_CLKDIV_MRCC0_MRCC_CTIMER3_CLKDIV_HALT, value: 'ON'}
+- {id: CTIMER4_CLKDIV_MRCC0_MRCC_CTIMER4_CLKDIV_HALT, value: 'ON'}
+- {id: DAC0_CLKDIV_MRCC0_MRCC_DAC0_CLKDIV_HALT, value: 'ON'}
 - {id: FROHFDIV_SYSCON_FROHFDIV_HALT, value: RUN}
 - {id: FROLFDIV_SYSCON_FROLFDIV_HALT, value: RUN}
+- {id: LPI2C0_CLKDIV_MRCC0_MRCC_LPI2C0_CLKDIV_HALT, value: 'ON'}
+- {id: LPI2C3_CLKDIV_MRCC0_MRCC_LPI2C3_CLKDIV_HALT, value: 'ON'}
+- {id: LPSPI0_CLKDIV_MRCC0_MRCC_LPSPI0_CLKDIV_HALT, value: 'ON'}
+- {id: LPSPI1_CLKDIV_MRCC0_MRCC_LPSPI1_CLKDIV_HALT, value: 'ON'}
+- {id: LPUART0_CLKDIV_MRCC0_MRCC_LPUART0_CLKDIV_HALT, value: 'ON'}
+- {id: LPUART1_CLKDIV_MRCC0_MRCC_LPUART1_CLKDIV_HALT, value: 'ON'}
+- {id: LPUART2_CLKDIV_MRCC0_MRCC_LPUART2_CLKDIV_HALT, value: 'ON'}
+- {id: LPUART3_CLKDIV_MRCC0_MRCC_LPUART3_CLKDIV_HALT, value: 'ON'}
+- {id: LPUART4_CLKDIV_MRCC0_MRCC_LPUART4_CLKDIV_HALT, value: 'ON'}
+- {id: MRCC.ADC_CLKDIV.scale, value: '3', locked: true}
+- {id: MRCC.ADC_CLKSEL.sel, value: SCG.FRO_HF_clock}
+- {id: MRCC.CTIMER0_CLKSEL.sel, value: SCG.FRO_HF_clock}
+- {id: MRCC.CTIMER1_CLKSEL.sel, value: SCG.FRO_HF_clock}
+- {id: MRCC.CTIMER2_CLKSEL.sel, value: SYSCON.FRO_12M_DIV_clock}
+- {id: MRCC.CTIMER3_CLKSEL.sel, value: SCG.FRO_HF_clock}
+- {id: MRCC.CTIMER4_CLKSEL.sel, value: SCG.FRO_HF_clock}
+- {id: MRCC.DAC0_CLKDIV.scale, value: '4', locked: true}
+- {id: MRCC.DAC0_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
+- {id: MRCC.LPI2C0_CLKDIV.scale, value: '9'}
+- {id: MRCC.LPI2C0_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
+- {id: MRCC.LPI2C3_CLKDIV.scale, value: '9'}
+- {id: MRCC.LPI2C3_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
+- {id: MRCC.LPSPI0_CLKDIV.scale, value: '16', locked: true}
+- {id: MRCC.LPSPI0_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
+- {id: MRCC.LPSPI1_CLKDIV.scale, value: '9'}
+- {id: MRCC.LPSPI1_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
+- {id: MRCC.LPUART0_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
+- {id: MRCC.LPUART1_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
+- {id: MRCC.LPUART2_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
+- {id: MRCC.LPUART3_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
+- {id: MRCC.LPUART4_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
 - {id: MRCC.TRACE_CLKDIV.scale, value: '9'}
 - {id: SCG.FREQ_SEL.scale, value: '1', locked: true}
+- {id: SYSCON.FROHFDIV.scale, value: '1', locked: true}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -1002,7 +1057,8 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
             CLOCK_AttachClk(kFRO_HF_to_MAIN_CLK);/* !< Switch MAIN_CLK to kFRO_HF */
             break;
         case kClockModule_ADCClk:
-            CLOCK_AttachClk(kNONE_to_ADC);                 /* !< Switch ADC to  */
+            CLOCK_AttachClk(kFRO_HF_to_ADC);               /* !< Switch ADC to FRO_HF */
+            CLOCK_SetClockDiv(kCLOCK_DivADC, 3U);          /* !< Set MRCC.ADC_CLKDIV divider to value 3 */
             break;
         case kClockModule_CLKOUT:
             CLOCK_AttachClk(kNONE_to_CLKOUT);              /* !< Switch CLKOUT to  */
@@ -1014,22 +1070,28 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
             CLOCK_AttachClk(kNONE_to_CMP1);                /* !< Switch CMP1 to  */
             break;
         case kClockModule_CTIMER0Clk:
-            CLOCK_AttachClk(kNONE_to_CTIMER0);             /* !< Switch CTIMER0 to  */
+            CLOCK_AttachClk(kFRO_HF_to_CTIMER0);           /* !< Switch CTIMER0 to FRO_HF */
+            CLOCK_SetClockDiv(kCLOCK_DivCTIMER0, 1U);      /* !< Set MRCC.CTIMER0_CLKDIV divider to value 1 */
             break;
         case kClockModule_CTIMER1Clk:
-            CLOCK_AttachClk(kNONE_to_CTIMER1);             /* !< Switch CTIMER1 to  */
+            CLOCK_AttachClk(kFRO_HF_to_CTIMER1);           /* !< Switch CTIMER1 to FRO_HF */
+            CLOCK_SetClockDiv(kCLOCK_DivCTIMER1, 1U);      /* !< Set MRCC.CTIMER1_CLKDIV divider to value 1 */
             break;
         case kClockModule_CTIMER2Clk:
-            CLOCK_AttachClk(kNONE_to_CTIMER2);             /* !< Switch CTIMER2 to  */
+            CLOCK_AttachClk(kFRO_LF_DIV_to_CTIMER2);       /* !< Switch CTIMER2 to FRO_LF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivCTIMER2, 1U);      /* !< Set MRCC.CTIMER2_CLKDIV divider to value 1 */
             break;
         case kClockModule_CTIMER3Clk:
-            CLOCK_AttachClk(kNONE_to_CTIMER3);             /* !< Switch CTIMER3 to  */
+            CLOCK_AttachClk(kFRO_HF_to_CTIMER3);           /* !< Switch CTIMER3 to FRO_HF */
+            CLOCK_SetClockDiv(kCLOCK_DivCTIMER3, 1U);      /* !< Set MRCC.CTIMER3_CLKDIV divider to value 1 */
             break;
         case kClockModule_CTIMER4Clk:
-            CLOCK_AttachClk(kNONE_to_CTIMER4);             /* !< Switch CTIMER4 to  */
+            CLOCK_AttachClk(kFRO_HF_to_CTIMER4);           /* !< Switch CTIMER4 to FRO_HF */
+            CLOCK_SetClockDiv(kCLOCK_DivCTIMER4, 1U);      /* !< Set MRCC.CTIMER4_CLKDIV divider to value 1 */
             break;
         case kClockModule_DAC0Clk:
-            CLOCK_AttachClk(kNONE_to_DAC0);                /* !< Switch DAC0 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_DAC0);          /* !< Switch DAC0 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivDAC0, 4U);         /* !< Set MRCC.DAC0_CLKDIV divider to value 4 */
             break;
         case kClockModule_FLEXCAN0Clk:
             CLOCK_AttachClk(kNONE_to_FLEXCAN0);            /* !< Switch FLEXCAN0 to  */
@@ -1041,7 +1103,8 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
             CLOCK_AttachClk(kNONE_to_I3C0FCLK);            /* !< Switch I3C0FCLK to  */
             break;
         case kClockModule_LPI2C0Clk:
-            CLOCK_AttachClk(kNONE_to_LPI2C0);              /* !< Switch LPI2C0 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_LPI2C0);        /* !< Switch LPI2C0 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivLPI2C0, 9U);       /* !< Set MRCC.LPI2C0_CLKDIV divider to value 9 */
             break;
         case kClockModule_LPI2C1Clk:
             CLOCK_AttachClk(kNONE_to_LPI2C1);              /* !< Switch LPI2C1 to  */
@@ -1050,31 +1113,39 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
             CLOCK_AttachClk(kNONE_to_LPI2C2);              /* !< Switch LPI2C2 to  */
             break;
         case kClockModule_LPI2C3Clk:
-            CLOCK_AttachClk(kNONE_to_LPI2C3);              /* !< Switch LPI2C3 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_LPI2C3);        /* !< Switch LPI2C3 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivLPI2C3, 9U);       /* !< Set MRCC.LPI2C3_CLKDIV divider to value 9 */
             break;
         case kClockModule_LPSPI0Clk:
-            CLOCK_AttachClk(kNONE_to_LPSPI0);              /* !< Switch LPSPI0 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_LPSPI0);        /* !< Switch LPSPI0 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivLPSPI0, 16U);      /* !< Set MRCC.LPSPI0_CLKDIV divider to value 16 */
             break;
         case kClockModule_LPSPI1Clk:
-            CLOCK_AttachClk(kNONE_to_LPSPI1);              /* !< Switch LPSPI1 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_LPSPI1);        /* !< Switch LPSPI1 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivLPSPI1, 9U);       /* !< Set MRCC.LPSPI1_CLKDIV divider to value 9 */
             break;
         case kClockModule_LPTMR0Clk:
             CLOCK_AttachClk(kNONE_to_LPTMR0);              /* !< Switch LPTMR0 to  */
             break;
         case kClockModule_LPUART0Clk:
-            CLOCK_AttachClk(kNONE_to_LPUART0);             /* !< Switch LPUART0 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_LPUART0);       /* !< Switch LPUART0 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivLPUART0, 1U);      /* !< Set MRCC.LPUART0_CLKDIV divider to value 1 */
             break;
         case kClockModule_LPUART1Clk:
-            CLOCK_AttachClk(kNONE_to_LPUART1);             /* !< Switch LPUART1 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_LPUART1);       /* !< Switch LPUART1 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivLPUART1, 1U);      /* !< Set MRCC.LPUART1_CLKDIV divider to value 1 */
             break;
         case kClockModule_LPUART2Clk:
-            CLOCK_AttachClk(kNONE_to_LPUART2);             /* !< Switch LPUART2 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_LPUART2);       /* !< Switch LPUART2 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivLPUART2, 1U);      /* !< Set MRCC.LPUART2_CLKDIV divider to value 1 */
             break;
         case kClockModule_LPUART3Clk:
-            CLOCK_AttachClk(kNONE_to_LPUART3);             /* !< Switch LPUART3 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_LPUART3);       /* !< Switch LPUART3 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivLPUART3, 1U);      /* !< Set MRCC.LPUART3_CLKDIV divider to value 1 */
             break;
         case kClockModule_LPUART4Clk:
-            CLOCK_AttachClk(kNONE_to_LPUART4);             /* !< Switch LPUART4 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_LPUART4);       /* !< Switch LPUART4 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivLPUART4, 1U);      /* !< Set MRCC.LPUART4_CLKDIV divider to value 1 */
             break;
         case kClockModule_OSTIMER0Clk:
             CLOCK_AttachClk(kNONE_to_OSTIMER);             /* !< Switch OSTIMER to  */

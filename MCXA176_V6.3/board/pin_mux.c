@@ -110,19 +110,19 @@ BOARD_InitPins:
     direction: OUTPUT}
   - {pin_num: '51', peripheral: LPI2C3, signal: SDA, pin_signal: P3_28/WUU0_IN26/TRIG_IN11/LPI2C3_SDA/LPUART4_RXD/CT_INP12/CT3_MAT2/FLEXIO0_D28/PWM1_B3/SmartDMA_PIO28,
     identifier: I2C3_SDA}
-  - {pin_num: '54', peripheral: SmartDMA0, signal: 'SMARTDMA_PIO, 21', pin_signal: P3_21/TRIG_OUT1/LPI2C3_SCL/LPUART1_TXD/CT2_MAT3/PWM0_X3/FLEXIO0_D29/PWM1_B3/SmartDMA_PIO21,
-    pull_select: up}
-  - {pin_num: '55', peripheral: SmartDMA0, signal: 'SMARTDMA_PIO, 20', pin_signal: P3_20/TRIG_OUT0/LPI2C3_SDA/LPUART1_RXD/CT2_MAT2/PWM0_X2/FLEXIO0_D28/PWM1_A3/SmartDMA_PIO20,
-    pull_select: up}
-  - {pin_num: '56', peripheral: SmartDMA0, signal: 'SMARTDMA_PIO, 19', pin_signal: P3_19/TAMPER4/LPUART4_TXD/CT2_MAT1/PWM0_X1/FLEXIO0_D27/PWM1_X1/SmartDMA_PIO19,
-    pull_select: up}
-  - {pin_num: '57', peripheral: SmartDMA0, signal: 'SMARTDMA_PIO, 18', pin_signal: P3_18/TAMPER5/LPUART4_RXD/CT2_MAT0/PWM0_X0/FLEXIO0_D26/PWM1_X0/SmartDMA_PIO18,
-    pull_select: up}
-  - {pin_num: '58', peripheral: SmartDMA0, signal: 'SMARTDMA_PIO, 17', pin_signal: P3_17/LPUART4_CTS_B/CT_INP9/FLEXIO0_D25/PWM1_B0/SmartDMA_PIO17, pull_select: up}
   - {pin_num: '90', peripheral: GPIO0, signal: 'GPIO, 23', pin_signal: P0_23/WUU0_IN5/LPUART0_CTS_B/CT_INP3/CT0_MAT1/FLEXIO0_D7/SmartDMA_PIO13/ADC0_A13, direction: OUTPUT,
     gpio_init_state: 'true'}
   - {pin_num: '11', peripheral: SCG0, signal: EXTAL, pin_signal: P1_31/TRIG_IN4/LPI2C0_SCL/CT_INP17/FLEXIO0_D31/I3C0_SCL/EXTAL48M}
   - {pin_num: '10', peripheral: SCG0, signal: XTAL, pin_signal: P1_30/TRIG_OUT3/LPI2C0_SDA/CT_INP16/FLEXIO0_D30/I3C0_SDA/XTAL48M}
+  - {pin_num: '58', peripheral: GPIO3, signal: 'GPIO, 17', pin_signal: P3_17/LPUART4_CTS_B/CT_INP9/FLEXIO0_D25/PWM1_B0/SmartDMA_PIO17, direction: INPUT, pull_select: up}
+  - {pin_num: '57', peripheral: GPIO3, signal: 'GPIO, 18', pin_signal: P3_18/TAMPER5/LPUART4_RXD/CT2_MAT0/PWM0_X0/FLEXIO0_D26/PWM1_X0/SmartDMA_PIO18, direction: INPUT,
+    pull_select: up}
+  - {pin_num: '56', peripheral: GPIO3, signal: 'GPIO, 19', pin_signal: P3_19/TAMPER4/LPUART4_TXD/CT2_MAT1/PWM0_X1/FLEXIO0_D27/PWM1_X1/SmartDMA_PIO19, direction: INPUT,
+    pull_select: up}
+  - {pin_num: '55', peripheral: GPIO3, signal: 'GPIO, 20', pin_signal: P3_20/TRIG_OUT0/LPI2C3_SDA/LPUART1_RXD/CT2_MAT2/PWM0_X2/FLEXIO0_D28/PWM1_A3/SmartDMA_PIO20,
+    direction: INPUT, pull_select: up}
+  - {pin_num: '54', peripheral: GPIO3, signal: 'GPIO, 21', pin_signal: P3_21/TRIG_OUT1/LPI2C3_SCL/LPUART1_TXD/CT2_MAT3/PWM0_X3/FLEXIO0_D29/PWM1_B3/SmartDMA_PIO21,
+    direction: INPUT, pull_select: up}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -409,8 +409,8 @@ void BOARD_InitPins(void)
                       /* Input Buffer Enable: Enables. */
                       | PORT_PCR_IBE(PCR_IBE_ibe1));
 
-    /* PORT3_17 (pin 58) is configured as SmartDMA_PIO17 */
-    PORT_SetPinMux(BOARD_INITPINS_IN5_PORT, BOARD_INITPINS_IN5_PIN, kPORT_MuxAlt10);
+    /* PORT3_17 (pin 58) is configured as P3_17 */
+    PORT_SetPinMux(BOARD_INITPINS_IN5_PORT, BOARD_INITPINS_IN5_PIN, kPORT_MuxAlt0);
 
     PORT3->PCR[17] = ((PORT3->PCR[17] &
                        /* Mask bits to zero which are setting */
@@ -422,8 +422,8 @@ void BOARD_InitPins(void)
                       /* Input Buffer Enable: Enables. */
                       | PORT_PCR_IBE(PCR_IBE_ibe1));
 
-    /* PORT3_18 (pin 57) is configured as SmartDMA_PIO18 */
-    PORT_SetPinMux(BOARD_INITPINS_IN1_PORT, BOARD_INITPINS_IN1_PIN, kPORT_MuxAlt10);
+    /* PORT3_18 (pin 57) is configured as P3_18 */
+    PORT_SetPinMux(BOARD_INITPINS_IN1_PORT, BOARD_INITPINS_IN1_PIN, kPORT_MuxAlt0);
 
     PORT3->PCR[18] = ((PORT3->PCR[18] &
                        /* Mask bits to zero which are setting */
@@ -435,8 +435,8 @@ void BOARD_InitPins(void)
                       /* Input Buffer Enable: Enables. */
                       | PORT_PCR_IBE(PCR_IBE_ibe1));
 
-    /* PORT3_19 (pin 56) is configured as SmartDMA_PIO19 */
-    PORT_SetPinMux(BOARD_INITPINS_IN10_PORT, BOARD_INITPINS_IN10_PIN, kPORT_MuxAlt10);
+    /* PORT3_19 (pin 56) is configured as P3_19 */
+    PORT_SetPinMux(BOARD_INITPINS_IN10_PORT, BOARD_INITPINS_IN10_PIN, kPORT_MuxAlt0);
 
     PORT3->PCR[19] = ((PORT3->PCR[19] &
                        /* Mask bits to zero which are setting */
@@ -448,8 +448,8 @@ void BOARD_InitPins(void)
                       /* Input Buffer Enable: Enables. */
                       | PORT_PCR_IBE(PCR_IBE_ibe1));
 
-    /* PORT3_20 (pin 55) is configured as SmartDMA_PIO20 */
-    PORT_SetPinMux(BOARD_INITPINS_IN6_PORT, BOARD_INITPINS_IN6_PIN, kPORT_MuxAlt10);
+    /* PORT3_20 (pin 55) is configured as P3_20 */
+    PORT_SetPinMux(BOARD_INITPINS_IN6_PORT, BOARD_INITPINS_IN6_PIN, kPORT_MuxAlt0);
 
     PORT3->PCR[20] = ((PORT3->PCR[20] &
                        /* Mask bits to zero which are setting */
@@ -461,8 +461,8 @@ void BOARD_InitPins(void)
                       /* Input Buffer Enable: Enables. */
                       | PORT_PCR_IBE(PCR_IBE_ibe1));
 
-    /* PORT3_21 (pin 54) is configured as SmartDMA_PIO21 */
-    PORT_SetPinMux(BOARD_INITPINS_IN7_PORT, BOARD_INITPINS_IN7_PIN, kPORT_MuxAlt10);
+    /* PORT3_21 (pin 54) is configured as P3_21 */
+    PORT_SetPinMux(BOARD_INITPINS_IN7_PORT, BOARD_INITPINS_IN7_PIN, kPORT_MuxAlt0);
 
     PORT3->PCR[21] = ((PORT3->PCR[21] &
                        /* Mask bits to zero which are setting */
@@ -593,6 +593,41 @@ void BOARD_InitPins(void)
     };
     /* Initialize GPIO functionality on pin PIO3_16 (pin 59)  */
     GPIO_PinInit(BOARD_INITPINS_RS485_EN2_GPIO, BOARD_INITPINS_RS485_EN2_PIN, &RS485_EN2_config);
+
+    gpio_pin_config_t IN5_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PIO3_17 (pin 58)  */
+    GPIO_PinInit(BOARD_INITPINS_IN5_GPIO, BOARD_INITPINS_IN5_PIN, &IN5_config);
+
+    gpio_pin_config_t IN1_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PIO3_18 (pin 57)  */
+    GPIO_PinInit(BOARD_INITPINS_IN1_GPIO, BOARD_INITPINS_IN1_PIN, &IN1_config);
+
+    gpio_pin_config_t IN10_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PIO3_19 (pin 56)  */
+    GPIO_PinInit(BOARD_INITPINS_IN10_GPIO, BOARD_INITPINS_IN10_PIN, &IN10_config);
+
+    gpio_pin_config_t IN6_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PIO3_20 (pin 55)  */
+    GPIO_PinInit(BOARD_INITPINS_IN6_GPIO, BOARD_INITPINS_IN6_PIN, &IN6_config);
+
+    gpio_pin_config_t IN7_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PIO3_21 (pin 54)  */
+    GPIO_PinInit(BOARD_INITPINS_IN7_GPIO, BOARD_INITPINS_IN7_PIN, &IN7_config);
 
     gpio_pin_config_t I2C3_WP_config = {
         .pinDirection = kGPIO_DigitalOutput,

@@ -95,11 +95,6 @@
                         <data>true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="Peripheral" resourceId="SmartDMA0" description="Peripheral SmartDMA0 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
-                     <feature name="initialized" evaluation="equal">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
                   <dependency resourceType="Peripheral" resourceId="SCG0" description="Peripheral SCG0 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
                      <feature name="initialized" evaluation="equal">
                         <data>true</data>
@@ -226,31 +221,6 @@
                         <pin_feature name="identifier" value="I2C3_SDA"/>
                      </pin_features>
                   </pin>
-                  <pin peripheral="SmartDMA0" signal="SMARTDMA_PIO, 21" pin_num="54" pin_signal="P3_21/TRIG_OUT1/LPI2C3_SCL/LPUART1_TXD/CT2_MAT3/PWM0_X3/FLEXIO0_D29/PWM1_B3/SmartDMA_PIO21">
-                     <pin_features>
-                        <pin_feature name="pull_select" value="up"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="SmartDMA0" signal="SMARTDMA_PIO, 20" pin_num="55" pin_signal="P3_20/TRIG_OUT0/LPI2C3_SDA/LPUART1_RXD/CT2_MAT2/PWM0_X2/FLEXIO0_D28/PWM1_A3/SmartDMA_PIO20">
-                     <pin_features>
-                        <pin_feature name="pull_select" value="up"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="SmartDMA0" signal="SMARTDMA_PIO, 19" pin_num="56" pin_signal="P3_19/TAMPER4/LPUART4_TXD/CT2_MAT1/PWM0_X1/FLEXIO0_D27/PWM1_X1/SmartDMA_PIO19">
-                     <pin_features>
-                        <pin_feature name="pull_select" value="up"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="SmartDMA0" signal="SMARTDMA_PIO, 18" pin_num="57" pin_signal="P3_18/TAMPER5/LPUART4_RXD/CT2_MAT0/PWM0_X0/FLEXIO0_D26/PWM1_X0/SmartDMA_PIO18">
-                     <pin_features>
-                        <pin_feature name="pull_select" value="up"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="SmartDMA0" signal="SMARTDMA_PIO, 17" pin_num="58" pin_signal="P3_17/LPUART4_CTS_B/CT_INP9/FLEXIO0_D25/PWM1_B0/SmartDMA_PIO17">
-                     <pin_features>
-                        <pin_feature name="pull_select" value="up"/>
-                     </pin_features>
-                  </pin>
                   <pin peripheral="GPIO0" signal="GPIO, 23" pin_num="90" pin_signal="P0_23/WUU0_IN5/LPUART0_CTS_B/CT_INP3/CT0_MAT1/FLEXIO0_D7/SmartDMA_PIO13/ADC0_A13">
                      <pin_features>
                         <pin_feature name="direction" value="OUTPUT"/>
@@ -259,6 +229,36 @@
                   </pin>
                   <pin peripheral="SCG0" signal="EXTAL" pin_num="11" pin_signal="P1_31/TRIG_IN4/LPI2C0_SCL/CT_INP17/FLEXIO0_D31/I3C0_SCL/EXTAL48M"/>
                   <pin peripheral="SCG0" signal="XTAL" pin_num="10" pin_signal="P1_30/TRIG_OUT3/LPI2C0_SDA/CT_INP16/FLEXIO0_D30/I3C0_SDA/XTAL48M"/>
+                  <pin peripheral="GPIO3" signal="GPIO, 17" pin_num="58" pin_signal="P3_17/LPUART4_CTS_B/CT_INP9/FLEXIO0_D25/PWM1_B0/SmartDMA_PIO17">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 18" pin_num="57" pin_signal="P3_18/TAMPER5/LPUART4_RXD/CT2_MAT0/PWM0_X0/FLEXIO0_D26/PWM1_X0/SmartDMA_PIO18">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 19" pin_num="56" pin_signal="P3_19/TAMPER4/LPUART4_TXD/CT2_MAT1/PWM0_X1/FLEXIO0_D27/PWM1_X1/SmartDMA_PIO19">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 20" pin_num="55" pin_signal="P3_20/TRIG_OUT0/LPI2C3_SDA/LPUART1_RXD/CT2_MAT2/PWM0_X2/FLEXIO0_D28/PWM1_A3/SmartDMA_PIO20">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="GPIO, 21" pin_num="54" pin_signal="P3_21/TRIG_OUT1/LPI2C3_SCL/LPUART1_TXD/CT2_MAT3/PWM0_X3/FLEXIO0_D29/PWM1_B3/SmartDMA_PIO21">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="pull_select" value="up"/>
+                     </pin_features>
+                  </pin>
                </pins>
             </function>
          </functions_list>
@@ -478,16 +478,32 @@
                </dependencies>
                <clock_sources/>
                <clock_outputs>
+                  <clock_output id="ADC_clock.outFreq" value="60 MHz" locked="false" accuracy=""/>
                   <clock_output id="BUS_clock.outFreq" value="90 MHz" locked="false" accuracy=""/>
                   <clock_output id="CLK_1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
                   <clock_output id="CLK_45M_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
                   <clock_output id="CPU_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CTIMER0_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CTIMER1_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CTIMER2_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CTIMER3_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CTIMER4_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="DAC0_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
                   <clock_output id="FREQME_reference_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
                   <clock_output id="FREQME_target_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
                   <clock_output id="FRO_12M_DIV_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
                   <clock_output id="FRO_12M_clock.outFreq" value="12 MHz" locked="false" accuracy=""/>
                   <clock_output id="FRO_HF_DIV_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
                   <clock_output id="FRO_HF_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPI2C0_clock.outFreq" value="20 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPI2C3_clock.outFreq" value="20 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPSPI0_clock.outFreq" value="11.25 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPSPI1_clock.outFreq" value="20 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPUART0_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPUART1_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPUART2_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPUART3_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPUART4_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
                   <clock_output id="MAIN_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
                   <clock_output id="Slow_clock.outFreq" value="30 MHz" locked="false" accuracy=""/>
                   <clock_output id="System_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
@@ -497,10 +513,49 @@
                </clock_outputs>
                <clock_settings>
                   <setting id="VDD_CORE" value="voltage_1v2" locked="false"/>
+                  <setting id="ADC_CLKDIV_MRCC0_MRCC_ADC_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="CTIMER0_CLKDIV_MRCC0_MRCC_CTIMER0_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="CTIMER1_CLKDIV_MRCC0_MRCC_CTIMER1_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="CTIMER2_CLKDIV_MRCC0_MRCC_CTIMER2_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="CTIMER3_CLKDIV_MRCC0_MRCC_CTIMER3_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="CTIMER4_CLKDIV_MRCC0_MRCC_CTIMER4_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="DAC0_CLKDIV_MRCC0_MRCC_DAC0_CLKDIV_HALT" value="ON" locked="false"/>
                   <setting id="FROHFDIV_SYSCON_FROHFDIV_HALT" value="RUN" locked="false"/>
                   <setting id="FROLFDIV_SYSCON_FROLFDIV_HALT" value="RUN" locked="false"/>
+                  <setting id="LPI2C0_CLKDIV_MRCC0_MRCC_LPI2C0_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="LPI2C3_CLKDIV_MRCC0_MRCC_LPI2C3_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="LPSPI0_CLKDIV_MRCC0_MRCC_LPSPI0_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="LPSPI1_CLKDIV_MRCC0_MRCC_LPSPI1_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="LPUART0_CLKDIV_MRCC0_MRCC_LPUART0_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="LPUART1_CLKDIV_MRCC0_MRCC_LPUART1_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="LPUART2_CLKDIV_MRCC0_MRCC_LPUART2_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="LPUART3_CLKDIV_MRCC0_MRCC_LPUART3_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="LPUART4_CLKDIV_MRCC0_MRCC_LPUART4_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="MRCC.ADC_CLKDIV.scale" value="3" locked="true"/>
+                  <setting id="MRCC.ADC_CLKSEL.sel" value="SCG.FRO_HF_clock" locked="false"/>
+                  <setting id="MRCC.CTIMER0_CLKSEL.sel" value="SCG.FRO_HF_clock" locked="false"/>
+                  <setting id="MRCC.CTIMER1_CLKSEL.sel" value="SCG.FRO_HF_clock" locked="false"/>
+                  <setting id="MRCC.CTIMER2_CLKSEL.sel" value="SYSCON.FRO_12M_DIV_clock" locked="false"/>
+                  <setting id="MRCC.CTIMER3_CLKSEL.sel" value="SCG.FRO_HF_clock" locked="false"/>
+                  <setting id="MRCC.CTIMER4_CLKSEL.sel" value="SCG.FRO_HF_clock" locked="false"/>
+                  <setting id="MRCC.DAC0_CLKDIV.scale" value="4" locked="true"/>
+                  <setting id="MRCC.DAC0_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
+                  <setting id="MRCC.LPI2C0_CLKDIV.scale" value="9" locked="false"/>
+                  <setting id="MRCC.LPI2C0_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
+                  <setting id="MRCC.LPI2C3_CLKDIV.scale" value="9" locked="false"/>
+                  <setting id="MRCC.LPI2C3_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
+                  <setting id="MRCC.LPSPI0_CLKDIV.scale" value="16" locked="true"/>
+                  <setting id="MRCC.LPSPI0_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
+                  <setting id="MRCC.LPSPI1_CLKDIV.scale" value="9" locked="false"/>
+                  <setting id="MRCC.LPSPI1_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
+                  <setting id="MRCC.LPUART0_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
+                  <setting id="MRCC.LPUART1_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
+                  <setting id="MRCC.LPUART2_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
+                  <setting id="MRCC.LPUART3_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
+                  <setting id="MRCC.LPUART4_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
                   <setting id="MRCC.TRACE_CLKDIV.scale" value="9" locked="false"/>
                   <setting id="SCG.FREQ_SEL.scale" value="1" locked="true"/>
+                  <setting id="SYSCON.FROHFDIV.scale" value="1" locked="true"/>
                </clock_settings>
                <called_from_default_init>true</called_from_default_init>
             </clock_configuration>
@@ -587,7 +642,32 @@
                   <data type="Version" maxValue="2.1.99">2.0.1</data>
                </feature>
             </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.ctimer" description="工具链/IDE工程中未找到CTimer Driver。工程不会被编译！" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data type="Boolean">true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.ctimer" description="工具链/IDE工程不支持CTimer Driver版本。所需值: ${required_value}, 实际值: ${actual_value}. 工程可能没有被正确编译。" problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="greaterOrEqual">
+                  <data type="Version" maxValue="2.3.9">2.2.2</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.edma4" description="工具链/IDE工程中未找到EDMA Driver。工程不会被编译！" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data type="Boolean">true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.edma4" description="工具链/IDE工程不支持EDMA Driver版本。所需值: ${required_value}, 实际值: ${actual_value}. 工程可能没有被正确编译。" problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="greaterOrEqual">
+                  <data type="Version" maxValue="2.10.99">2.9.0</data>
+               </feature>
+            </dependency>
             <dependency resourceType="Tool" resourceId="Pins" description="外围设备工具需要 Pins 工具，但它已被禁用。" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data>true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="Tool" resourceId="Clocks" description="外围设备工具需要 Clocks 工具，但它已被禁用。" problem_level="2" source="Peripherals">
                <feature name="enabled" evaluation="equal">
                   <data>true</data>
                </feature>
@@ -604,11 +684,19 @@
             <functional_group name="BOARD_InitPeripherals" uuid="6576fcf0-725b-4cb8-8eca-6e744b74bee8" called_from_default_init="true" id_prefix="" core="cm33_core0">
                <description></description>
                <options/>
-               <dependencies/>
+               <dependencies>
+                  <dependency resourceType="ClockOutput" resourceId="CTIMER4_clock" description="CTIMER4_clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+               </dependencies>
                <instances>
                   <instance name="NVIC" uuid="f9d970ff-8e91-4728-af1f-06d28b1b9ac4" type="nvic" type_id="nvic" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
                      <config_set name="nvic">
-                        <array name="interrupt_table"/>
+                        <array name="interrupt_table">
+                           <struct name="0"/>
+                        </array>
                         <array name="interrupts"/>
                      </config_set>
                   </instance>
@@ -691,6 +779,11 @@
                            <struct name="4"/>
                            <struct name="5"/>
                            <struct name="6"/>
+                           <struct name="7"/>
+                           <struct name="8"/>
+                           <struct name="9"/>
+                           <struct name="10"/>
+                           <struct name="11"/>
                         </array>
                         <array name="gpioPinsOverView">
                            <struct name="0"/>
@@ -700,6 +793,11 @@
                            <struct name="4"/>
                            <struct name="5"/>
                            <struct name="6"/>
+                           <struct name="7"/>
+                           <struct name="8"/>
+                           <struct name="9"/>
+                           <struct name="10"/>
+                           <struct name="11"/>
                         </array>
                         <array name="gpioPinsConfig"/>
                         <struct name="globalCfg"/>
@@ -731,6 +829,127 @@
                            <setting name="crcBits" value="kCrcBits32"/>
                            <setting name="crcResult" value="kCrcFinalChecksum"/>
                         </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="CTIMER4" uuid="f6caf5af-0017-4770-bce9-342c8b96155d" type="ctimer" type_id="ctimer_2.2.2" mode="Capture_Match" peripheral="CTIMER4" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="fsl_ctimer">
+                        <struct name="ctimerConfig">
+                           <setting name="mode" value="kCTIMER_TimerMode"/>
+                           <setting name="clockSource" value="FunctionClock"/>
+                           <setting name="clockSourceFreq" value="ClocksTool_DefaultInit"/>
+                           <setting name="timerPrescaler" value="180"/>
+                        </struct>
+                        <setting name="EnableTimerInInit" value="false"/>
+                        <array name="matchChannels">
+                           <struct name="0">
+                              <setting name="matchChannelPrefixId" value="Match_0"/>
+                              <setting name="matchChannel" value="kCTIMER_Match_0"/>
+                              <setting name="matchValueStr" value="100"/>
+                              <setting name="enableCounterReset" value="true"/>
+                              <setting name="enableCounterStop" value="false"/>
+                              <setting name="outControl" value="kCTIMER_Output_NoAction"/>
+                              <setting name="outPinInitValue" value="low"/>
+                              <setting name="enableInterrupt" value="false"/>
+                           </struct>
+                        </array>
+                        <array name="captureChannels"/>
+                        <struct name="interruptCallbackConfig">
+                           <struct name="interrupt">
+                              <setting name="IRQn" value="CTIMER4_IRQn"/>
+                              <setting name="enable_priority" value="false"/>
+                              <setting name="priority" value="0"/>
+                           </struct>
+                           <setting name="callback" value="kCTIMER_NoCallback"/>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="DMA0" uuid="9e7c0151-3eb5-4a2e-baf8-ae7e3d8a2fcc" type="edma4" type_id="edma4_2.9.0" mode="general" peripheral="DMA0" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="fsl_edma">
+                        <array name="dmamux_devices"/>
+                        <struct name="common_settings">
+                           <struct name="vars"/>
+                           <setting name="enableHaltOnError" value="true"/>
+                           <setting name="enableDebugMode" value="false"/>
+                           <setting name="enableRoundRobinArbitration" value="fixedPriority"/>
+                           <setting name="enableGlobalChannelLink" value="true"/>
+                           <setting name="enableMasterIdReplication" value="false"/>
+                        </struct>
+                        <array name="dma_table">
+                           <struct name="0"/>
+                        </array>
+                        <array name="edma_channels">
+                           <struct name="0">
+                              <setting name="apiMode" value="trans"/>
+                              <struct name="edma_channel">
+                                 <setting name="channel_prefix_id" value="CH7"/>
+                                 <setting name="uid" value="1789096047450"/>
+                                 <setting name="eDMAn" value="7"/>
+                                 <setting name="eDMA_source" value="kDma0RequestMuxCtimer4M0"/>
+                                 <setting name="init_channel_priority" value="false"/>
+                                 <struct name="edma_channel_Preemption">
+                                    <setting name="enableChannelPreemption" value="false"/>
+                                    <setting name="enablePreemptAbility" value="false"/>
+                                    <setting name="channelPriority" value="0"/>
+                                 </struct>
+                                 <setting name="masterIdReplicationEnable" value="noInit"/>
+                                 <setting name="protectionLevel" value="noInit"/>
+                                 <setting name="enable_custom_name" value="false"/>
+                              </struct>
+                              <setting name="resetChannel" value="true"/>
+                              <setting name="enableChannelRequest" value="true"/>
+                              <setting name="enableAsyncRequest" value="false"/>
+                              <setting name="enableAutoStop" value="true"/>
+                              <setting name="tcd_pool_enable" value="false"/>
+                              <struct name="tcd_settings">
+                                 <setting name="tcd_size" value="1"/>
+                                 <setting name="tcd_memory_ptr_id" value="default"/>
+                              </struct>
+                              <array name="transfer_config">
+                                 <struct name="0">
+                                    <setting name="uid" value="1789096515697"/>
+                                    <setting name="tcdID" value="CH7_TRANSFER0"/>
+                                    <setting name="ssize" value="kEDMA_TransferSize4Bytes"/>
+                                    <setting name="saddr_expr" value="&amp;GPIO3-&gt;PDIR"/>
+                                    <setting name="saddr_def" value=""/>
+                                    <setting name="soff" value="0"/>
+                                    <setting name="soff_def" value=""/>
+                                    <setting name="smod" value="kEDMA_ModuloDisable"/>
+                                    <setting name="dsize" value="kEDMA_TransferSize4Bytes"/>
+                                    <setting name="daddr_expr" value="g_gpio3SampleBuf"/>
+                                    <setting name="daddr_def" value="extern volatile uint32_t g_gpio3SampleBuf[8];"/>
+                                    <setting name="doff" value="sizeof(g_gpio3SampleBuf[0])"/>
+                                    <setting name="doff_def" value=""/>
+                                    <setting name="dmod" value="kEDMA_ModuloDisable"/>
+                                    <setting name="nbytes" value="4"/>
+                                    <struct name="MLconfig">
+                                       <setting name="offsetType" value="disabled"/>
+                                       <setting name="mloff" value="0"/>
+                                    </struct>
+                                    <setting name="enableChannelLinkMinor" value="false"/>
+                                    <setting name="linkedChannelMinor" value="1789096047450"/>
+                                    <setting name="citer" value="8"/>
+                                    <setting name="slast" value="0"/>
+                                    <setting name="dlast" value="-32"/>
+                                    <setting name="enableChannelLinkMajor" value="false"/>
+                                    <setting name="linkedChannelMajor" value="1789096047450"/>
+                                    <setting name="submitTransfer" value="false"/>
+                                 </struct>
+                              </array>
+                              <setting name="loopTransfer" value="false"/>
+                              <setting name="no_init_uid" value="1789096047484"/>
+                              <setting name="init_callback" value="true"/>
+                              <setting name="callback_function" value="GpioDmaFilterDmaCallback"/>
+                              <setting name="callback_user_data" value=""/>
+                              <set name="channel_enabled_interrupts">
+                                 <selected/>
+                              </set>
+                              <struct name="interrupt_channel">
+                                 <setting name="IRQn" value="DMA_CH7_IRQn"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
+                              </struct>
+                           </struct>
+                        </array>
                      </config_set>
                   </instance>
                </instances>

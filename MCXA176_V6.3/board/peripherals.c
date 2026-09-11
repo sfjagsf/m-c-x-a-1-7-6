@@ -58,6 +58,128 @@ component:
  * BOARD_InitPeripherals functional group
  **********************************************************************************************************************/
 /***********************************************************************************************************************
+ * DMA0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'DMA0'
+- type: 'edma4'
+- mode: 'general'
+- custom_name_enabled: 'false'
+- type_id: 'edma4_2.9.0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'DMA0'
+- config_sets:
+  - fsl_edma:
+    - dmamux_devices: []
+    - common_settings:
+      - vars: []
+      - enableHaltOnError: 'true'
+      - enableDebugMode: 'false'
+      - enableRoundRobinArbitration: 'fixedPriority'
+      - enableGlobalChannelLink: 'true'
+      - enableMasterIdReplication: 'false'
+    - dma_table:
+      - 0: []
+    - edma_channels:
+      - 0:
+        - apiMode: 'trans'
+        - edma_channel:
+          - channel_prefix_id: 'CH7'
+          - uid: '1789096047450'
+          - eDMAn: '7'
+          - eDMA_source: 'kDma0RequestMuxCtimer4M0'
+          - init_channel_priority: 'false'
+          - edma_channel_Preemption:
+            - enableChannelPreemption: 'false'
+            - enablePreemptAbility: 'false'
+            - channelPriority: '0'
+          - masterIdReplicationEnable: 'noInit'
+          - protectionLevel: 'noInit'
+          - enable_custom_name: 'false'
+        - resetChannel: 'true'
+        - enableChannelRequest: 'true'
+        - enableAsyncRequest: 'false'
+        - enableAutoStop: 'true'
+        - tcd_pool_enable: 'false'
+        - tcd_settings:
+          - tcd_size: '1'
+          - tcd_memory_ptr_id: 'default'
+        - transfer_config:
+          - 0:
+            - uid: '1789096515697'
+            - tcdID: 'CH7_TRANSFER0'
+            - ssize: 'kEDMA_TransferSize4Bytes'
+            - saddr_expr: '&GPIO3->PDIR'
+            - saddr_def: ''
+            - soff: '0'
+            - soff_def: ''
+            - smod: 'kEDMA_ModuloDisable'
+            - dsize: 'kEDMA_TransferSize4Bytes'
+            - daddr_expr: 'g_gpio3SampleBuf'
+            - daddr_def: 'extern volatile uint32_t g_gpio3SampleBuf[8];'
+            - doff: 'sizeof(g_gpio3SampleBuf[0])'
+            - doff_def: ''
+            - dmod: 'kEDMA_ModuloDisable'
+            - nbytes: '4'
+            - MLconfig:
+              - offsetType: 'disabled'
+              - mloff: '0'
+            - enableChannelLinkMinor: 'false'
+            - linkedChannelMinor: '1789096047450'
+            - citer: '8'
+            - slast: '0'
+            - dlast: '-32'
+            - enableChannelLinkMajor: 'false'
+            - linkedChannelMajor: '1789096047450'
+            - submitTransfer: 'false'
+        - loopTransfer: 'false'
+        - no_init_uid: '1789096047484'
+        - init_callback: 'true'
+        - callback_function: 'GpioDmaFilterDmaCallback'
+        - callback_user_data: ''
+        - channel_enabled_interrupts: ''
+        - interrupt_channel:
+          - IRQn: 'DMA_CH7_IRQn'
+          - enable_priority: 'true'
+          - priority: '5'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+edma_config_t DMA0_config = {
+  .enableMasterIdReplication = false,
+  .enableGlobalChannelLink = true,
+  .enableHaltOnError = true,
+  .enableDebugMode = false,
+  .enableRoundRobinArbitration = false
+};
+/* Tansactional transfer configurations */
+edma_transfer_config_t DMA0_CH7_Transfers_config[1];
+edma_handle_t DMA0_CH7_Handle;
+
+static void DMA0_init(void) {
+
+  /* Channel CH7 initialization */
+  /* Set the kDma0RequestMuxCtimer4M0 request */
+  EDMA_SetChannelMux(DMA0_DMA_BASEADDR, DMA0_CH7_DMA_CHANNEL, DMA0_CH7_DMA_REQUEST);
+  /* Create the eDMA DMA0_CH7_Handle handle */
+  EDMA_CreateHandle(&DMA0_CH7_Handle, DMA0_DMA_BASEADDR, DMA0_CH7_DMA_CHANNEL);
+  /* DMA0 channel 7 reset */
+  EDMA_ResetChannel(DMA0_DMA_BASEADDR, DMA0_CH7_DMA_CHANNEL);
+  /* DMA callback initialization */
+  EDMA_SetCallback(&DMA0_CH7_Handle, GpioDmaFilterDmaCallback, NULL);
+  /* Interrupt vector DMA_CH7_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA0_DMA_CH_INT_DONE_7_IRQN, DMA0_DMA_CH_INT_DONE_7_IRQ_PRIORITY);
+  /* DMA0 transfer CH7_TRANSFER0 configuration */
+  EDMA_PrepareTransferConfig(&DMA0_CH7_TRANSFER0_CONFIG, (void *) &GPIO3->PDIR, 1 << kEDMA_TransferSize4Bytes, 0, (void *) g_gpio3SampleBuf, 1 << kEDMA_TransferSize4Bytes, sizeof(g_gpio3SampleBuf[0]), 4U, 32U); 
+  DMA0_CH7_TRANSFER0_CONFIG.dstMajorLoopOffset = -32;
+  /* DMA0 hardware channel 7 request auto stop */
+  EDMA_EnableAutoStopRequest(DMA0_DMA_BASEADDR, DMA0_CH7_DMA_CHANNEL, true);
+  /* DMA0 channel 7 peripheral request */
+  EDMA_EnableChannelRequest(DMA0_DMA_BASEADDR, DMA0_CH7_DMA_CHANNEL);
+}
+
+/***********************************************************************************************************************
  * NVIC initialization code
  **********************************************************************************************************************/
 /* clang-format off */
@@ -72,7 +194,8 @@ instance:
 - peripheral: 'NVIC'
 - config_sets:
   - nvic:
-    - interrupt_table: []
+    - interrupt_table:
+      - 0: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -266,6 +389,11 @@ instance:
       - 4: []
       - 5: []
       - 6: []
+      - 7: []
+      - 8: []
+      - 9: []
+      - 10: []
+      - 11: []
     - gpioPinsOverView:
       - 0: []
       - 1: []
@@ -274,6 +402,11 @@ instance:
       - 4: []
       - 5: []
       - 6: []
+      - 7: []
+      - 8: []
+      - 9: []
+      - 10: []
+      - 11: []
     - gpioPinsConfig: []
     - globalCfg: []
     - differentPeripheralsAdd: []
@@ -284,6 +417,11 @@ GPIO_HANDLE_DEFINE(BOARD_INITPINS_RESET_handle);
 GPIO_HANDLE_DEFINE(BOARD_INITPINS_LED_OUT_handle);
 GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO2_handle);
 GPIO_HANDLE_DEFINE(BOARD_INITPINS_RS485_EN2_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN5_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN1_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN10_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN6_handle);
+GPIO_HANDLE_DEFINE(BOARD_INITPINS_IN7_handle);
 GPIO_HANDLE_DEFINE(BOARD_INITPINS_I2C3_WP_handle);
 GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO3_handle);
 GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO1_handle);
@@ -308,6 +446,26 @@ static void GPIO3_init(void) {
   /* GPIO, 16 signal initialization */
   gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_RS485_EN2_GPIO, BOARD_INITPINS_RS485_EN2_PIN, BOARD_INITPINS_RS485_EN2_PIN_DIRECTION, BOARD_INITPINS_RS485_EN2_PIN_LEVEL);
   status = HAL_GpioInit(BOARD_INITPINS_RS485_EN2_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 17 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_IN5_GPIO, BOARD_INITPINS_IN5_PIN, BOARD_INITPINS_IN5_PIN_DIRECTION, BOARD_INITPINS_IN5_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_IN5_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 18 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_IN1_GPIO, BOARD_INITPINS_IN1_PIN, BOARD_INITPINS_IN1_PIN_DIRECTION, BOARD_INITPINS_IN1_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_IN1_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 19 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_IN10_GPIO, BOARD_INITPINS_IN10_PIN, BOARD_INITPINS_IN10_PIN_DIRECTION, BOARD_INITPINS_IN10_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_IN10_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 20 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_IN6_GPIO, BOARD_INITPINS_IN6_PIN, BOARD_INITPINS_IN6_PIN_DIRECTION, BOARD_INITPINS_IN6_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_IN6_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* GPIO, 21 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_IN7_GPIO, BOARD_INITPINS_IN7_PIN, BOARD_INITPINS_IN7_PIN_DIRECTION, BOARD_INITPINS_IN7_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_INITPINS_IN7_handle, &gpioPinConfig);
   assert(status == kStatus_HAL_GpioSuccess);
   /* GPIO, 22 signal initialization */
   gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_I2C3_WP_GPIO, BOARD_INITPINS_I2C3_WP_PIN, BOARD_INITPINS_I2C3_WP_PIN_DIRECTION, BOARD_INITPINS_I2C3_WP_PIN_LEVEL);
@@ -391,21 +549,86 @@ static void CRC0_init(void) {
 }
 
 /***********************************************************************************************************************
+ * CTIMER4 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'CTIMER4'
+- type: 'ctimer'
+- mode: 'Capture_Match'
+- custom_name_enabled: 'false'
+- type_id: 'ctimer_2.2.2'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'CTIMER4'
+- config_sets:
+  - fsl_ctimer:
+    - ctimerConfig:
+      - mode: 'kCTIMER_TimerMode'
+      - clockSource: 'FunctionClock'
+      - clockSourceFreq: 'ClocksTool_DefaultInit'
+      - timerPrescaler: '180'
+    - EnableTimerInInit: 'false'
+    - matchChannels:
+      - 0:
+        - matchChannelPrefixId: 'Match_0'
+        - matchChannel: 'kCTIMER_Match_0'
+        - matchValueStr: '100'
+        - enableCounterReset: 'true'
+        - enableCounterStop: 'false'
+        - outControl: 'kCTIMER_Output_NoAction'
+        - outPinInitValue: 'low'
+        - enableInterrupt: 'false'
+    - captureChannels: []
+    - interruptCallbackConfig:
+      - interrupt:
+        - IRQn: 'CTIMER4_IRQn'
+        - enable_priority: 'false'
+        - priority: '0'
+      - callback: 'kCTIMER_NoCallback'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const ctimer_config_t CTIMER4_config = {
+  .mode = kCTIMER_TimerMode,
+  .input = kCTIMER_Capture_0,
+  .prescale = 179
+};
+const ctimer_match_config_t CTIMER4_Match_0_config = {
+  .matchValue = 99,
+  .enableCounterReset = true,
+  .enableCounterStop = false,
+  .outControl = kCTIMER_Output_NoAction,
+  .outPinInitState = false,
+  .enableInterrupt = false
+};
+
+static void CTIMER4_init(void) {
+  /* CTIMER4 peripheral initialization */
+  CTIMER_Init(CTIMER4_PERIPHERAL, &CTIMER4_config);
+  /* Match channel 0 of CTIMER4 peripheral initialization */
+  CTIMER_SetupMatch(CTIMER4_PERIPHERAL, CTIMER4_MATCH_0_CHANNEL, &CTIMER4_Match_0_config);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
 {
   /* Global initialization */
+  (void)memset(DMA0_config.channelConfig, 0, FSL_FEATURE_EDMA_INSTANCE_CHANNELn(DMA0_DMA_BASEADDR) * sizeof(edma_channel_config_t *));
+  EDMA_Init(DMA0_DMA_BASEADDR, &DMA0_config);
   /* GPIO adapter pre-initialization */
   HAL_GpioPreInit();
 
   /* Initialize components */
+  DMA0_init();
   GPIO0_init();
   GPIO1_init();
   GPIO2_init();
   GPIO3_init();
   GPIO4_init();
   CRC0_init();
+  CTIMER4_init();
 }
 
 /***********************************************************************************************************************
