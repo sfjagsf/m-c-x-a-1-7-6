@@ -959,6 +959,7 @@ called_from_default_init: true
 outputs:
 - {id: ADC_clock.outFreq, value: 60 MHz}
 - {id: BUS_clock.outFreq, value: 90 MHz}
+- {id: CLK16K_0_clock.outFreq, value: 16.384 kHz}
 - {id: CLK_1M_clock.outFreq, value: 1 MHz}
 - {id: CLK_45M_clock.outFreq, value: 45 MHz}
 - {id: CPU_clock.outFreq, value: 180 MHz}
@@ -976,8 +977,8 @@ outputs:
 - {id: FRO_HF_clock.outFreq, value: 180 MHz}
 - {id: LPI2C0_clock.outFreq, value: 20 MHz}
 - {id: LPI2C3_clock.outFreq, value: 20 MHz}
-- {id: LPSPI0_clock.outFreq, value: 11.25 MHz}
-- {id: LPSPI1_clock.outFreq, value: 20 MHz}
+- {id: LPSPI0_clock.outFreq, value: 90 MHz}
+- {id: LPSPI1_clock.outFreq, value: 90 MHz}
 - {id: LPUART0_clock.outFreq, value: 180 MHz}
 - {id: LPUART1_clock.outFreq, value: 180 MHz}
 - {id: LPUART2_clock.outFreq, value: 180 MHz}
@@ -992,6 +993,7 @@ outputs:
 settings:
 - {id: VDD_CORE, value: voltage_1v2}
 - {id: ADC_CLKDIV_MRCC0_MRCC_ADC_CLKDIV_HALT, value: 'ON'}
+- {id: CLK16K_0_clock, value: Enabled}
 - {id: CTIMER0_CLKDIV_MRCC0_MRCC_CTIMER0_CLKDIV_HALT, value: 'ON'}
 - {id: CTIMER1_CLKDIV_MRCC0_MRCC_CTIMER1_CLKDIV_HALT, value: 'ON'}
 - {id: CTIMER2_CLKDIV_MRCC0_MRCC_CTIMER2_CLKDIV_HALT, value: 'ON'}
@@ -1022,9 +1024,9 @@ settings:
 - {id: MRCC.LPI2C0_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
 - {id: MRCC.LPI2C3_CLKDIV.scale, value: '9'}
 - {id: MRCC.LPI2C3_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
-- {id: MRCC.LPSPI0_CLKDIV.scale, value: '16', locked: true}
+- {id: MRCC.LPSPI0_CLKDIV.scale, value: '2', locked: true}
 - {id: MRCC.LPSPI0_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
-- {id: MRCC.LPSPI1_CLKDIV.scale, value: '9'}
+- {id: MRCC.LPSPI1_CLKDIV.scale, value: '2', locked: true}
 - {id: MRCC.LPSPI1_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
 - {id: MRCC.LPUART0_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
 - {id: MRCC.LPUART1_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
@@ -1051,6 +1053,9 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
         case kClockModule_SIRC:
             CLOCK_SetClockDiv(kCLOCK_DivFRO_LF, 1U);       /* !< Set SYSCON.FROLFDIV divider to value 1 */
             CLOCK_SetupFRO12MClocking();                /*!< Setup FRO12M clock */
+            break;
+        case kClockModule_VBAT:
+            CLOCK_SetupFRO16KClocking(0x1U);     /* Enable VBAT.CLK16K_1_clock */
             break;
         case kClockModule_SystemClk:
             CLOCK_SetClockDiv(kCLOCK_DivAHBCLK, 1U);       /* !< Set SYSCON.AHBCLKDIV divider to value 1 */
@@ -1118,11 +1123,11 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
             break;
         case kClockModule_LPSPI0Clk:
             CLOCK_AttachClk(kFRO_HF_DIV_to_LPSPI0);        /* !< Switch LPSPI0 to FRO_HF_DIV */
-            CLOCK_SetClockDiv(kCLOCK_DivLPSPI0, 16U);      /* !< Set MRCC.LPSPI0_CLKDIV divider to value 16 */
+            CLOCK_SetClockDiv(kCLOCK_DivLPSPI0, 2U);       /* !< Set MRCC.LPSPI0_CLKDIV divider to value 2 */
             break;
         case kClockModule_LPSPI1Clk:
             CLOCK_AttachClk(kFRO_HF_DIV_to_LPSPI1);        /* !< Switch LPSPI1 to FRO_HF_DIV */
-            CLOCK_SetClockDiv(kCLOCK_DivLPSPI1, 9U);       /* !< Set MRCC.LPSPI1_CLKDIV divider to value 9 */
+            CLOCK_SetClockDiv(kCLOCK_DivLPSPI1, 2U);       /* !< Set MRCC.LPSPI1_CLKDIV divider to value 2 */
             break;
         case kClockModule_LPTMR0Clk:
             CLOCK_AttachClk(kNONE_to_LPTMR0);              /* !< Switch LPTMR0 to  */
@@ -1197,6 +1202,7 @@ void BOARD_BootClockFROHF180M(void)
     }
     BOARD_BootClockFROHF180M_InitClockModule(kClockModule_SIRC);
     BOARD_BootClockFROHF180M_InitClockModule(kClockModule_FIRC);
+    BOARD_BootClockFROHF180M_InitClockModule(kClockModule_VBAT);
     BOARD_BootClockFROHF180M_InitClockModule(kClockModule_SystemClk);
 
     /* The flow of decreasing voltage and frequency */
@@ -1440,6 +1446,7 @@ void BOARD_BootClockPLL180M(void)
     }
     BOARD_BootClockPLL180M_InitClockModule(kClockModule_SIRC);
     BOARD_BootClockPLL180M_InitClockModule(kClockModule_FIRC);
+    BOARD_BootClockPLL180M_InitClockModule(kClockModule_VBAT);
     BOARD_BootClockPLL180M_InitClockModule(kClockModule_PLL);
     BOARD_BootClockPLL180M_InitClockModule(kClockModule_SystemClk);
 

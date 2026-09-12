@@ -134,9 +134,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/DSP/PrivateInclude}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/DSP/Source/DistanceFunctions}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/RTOS2/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/drivers/mcxa}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/component/gpio}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/board}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/drivers/mcxa}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/RTOS2/RTX/Source}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/freertos/freertos-kernel/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/source}&quot;"/>
@@ -220,9 +220,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/DSP/PrivateInclude}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/DSP/Source/DistanceFunctions}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/RTOS2/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/drivers/mcxa}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/component/gpio}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/board}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/drivers/mcxa}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/RTOS2/RTX/Source}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/freertos/freertos-kernel/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/source}&quot;"/>
@@ -512,9 +512,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/DSP/PrivateInclude}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/DSP/Source/DistanceFunctions}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/RTOS2/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/drivers/mcxa}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/component/gpio}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/board}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/drivers/mcxa}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/RTOS2/RTX/Source}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/freertos/freertos-kernel/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/source}&quot;"/>
@@ -595,9 +595,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/DSP/PrivateInclude}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/DSP/Source/DistanceFunctions}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/RTOS2/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/drivers/mcxa}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/component/gpio}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/board}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/drivers/mcxa}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/CMSIS/RTOS2/RTX/Source}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/freertos/freertos-kernel/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/source}&quot;"/>
@@ -781,7 +781,7 @@
 	<storageModule moduleId="com.nxp.mcuxpresso.core.datamodels">
 		<sdkName>SDK_2.x_MCXA176</sdkName>
 		<sdkVersion>26.06.00</sdkVersion>
-		<sdkComponents>project_template.MCXA176.MCXA176;platform.drivers.port.MCXA176;component.lists.MCXA176;platform.drivers.common.MCXA176;platform.utilities.assert.MCXA176;CMSIS_Include_core_cm.MCXA176;utility.debug_console.MCXA176;device.MCXA176_CMSIS.MCXA176;component.serial_manager_uart.MCXA176;platform.drivers.gpio.MCXA176;device.MCXA176_startup.MCXA176;component.serial_manager.MCXA176;utility.str.MCXA176;device.MCXA176_system.MCXA176;platform.drivers.reset.MCXA176;platform.drivers.lpuart.MCXA176;platform.drivers.mcx_spc.MCXA176;utility.debug_console_template_config.MCXA176;component.lpuart_adapter.MCXA176;platform.drivers.clock.MCXA176;CMSIS_RTOS2_RTX.MCXA176;device.RTE.MCXA176;platform.drivers.edma_soc.MCXA176;platform.drivers.edma4.MCXA176;component.cmsis_drivers.MCXA176;CMSIS_DSP_Include.MCXA176;CMSIS_DSP_Source.MCXA176;CMSIS_Device_API_RTOS2.MCXA176;CMSIS_Device_API_OSTick.MCXA176;middleware.baremetal.MCXA176;platform.drivers.smartdma.MCXA176;platform.drivers.flexio_mculcd.MCXA176;platform.drivers.flexio.MCXA176;platform.drivers.smartdma_mcxa.MCXA176;component.gpio_adapter.MCXA176;platform.drivers.crc.MCXA176;platform.drivers.ctimer.MCXA176;</sdkComponents>
+		<sdkComponents>project_template.MCXA176.MCXA176;platform.drivers.port.MCXA176;component.lists.MCXA176;platform.drivers.common.MCXA176;platform.utilities.assert.MCXA176;CMSIS_Include_core_cm.MCXA176;utility.debug_console.MCXA176;device.MCXA176_CMSIS.MCXA176;component.serial_manager_uart.MCXA176;platform.drivers.gpio.MCXA176;device.MCXA176_startup.MCXA176;component.serial_manager.MCXA176;utility.str.MCXA176;device.MCXA176_system.MCXA176;platform.drivers.reset.MCXA176;platform.drivers.lpuart.MCXA176;platform.drivers.mcx_spc.MCXA176;utility.debug_console_template_config.MCXA176;component.lpuart_adapter.MCXA176;platform.drivers.clock.MCXA176;CMSIS_RTOS2_RTX.MCXA176;device.RTE.MCXA176;platform.drivers.edma_soc.MCXA176;platform.drivers.edma4.MCXA176;component.cmsis_drivers.MCXA176;CMSIS_DSP_Include.MCXA176;CMSIS_DSP_Source.MCXA176;CMSIS_Device_API_RTOS2.MCXA176;CMSIS_Device_API_OSTick.MCXA176;middleware.baremetal.MCXA176;platform.drivers.smartdma.MCXA176;platform.drivers.flexio_mculcd.MCXA176;platform.drivers.flexio.MCXA176;platform.drivers.smartdma_mcxa.MCXA176;component.gpio_adapter.MCXA176;platform.drivers.crc.MCXA176;platform.drivers.ctimer.MCXA176;platform.drivers.rtc.MCXA176;platform.drivers.dac_1.MCXA176;platform.drivers.lpspi.MCXA176;</sdkComponents>
 		<package>MCXA176VLL</package>
 		<core>cm33</core>
 		<coreId>cm33_core0_MCXA176</coreId>

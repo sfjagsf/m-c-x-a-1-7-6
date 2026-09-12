@@ -12,6 +12,7 @@ processor: MCXA176
 package_id: MCXA176VLL
 mcu_data: ksdk2_0
 processor_version: 26.06.20
+external_user_signals: {}
 pin_labels:
 - {pin_num: '1', pin_signal: P1_8/WUU0_IN10/FREQME_CLK_IN0/LPUART1_RXD/LPI2C2_SDA/CT_INP8/CT0_MAT2/FLEXIO0_D16/SmartDMA_PIO4/I3C0_SDA, label: LED, identifier: LED}
 - {pin_num: '85', pin_signal: P0_18/LPI2C0_SCLS/CT0_MAT2/FLEXIO0_D2/SmartDMA_PIO8/CMP0_OUT/ADC0_A8, label: RS485_EN, identifier: RS485_EN}
@@ -48,6 +49,7 @@ pin_labels:
 - {pin_num: '52', pin_signal: P3_27/WUU0_IN30/TRIG_OUT7/LPI2C3_SCL/LPUART4_TXD/CT_INP13/CT3_MAT1/FLEXIO0_D27/PWM1_A3/SmartDMA_PIO27, label: I2C3_SCL, identifier: I2C3_SCL}
 - {pin_num: '11', pin_signal: P1_31/TRIG_IN4/LPI2C0_SCL/CT_INP17/FLEXIO0_D31/I3C0_SCL/EXTAL48M, label: OSC_IN, identifier: OSC_IN}
 - {pin_num: '10', pin_signal: P1_30/TRIG_OUT3/LPI2C0_SDA/CT_INP16/FLEXIO0_D30/I3C0_SDA/XTAL48M, label: OSC_OUT, identifier: OSC_OUT}
+- {pin_num: '24', pin_signal: P2_2/TRIG_IN6/LPUART0_RTS_B/LPUART2_TXD/CT_INP12/CT2_MAT2/FLEXIO0_D10/SmartDMA_PIO26/ADC0_A4/CMP0_IN0/DAC0_OUT, label: DAC1_1, identifier: DAC1_1}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -123,6 +125,7 @@ BOARD_InitPins:
     direction: INPUT, pull_select: up}
   - {pin_num: '54', peripheral: GPIO3, signal: 'GPIO, 21', pin_signal: P3_21/TRIG_OUT1/LPI2C3_SCL/LPUART1_TXD/CT2_MAT3/PWM0_X3/FLEXIO0_D29/PWM1_B3/SmartDMA_PIO21,
     direction: INPUT, pull_select: up}
+  - {pin_num: '24', peripheral: DAC0, signal: OUT, pin_signal: P2_2/TRIG_IN6/LPUART0_RTS_B/LPUART2_TXD/CT_INP12/CT2_MAT2/FLEXIO0_D10/SmartDMA_PIO26/ADC0_A4/CMP0_IN0/DAC0_OUT}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -167,6 +170,8 @@ void BOARD_InitPins(void)
     RESET_ReleasePeripheralReset(kLPSPI1_RST_SHIFT_RSTn);
     /* PORT2 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kPORT2_RST_SHIFT_RSTn);
+    /* DAC0 peripheral is released from reset */
+    RESET_ReleasePeripheralReset(kDAC0_RST_SHIFT_RSTn);
     /* GPIO2 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kGPIO2_RST_SHIFT_RSTn);
     /* GPIO3 peripheral is released from reset */
@@ -335,6 +340,16 @@ void BOARD_InitPins(void)
 
                       /* Input Buffer Enable: Enables. */
                       | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    PORT2->PCR[2] = ((PORT2->PCR[2] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_MUX_MASK | PORT_PCR_IBE_MASK)))
+
+                     /* Pin Multiplex Control: PORT2_2 (pin 24) is configured as DAC0_OUT. */
+                     | PORT_PCR_MUX(PORT2_PCR2_MUX_mux00)
+
+                     /* Input Buffer Enable: Disables. */
+                     | PORT_PCR_IBE(PCR_IBE_ibe0));
 
     PORT2->PCR[20] = ((PORT2->PCR[20] &
                        /* Mask bits to zero which are setting */

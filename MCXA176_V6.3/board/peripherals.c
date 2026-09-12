@@ -610,6 +610,289 @@ static void CTIMER4_init(void) {
 }
 
 /***********************************************************************************************************************
+ * RTC0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'RTC0'
+- type: 'rtc'
+- mode: 'general'
+- custom_name_enabled: 'false'
+- type_id: 'rtc_2.4.0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'RTC0'
+- config_sets:
+  - fsl_rtc:
+    - clockConfig_t:
+      - clockSource: 'clk_16khz'
+      - clockSourceFreq: 'BOARD_BootClockFROHF180M'
+    - rtc_config:
+      - updateMode: 'false'
+      - supervisorAccess: 'false'
+      - compensationIntervalInt: '1'
+      - compensationTimeInt: '0'
+      - setDateTime: 'true'
+      - rtc_datetime:
+        - year: '2000'
+        - month: '1'
+        - day: '1'
+        - hour: '0'
+        - minute: '0'
+        - second: '0'
+      - setAlarm: 'false'
+      - alarm_datetime:
+        - year: '1970'
+        - month: '1'
+        - day: '1'
+        - hour: '0'
+        - minute: '0'
+        - second: '0'
+      - start: 'true'
+    - interruptsCfg:
+      - interruptSources: ''
+      - isSecondsInterruptEnabled: 'false'
+      - secondsInterrupt:
+        - IRQn: 'RTC_1HZ_IRQn'
+        - enable_interrrupt: 'enabled'
+        - enable_priority: 'false'
+        - priority: '1'
+        - enable_custom_name: 'false'
+      - isInterruptEnabled: 'false'
+      - commonInterrupt:
+        - IRQn: 'RTC_IRQn'
+        - enable_interrrupt: 'enabled'
+        - enable_priority: 'false'
+        - priority: '0'
+        - enable_custom_name: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const rtc_config_t RTC0_config = {
+  .wakeupSelect = false,
+  .updateMode = false,
+  .supervisorAccess = false,
+  .compensationInterval = 0x0U,
+  .compensationTime = 0x0U
+};
+rtc_datetime_t RTC0_dateTimeStruct = {
+  .year = 2000U,
+  .month = 1U,
+  .day = 1U,
+  .hour = 0U,
+  .minute = 0U,
+  .second = 0U
+};
+
+static void RTC0_init(void) {
+  /* RTC initialization */
+  RTC_Init(RTC0_PERIPHERAL, &RTC0_config);
+  /* Set LPO 16kHz clock source */
+  RTC_EnableLPOClock(RTC0_PERIPHERAL, true);
+  /* Stop RTC timer */
+  RTC_StopTimer(RTC0_PERIPHERAL);
+  /* Date and time initialization */
+  RTC_SetDatetime(RTC0_PERIPHERAL, &RTC0_dateTimeStruct);
+  /* Start RTC timer */
+  RTC_StartTimer(RTC0_PERIPHERAL);
+}
+
+/***********************************************************************************************************************
+ * DAC0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'DAC0'
+- type: 'dac_1'
+- mode: 'general'
+- custom_name_enabled: 'false'
+- type_id: 'dac_1_2.1.0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'DAC0'
+- config_sets:
+  - fsl_dac:
+    - dac_config:
+      - fifoWatermarkLevel: '0'
+      - fifoTriggerMode: 'kDAC_FIFOTriggerBySoftwareMode'
+      - fifoWorkMode: 'kDAC_FIFODisabled'
+      - referenceVoltageSource: 'kDAC_ReferenceVoltageSourceAlt1'
+      - referenceCurrentSource: 'kDAC_ReferenceCurrentSourcePtat'
+      - enableOpampBuffer: 'true'
+      - periodicTriggerNumber: '0'
+      - periodicTriggerWidth: '0'
+      - syncTime: '0'
+      - enableLowerLowPowerMode: 'false'
+    - enable_dma: 'false'
+    - dac_dma: 'kDAC_FIFOEmptyDMAEnable'
+    - enable_DAC: 'true'
+    - enable_convert: 'true'
+    - convert_value: '0'
+    - interrupt_config:
+      - dac_interrupts: ''
+      - enable_irq: 'false'
+      - interrupt:
+        - IRQn: 'DAC0_IRQn'
+        - enable_interrrupt: 'enabled'
+        - enable_priority: 'false'
+        - priority: '0'
+        - enable_custom_name: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const dac_config_t DAC0_config = {
+  .fifoWatermarkLevel = 0UL,
+  .fifoTriggerMode = kDAC_FIFOTriggerBySoftwareMode,
+  .fifoWorkMode = kDAC_FIFODisabled,
+  .referenceVoltageSource = kDAC_ReferenceVoltageSourceAlt1,
+  .referenceCurrentSource = kDAC_ReferenceCurrentSourcePtat,
+  .enableOpampBuffer = true,
+  .periodicTriggerNumber = 0UL,
+  .periodicTriggerWidth = 0UL,
+  .syncTime = 0UL,
+  .enableLowerLowPowerMode = false,
+};
+
+static void DAC0_init(void) {
+  /* Power up analog module in SPC */
+  SPC_EnableActiveModeAnalogModules(SPC0, kSPC_controlDac0);
+  /* Initialize the LPDAC */
+  DAC_Init(DAC0_PERIPHERAL, &DAC0_config);
+  /* Enable the LPDAC */
+  DAC_Enable(DAC0_PERIPHERAL, true);
+  /* Set LPDAC value */
+  DAC_SetData(DAC0_PERIPHERAL, 0);
+}
+
+/***********************************************************************************************************************
+ * LPSPI0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'LPSPI0'
+- type: 'lpspi'
+- mode: 'polling'
+- custom_name_enabled: 'false'
+- type_id: 'lpspi_2.6.0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'LPSPI0'
+- config_sets:
+  - main:
+    - mode: 'kLPSPI_Master'
+    - clockSource: 'LpspiClock'
+    - clockSourceFreq: 'ClocksTool_DefaultInit'
+    - master:
+      - baudRate: '20000000'
+      - bitsPerFrame: '8'
+      - cpol: 'kLPSPI_ClockPolarityActiveHigh'
+      - cpha: 'kLPSPI_ClockPhaseFirstEdge'
+      - direction: 'kLPSPI_MsbFirst'
+      - pcsToSckDelayInNanoSec: '400'
+      - lastSckToPcsDelayInNanoSec: '400'
+      - betweenTransferDelayInNanoSec: '100'
+      - whichPcs: 'kLPSPI_Pcs0'
+      - pcsActiveHighOrLow: 'kLPSPI_PcsActiveLow'
+      - pinCfg: 'kLPSPI_SdiInSdoOut'
+      - pcsFunc: 'kLPSPI_PcsAsCs'
+      - dataOutConfig: 'kLpspiDataOutRetained'
+      - enableInputDelay: 'false'
+    - set_FifoWaterMarks: 'false'
+    - fifoWaterMarks:
+      - txWatermark: '0'
+      - rxWatermark: '0'
+    - allPcsPolarityEnable: 'false'
+    - allPcsPolarity:
+      - kLPSPI_Pcs1Active: 'kLPSPI_PcsActiveLow'
+      - kLPSPI_Pcs2Active: 'kLPSPI_PcsActiveLow'
+      - kLPSPI_Pcs3Active: 'kLPSPI_PcsActiveLow'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const lpspi_master_config_t LPSPI0_config = {
+  .baudRate = 20000000UL,
+  .bitsPerFrame = 8UL,
+  .cpol = kLPSPI_ClockPolarityActiveHigh,
+  .cpha = kLPSPI_ClockPhaseFirstEdge,
+  .direction = kLPSPI_MsbFirst,
+  .pcsToSckDelayInNanoSec = 400UL,
+  .lastSckToPcsDelayInNanoSec = 400UL,
+  .betweenTransferDelayInNanoSec = 100UL,
+  .whichPcs = kLPSPI_Pcs0,
+  .pcsActiveHighOrLow = kLPSPI_PcsActiveLow,
+  .pinCfg = kLPSPI_SdiInSdoOut,
+  .pcsFunc = kLPSPI_PcsAsCs,
+  .dataOutConfig = kLpspiDataOutRetained,
+  .enableInputDelay = false
+};
+
+static void LPSPI0_init(void) {
+  LPSPI_MasterInit(LPSPI0_PERIPHERAL, &LPSPI0_config, LPSPI0_CLOCK_FREQ);
+}
+
+/***********************************************************************************************************************
+ * LPSPI1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'LPSPI1'
+- type: 'lpspi'
+- mode: 'polling'
+- custom_name_enabled: 'false'
+- type_id: 'lpspi_2.6.0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'LPSPI1'
+- config_sets:
+  - main:
+    - mode: 'kLPSPI_Master'
+    - clockSource: 'LpspiClock'
+    - clockSourceFreq: 'ClocksTool_DefaultInit'
+    - master:
+      - baudRate: '20000000'
+      - bitsPerFrame: '8'
+      - cpol: 'kLPSPI_ClockPolarityActiveHigh'
+      - cpha: 'kLPSPI_ClockPhaseFirstEdge'
+      - direction: 'kLPSPI_MsbFirst'
+      - pcsToSckDelayInNanoSec: '400'
+      - lastSckToPcsDelayInNanoSec: '400'
+      - betweenTransferDelayInNanoSec: '100'
+      - whichPcs: 'kLPSPI_Pcs0'
+      - pcsActiveHighOrLow: 'kLPSPI_PcsActiveLow'
+      - pinCfg: 'kLPSPI_SdiInSdoOut'
+      - pcsFunc: 'kLPSPI_PcsAsCs'
+      - dataOutConfig: 'kLpspiDataOutRetained'
+      - enableInputDelay: 'false'
+    - set_FifoWaterMarks: 'false'
+    - fifoWaterMarks:
+      - txWatermark: '0'
+      - rxWatermark: '0'
+    - allPcsPolarityEnable: 'false'
+    - allPcsPolarity:
+      - kLPSPI_Pcs1Active: 'kLPSPI_PcsActiveLow'
+      - kLPSPI_Pcs2Active: 'kLPSPI_PcsActiveLow'
+      - kLPSPI_Pcs3Active: 'kLPSPI_PcsActiveLow'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const lpspi_master_config_t LPSPI1_config = {
+  .baudRate = 20000000UL,
+  .bitsPerFrame = 8UL,
+  .cpol = kLPSPI_ClockPolarityActiveHigh,
+  .cpha = kLPSPI_ClockPhaseFirstEdge,
+  .direction = kLPSPI_MsbFirst,
+  .pcsToSckDelayInNanoSec = 400UL,
+  .lastSckToPcsDelayInNanoSec = 400UL,
+  .betweenTransferDelayInNanoSec = 100UL,
+  .whichPcs = kLPSPI_Pcs0,
+  .pcsActiveHighOrLow = kLPSPI_PcsActiveLow,
+  .pinCfg = kLPSPI_SdiInSdoOut,
+  .pcsFunc = kLPSPI_PcsAsCs,
+  .dataOutConfig = kLpspiDataOutRetained,
+  .enableInputDelay = false
+};
+
+static void LPSPI1_init(void) {
+  LPSPI_MasterInit(LPSPI1_PERIPHERAL, &LPSPI1_config, LPSPI1_CLOCK_FREQ);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
@@ -629,6 +912,10 @@ void BOARD_InitPeripherals(void)
   GPIO4_init();
   CRC0_init();
   CTIMER4_init();
+  RTC0_init();
+  DAC0_init();
+  LPSPI0_init();
+  LPSPI1_init();
 }
 
 /***********************************************************************************************************************

@@ -17,6 +17,10 @@
 #include "fsl_crc.h"
 #include "fsl_ctimer.h"
 #include "fsl_clock.h"
+#include "fsl_rtc.h"
+#include "fsl_spc.h"
+#include "fsl_dac.h"
+#include "fsl_lpspi.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -144,6 +148,25 @@ extern "C" {
 #define CTIMER4_PWM_PERIOD_CH kCTIMER_Match_0
 /* Definition of channel 0 ID */
 #define CTIMER4_MATCH_0_CHANNEL kCTIMER_Match_0
+/* Definition of peripheral ID */
+#define RTC0_PERIPHERAL RTC0
+/* BOARD_InitPeripherals defines for DAC0 */
+/* Definition of peripheral ID */
+#define DAC0_PERIPHERAL DAC0
+/* DAC0 interrupt vector ID (number). */
+#define DAC0_IRQN DAC0_IRQn
+/* DAC0 interrupt handler identifier. */
+#define DAC0_IRQHANDLER DAC0_IRQHandler
+/* BOARD_InitPeripherals defines for LPSPI0 */
+/* Definition of peripheral ID */
+#define LPSPI0_PERIPHERAL LPSPI0
+/* Definition of clock source */
+#define LPSPI0_CLOCK_FREQ 90000000UL
+/* BOARD_InitPeripherals defines for LPSPI1 */
+/* Definition of peripheral ID */
+#define LPSPI1_PERIPHERAL LPSPI1
+/* Definition of clock source */
+#define LPSPI1_CLOCK_FREQ 90000000UL
 
 /***********************************************************************************************************************
  * Global variables
@@ -175,6 +198,14 @@ extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_IO1_handle);
 extern const crc_config_t CRC0_config;
 extern const ctimer_config_t CTIMER4_config;
 extern const ctimer_match_config_t CTIMER4_Match_0_config;
+/* RTC configuration */
+extern const rtc_config_t RTC0_config;
+/* Date and time structure */
+extern rtc_datetime_t RTC0_dateTimeStruct;
+/* LPDAC configuration */
+extern const dac_config_t DAC0_config;
+extern const lpspi_master_config_t LPSPI0_config;
+extern const lpspi_master_config_t LPSPI1_config;
 
 /***********************************************************************************************************************
  * Global functions

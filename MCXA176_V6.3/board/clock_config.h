@@ -432,7 +432,7 @@ void BOARD_BootClockFROHF90M(void);
 /* Clock outputs (values are in Hz): */
 #define BOARD_BOOTCLOCKFROHF180M_ADC_CLOCK            60000000UL     /* Clock consumers of ADC_clock output : ADC0, ADC1 */
 #define BOARD_BOOTCLOCKFROHF180M_BUS_CLOCK            90000000UL     /* Clock consumers of BUS_clock output : OPAMP0 */
-#define BOARD_BOOTCLOCKFROHF180M_CLK16K_0_CLOCK       0UL            /* Clock consumers of CLK16K_0_clock output : CMP0, LPTMR0, RTC0, TDET0, WAKETIMER0, WUU0 */
+#define BOARD_BOOTCLOCKFROHF180M_CLK16K_0_CLOCK       16384UL        /* Clock consumers of CLK16K_0_clock output : CMP0, LPTMR0, RTC0, TDET0, WAKETIMER0, WUU0 */
 #define BOARD_BOOTCLOCKFROHF180M_CLK16K_1_CLOCK       0UL            /* Clock consumers of CLK16K_1_clock output : CMP1, WAKETIMER0 */
 #define BOARD_BOOTCLOCKFROHF180M_CLKOUT_CLOCK         0UL            /* Clock consumers of CLKOUT_clock output : N/A */
 #define BOARD_BOOTCLOCKFROHF180M_CLK_1M_CLOCK         1000000UL      /* Clock consumers of CLK_1M_clock output : CMC */
@@ -464,8 +464,8 @@ void BOARD_BootClockFROHF90M(void);
 #define BOARD_BOOTCLOCKFROHF180M_LPI2C1_CLOCK         0UL            /* Clock consumers of LPI2C1_clock output : LPI2C1 */
 #define BOARD_BOOTCLOCKFROHF180M_LPI2C2_CLOCK         0UL            /* Clock consumers of LPI2C2_clock output : LPI2C2 */
 #define BOARD_BOOTCLOCKFROHF180M_LPI2C3_CLOCK         20000000UL     /* Clock consumers of LPI2C3_clock output : LPI2C3 */
-#define BOARD_BOOTCLOCKFROHF180M_LPSPI0_CLOCK         11250000UL     /* Clock consumers of LPSPI0_clock output : LPSPI0 */
-#define BOARD_BOOTCLOCKFROHF180M_LPSPI1_CLOCK         20000000UL     /* Clock consumers of LPSPI1_clock output : LPSPI1 */
+#define BOARD_BOOTCLOCKFROHF180M_LPSPI0_CLOCK         90000000UL     /* Clock consumers of LPSPI0_clock output : LPSPI0 */
+#define BOARD_BOOTCLOCKFROHF180M_LPSPI1_CLOCK         90000000UL     /* Clock consumers of LPSPI1_clock output : LPSPI1 */
 #define BOARD_BOOTCLOCKFROHF180M_LPTMR0_CLOCK         0UL            /* Clock consumers of LPTMR0_clock output : LPTMR0 */
 #define BOARD_BOOTCLOCKFROHF180M_LPUART0_CLOCK        180000000UL    /* Clock consumers of LPUART0_clock output : LPUART0 */
 #define BOARD_BOOTCLOCKFROHF180M_LPUART1_CLOCK        180000000UL    /* Clock consumers of LPUART1_clock output : LPUART1 */

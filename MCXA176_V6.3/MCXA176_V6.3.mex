@@ -59,7 +59,11 @@
                <pin_label pin_num="52" pin_signal="P3_27/WUU0_IN30/TRIG_OUT7/LPI2C3_SCL/LPUART4_TXD/CT_INP13/CT3_MAT1/FLEXIO0_D27/PWM1_A3/SmartDMA_PIO27" label="I2C3_SCL" identifier="I2C3_SCL"/>
                <pin_label pin_num="11" pin_signal="P1_31/TRIG_IN4/LPI2C0_SCL/CT_INP17/FLEXIO0_D31/I3C0_SCL/EXTAL48M" label="OSC_IN" identifier="OSC_IN"/>
                <pin_label pin_num="10" pin_signal="P1_30/TRIG_OUT3/LPI2C0_SDA/CT_INP16/FLEXIO0_D30/I3C0_SDA/XTAL48M" label="OSC_OUT" identifier="OSC_OUT"/>
+               <pin_label pin_num="24" pin_signal="P2_2/TRIG_IN6/LPUART0_RTS_B/LPUART2_TXD/CT_INP12/CT2_MAT2/FLEXIO0_D10/SmartDMA_PIO26/ADC0_A4/CMP0_IN0/DAC0_OUT" label="DAC1_1" identifier="DAC1_1"/>
             </pin_labels>
+            <external_user_signals>
+               <properties/>
+            </external_user_signals>
          </pins_profile>
          <functions_list>
             <function name="BOARD_InitPins">
@@ -96,6 +100,11 @@
                      </feature>
                   </dependency>
                   <dependency resourceType="Peripheral" resourceId="SCG0" description="Peripheral SCG0 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="DAC0" description="Peripheral DAC0 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
                      <feature name="initialized" evaluation="equal">
                         <data>true</data>
                      </feature>
@@ -259,6 +268,7 @@
                         <pin_feature name="pull_select" value="up"/>
                      </pin_features>
                   </pin>
+                  <pin peripheral="DAC0" signal="OUT" pin_num="24" pin_signal="P2_2/TRIG_IN6/LPUART0_RTS_B/LPUART2_TXD/CT_INP12/CT2_MAT2/FLEXIO0_D10/SmartDMA_PIO26/ADC0_A4/CMP0_IN0/DAC0_OUT"/>
                </pins>
             </function>
          </functions_list>
@@ -480,6 +490,7 @@
                <clock_outputs>
                   <clock_output id="ADC_clock.outFreq" value="60 MHz" locked="false" accuracy=""/>
                   <clock_output id="BUS_clock.outFreq" value="90 MHz" locked="false" accuracy=""/>
+                  <clock_output id="CLK16K_0_clock.outFreq" value="16.384 kHz" locked="false" accuracy=""/>
                   <clock_output id="CLK_1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
                   <clock_output id="CLK_45M_clock.outFreq" value="45 MHz" locked="false" accuracy=""/>
                   <clock_output id="CPU_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
@@ -497,8 +508,8 @@
                   <clock_output id="FRO_HF_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
                   <clock_output id="LPI2C0_clock.outFreq" value="20 MHz" locked="false" accuracy=""/>
                   <clock_output id="LPI2C3_clock.outFreq" value="20 MHz" locked="false" accuracy=""/>
-                  <clock_output id="LPSPI0_clock.outFreq" value="11.25 MHz" locked="false" accuracy=""/>
-                  <clock_output id="LPSPI1_clock.outFreq" value="20 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPSPI0_clock.outFreq" value="90 MHz" locked="false" accuracy=""/>
+                  <clock_output id="LPSPI1_clock.outFreq" value="90 MHz" locked="false" accuracy=""/>
                   <clock_output id="LPUART0_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
                   <clock_output id="LPUART1_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
                   <clock_output id="LPUART2_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
@@ -514,6 +525,7 @@
                <clock_settings>
                   <setting id="VDD_CORE" value="voltage_1v2" locked="false"/>
                   <setting id="ADC_CLKDIV_MRCC0_MRCC_ADC_CLKDIV_HALT" value="ON" locked="false"/>
+                  <setting id="CLK16K_0_clock" value="Enabled" locked="false"/>
                   <setting id="CTIMER0_CLKDIV_MRCC0_MRCC_CTIMER0_CLKDIV_HALT" value="ON" locked="false"/>
                   <setting id="CTIMER1_CLKDIV_MRCC0_MRCC_CTIMER1_CLKDIV_HALT" value="ON" locked="false"/>
                   <setting id="CTIMER2_CLKDIV_MRCC0_MRCC_CTIMER2_CLKDIV_HALT" value="ON" locked="false"/>
@@ -544,9 +556,9 @@
                   <setting id="MRCC.LPI2C0_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
                   <setting id="MRCC.LPI2C3_CLKDIV.scale" value="9" locked="false"/>
                   <setting id="MRCC.LPI2C3_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
-                  <setting id="MRCC.LPSPI0_CLKDIV.scale" value="16" locked="true"/>
+                  <setting id="MRCC.LPSPI0_CLKDIV.scale" value="2" locked="true"/>
                   <setting id="MRCC.LPSPI0_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
-                  <setting id="MRCC.LPSPI1_CLKDIV.scale" value="9" locked="false"/>
+                  <setting id="MRCC.LPSPI1_CLKDIV.scale" value="2" locked="true"/>
                   <setting id="MRCC.LPSPI1_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
                   <setting id="MRCC.LPUART0_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
                   <setting id="MRCC.LPUART1_CLKSEL.sel" value="SYSCON.FRO_HF_DIV_clock" locked="false"/>
@@ -662,6 +674,36 @@
                   <data type="Version" maxValue="2.10.99">2.9.0</data>
                </feature>
             </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.rtc" description="工具链/IDE工程中未找到RTC Driver。工程不会被编译！" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data type="Boolean">true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.rtc" description="工具链/IDE工程不支持RTC Driver版本。所需值: ${required_value}, 实际值: ${actual_value}. 工程可能没有被正确编译。" problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="equivalent">
+                  <data type="Version">2.4.0</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.dac_1" description="工具链/IDE工程中未找到DAC Driver。工程不会被编译！" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data type="Boolean">true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.dac_1" description="工具链/IDE工程不支持DAC Driver版本。所需值: ${required_value}, 实际值: ${actual_value}. 工程可能没有被正确编译。" problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="greaterOrEqual">
+                  <data type="Version" maxValue="2.2.99">2.1.0</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpspi" description="工具链/IDE工程中未找到LPSPI Driver。工程不会被编译！" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data type="Boolean">true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpspi" description="工具链/IDE工程不支持LPSPI Driver版本。所需值: ${required_value}, 实际值: ${actual_value}. 工程可能没有被正确编译。" problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="greaterOrEqual">
+                  <data type="Version" maxValue="2.7.9">2.6.0</data>
+               </feature>
+            </dependency>
             <dependency resourceType="Tool" resourceId="Pins" description="外围设备工具需要 Pins 工具，但它已被禁用。" problem_level="2" source="Peripherals">
                <feature name="enabled" evaluation="equal">
                   <data>true</data>
@@ -686,6 +728,66 @@
                <options/>
                <dependencies>
                   <dependency resourceType="ClockOutput" resourceId="CTIMER4_clock" description="CTIMER4_clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="CLK16K_0_clock" description="CLK16K_0_clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.mcx_spc" description="The fsl_spc driver is missing in the project ." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="enabled" evaluation="equal">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI0.lpspi_sck" description="Signal serial clock is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI0.lpspi_sin" description="Signal serial data input is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI0.lpspi_sout" description="Signal serial data output is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI0.lpspi_pcs0" description="Signal peripheral chip select 0 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="LPSPI0_clock" description="LPSPI0_clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI1.lpspi_sck" description="Signal serial clock is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI1.lpspi_sin" description="Signal serial data input is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI1.lpspi_sout" description="Signal serial data output is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI1.lpspi_pcs0" description="Signal peripheral chip select 0 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="LPSPI1_clock" description="LPSPI1_clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="frequency" evaluation="greaterThan">
                         <data type="Frequency" unit="Hz">0</data>
                      </feature>
@@ -950,6 +1052,162 @@
                               </struct>
                            </struct>
                         </array>
+                     </config_set>
+                  </instance>
+                  <instance name="RTC0" uuid="02e72449-38b7-4a74-85e1-37665ede2eb4" type="rtc" type_id="rtc_2.4.0" mode="general" peripheral="RTC0" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="fsl_rtc">
+                        <struct name="clockConfig_t">
+                           <setting name="clockSource" value="clk_16khz"/>
+                           <setting name="clockSourceFreq" value="BOARD_BootClockFROHF180M"/>
+                        </struct>
+                        <struct name="rtc_config">
+                           <setting name="updateMode" value="false"/>
+                           <setting name="supervisorAccess" value="false"/>
+                           <setting name="compensationIntervalInt" value="1"/>
+                           <setting name="compensationTimeInt" value="0"/>
+                           <setting name="setDateTime" value="true"/>
+                           <struct name="rtc_datetime">
+                              <setting name="year" value="2000"/>
+                              <setting name="month" value="1"/>
+                              <setting name="day" value="1"/>
+                              <setting name="hour" value="0"/>
+                              <setting name="minute" value="0"/>
+                              <setting name="second" value="0"/>
+                           </struct>
+                           <setting name="setAlarm" value="false"/>
+                           <struct name="alarm_datetime">
+                              <setting name="year" value="1970"/>
+                              <setting name="month" value="1"/>
+                              <setting name="day" value="1"/>
+                              <setting name="hour" value="0"/>
+                              <setting name="minute" value="0"/>
+                              <setting name="second" value="0"/>
+                           </struct>
+                           <setting name="start" value="true"/>
+                        </struct>
+                        <struct name="interruptsCfg">
+                           <set name="interruptSources">
+                              <selected/>
+                           </set>
+                           <setting name="isSecondsInterruptEnabled" value="false"/>
+                           <struct name="secondsInterrupt">
+                              <setting name="IRQn" value="RTC_1HZ_IRQn"/>
+                              <setting name="enable_interrrupt" value="enabled"/>
+                              <setting name="enable_priority" value="false"/>
+                              <setting name="priority" value="1"/>
+                              <setting name="enable_custom_name" value="false"/>
+                           </struct>
+                           <setting name="isInterruptEnabled" value="false"/>
+                           <struct name="commonInterrupt">
+                              <setting name="IRQn" value="RTC_IRQn"/>
+                              <setting name="enable_interrrupt" value="enabled"/>
+                              <setting name="enable_priority" value="false"/>
+                              <setting name="priority" value="0"/>
+                              <setting name="enable_custom_name" value="false"/>
+                           </struct>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="DAC0" uuid="98b9775f-eb96-4ba8-a728-9734230c7c82" type="dac_1" type_id="dac_1_2.1.0" mode="general" peripheral="DAC0" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="fsl_dac">
+                        <struct name="dac_config">
+                           <setting name="fifoWatermarkLevel" value="0"/>
+                           <setting name="fifoTriggerMode" value="kDAC_FIFOTriggerBySoftwareMode"/>
+                           <setting name="fifoWorkMode" value="kDAC_FIFODisabled"/>
+                           <setting name="referenceVoltageSource" value="kDAC_ReferenceVoltageSourceAlt1"/>
+                           <setting name="referenceCurrentSource" value="kDAC_ReferenceCurrentSourcePtat"/>
+                           <setting name="enableOpampBuffer" value="true"/>
+                           <setting name="periodicTriggerNumber" value="0"/>
+                           <setting name="periodicTriggerWidth" value="0"/>
+                           <setting name="syncTime" value="0"/>
+                           <setting name="enableLowerLowPowerMode" value="false"/>
+                        </struct>
+                        <setting name="enable_dma" value="false"/>
+                        <setting name="dac_dma" value="kDAC_FIFOEmptyDMAEnable"/>
+                        <setting name="enable_DAC" value="true"/>
+                        <setting name="enable_convert" value="true"/>
+                        <setting name="convert_value" value="0"/>
+                        <struct name="interrupt_config">
+                           <set name="dac_interrupts">
+                              <selected/>
+                           </set>
+                           <setting name="enable_irq" value="false"/>
+                           <struct name="interrupt">
+                              <setting name="IRQn" value="DAC0_IRQn"/>
+                              <setting name="enable_interrrupt" value="enabled"/>
+                              <setting name="enable_priority" value="false"/>
+                              <setting name="priority" value="0"/>
+                              <setting name="enable_custom_name" value="false"/>
+                           </struct>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="LPSPI0" uuid="b03be823-8c45-410d-a4e2-6f2a127ec336" type="lpspi" type_id="lpspi_2.6.0" mode="polling" peripheral="LPSPI0" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="main">
+                        <setting name="mode" value="kLPSPI_Master"/>
+                        <setting name="clockSource" value="LpspiClock"/>
+                        <setting name="clockSourceFreq" value="ClocksTool_DefaultInit"/>
+                        <struct name="master">
+                           <setting name="baudRate" value="20000000"/>
+                           <setting name="bitsPerFrame" value="8"/>
+                           <setting name="cpol" value="kLPSPI_ClockPolarityActiveHigh"/>
+                           <setting name="cpha" value="kLPSPI_ClockPhaseFirstEdge"/>
+                           <setting name="direction" value="kLPSPI_MsbFirst"/>
+                           <setting name="pcsToSckDelayInNanoSec" value="400"/>
+                           <setting name="lastSckToPcsDelayInNanoSec" value="400"/>
+                           <setting name="betweenTransferDelayInNanoSec" value="100"/>
+                           <setting name="whichPcs" value="kLPSPI_Pcs0"/>
+                           <setting name="pcsActiveHighOrLow" value="kLPSPI_PcsActiveLow"/>
+                           <setting name="pinCfg" value="kLPSPI_SdiInSdoOut"/>
+                           <setting name="pcsFunc" value="kLPSPI_PcsAsCs"/>
+                           <setting name="dataOutConfig" value="kLpspiDataOutRetained"/>
+                           <setting name="enableInputDelay" value="false"/>
+                        </struct>
+                        <setting name="set_FifoWaterMarks" value="false"/>
+                        <struct name="fifoWaterMarks">
+                           <setting name="txWatermark" value="0"/>
+                           <setting name="rxWatermark" value="0"/>
+                        </struct>
+                        <setting name="allPcsPolarityEnable" value="false"/>
+                        <struct name="allPcsPolarity">
+                           <setting name="kLPSPI_Pcs1Active" value="kLPSPI_PcsActiveLow"/>
+                           <setting name="kLPSPI_Pcs2Active" value="kLPSPI_PcsActiveLow"/>
+                           <setting name="kLPSPI_Pcs3Active" value="kLPSPI_PcsActiveLow"/>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="LPSPI1" uuid="476465f5-9ed8-4c07-be1e-c0c02f32d59b" type="lpspi" type_id="lpspi_2.6.0" mode="polling" peripheral="LPSPI1" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="main">
+                        <setting name="mode" value="kLPSPI_Master"/>
+                        <setting name="clockSource" value="LpspiClock"/>
+                        <setting name="clockSourceFreq" value="ClocksTool_DefaultInit"/>
+                        <struct name="master">
+                           <setting name="baudRate" value="20000000"/>
+                           <setting name="bitsPerFrame" value="8"/>
+                           <setting name="cpol" value="kLPSPI_ClockPolarityActiveHigh"/>
+                           <setting name="cpha" value="kLPSPI_ClockPhaseFirstEdge"/>
+                           <setting name="direction" value="kLPSPI_MsbFirst"/>
+                           <setting name="pcsToSckDelayInNanoSec" value="400"/>
+                           <setting name="lastSckToPcsDelayInNanoSec" value="400"/>
+                           <setting name="betweenTransferDelayInNanoSec" value="100"/>
+                           <setting name="whichPcs" value="kLPSPI_Pcs0"/>
+                           <setting name="pcsActiveHighOrLow" value="kLPSPI_PcsActiveLow"/>
+                           <setting name="pinCfg" value="kLPSPI_SdiInSdoOut"/>
+                           <setting name="pcsFunc" value="kLPSPI_PcsAsCs"/>
+                           <setting name="dataOutConfig" value="kLpspiDataOutRetained"/>
+                           <setting name="enableInputDelay" value="false"/>
+                        </struct>
+                        <setting name="set_FifoWaterMarks" value="false"/>
+                        <struct name="fifoWaterMarks">
+                           <setting name="txWatermark" value="0"/>
+                           <setting name="rxWatermark" value="0"/>
+                        </struct>
+                        <setting name="allPcsPolarityEnable" value="false"/>
+                        <struct name="allPcsPolarity">
+                           <setting name="kLPSPI_Pcs1Active" value="kLPSPI_PcsActiveLow"/>
+                           <setting name="kLPSPI_Pcs2Active" value="kLPSPI_PcsActiveLow"/>
+                           <setting name="kLPSPI_Pcs3Active" value="kLPSPI_PcsActiveLow"/>
+                        </struct>
                      </config_set>
                   </instance>
                </instances>

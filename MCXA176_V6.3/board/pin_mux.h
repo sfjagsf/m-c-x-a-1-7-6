@@ -34,6 +34,7 @@ void BOARD_InitBootPins(void);
 #define PORT2_PCR20_MUX_mux00 0x00u /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
 #define PORT2_PCR21_MUX_mux00 0x00u /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
 #define PORT2_PCR23_MUX_mux00 0x00u /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
+#define PORT2_PCR2_MUX_mux00 0x00u  /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
 
 /*! @name PORT0_1 (number 77), SWCLK
   @{ */
@@ -433,6 +434,15 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_IN7_PIN 21U                   /*!<@brief PORT pin number */
 #define BOARD_INITPINS_IN7_PIN_MASK (1U << 21U)      /*!<@brief PORT pin mask */
                                                      /* @} */
+
+/*! @name PORT2_2 (number 24), DAC1_1
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_DAC1_1_PORT PORT2               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_DAC1_1_PIN 2U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_DAC1_1_PIN_MASK (1U << 2U)      /*!<@brief PORT pin mask */
+                                                       /* @} */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.
