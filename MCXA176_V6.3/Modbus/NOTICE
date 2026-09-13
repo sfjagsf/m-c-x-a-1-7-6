@@ -2,6 +2,7 @@ Embedded Modbus RTU adaptation
 
 Protocol behavior was adapted from libmodbus 3.2.0:
 https://github.com/stephane/libmodbus
+Upstream commit: a9b025d12289855490b10d77461c99e001abfc0f
 
 libmodbus copyright (C) Stephane Raimbault and contributors.
 The upstream and adapted source files are licensed under LGPL-2.1-or-later.
