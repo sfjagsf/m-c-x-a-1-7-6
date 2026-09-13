@@ -9,995 +9,882 @@
 #include "peripherals.h"
 #include "pin_mux.h"
 
-/*
- * Only UART line errors belong in the application error event. FIFO status is
- * intentionally excluded: after LPUART_GetStatusFlags() combines STAT and
- * FIFO, FIFO underflow/overflow is a controller diagnostic, not a malformed
- * RS485 frame, and must not make every received frame look erroneous.
- */
-#define UART_LINE_ERROR_FLAGS                                                                \
+#define UART_LINE_ERROR_FLAGS                                                               \
     (kLPUART_RxOverrunFlag | kLPUART_NoiseErrorFlag | kLPUART_FramingErrorFlag |            \
      kLPUART_ParityErrorFlag)
 
 typedef enum
 {
-    kUart0Idle,
-    kUart0Receiving,
-    kUart0TxDma,
-    kUart0TxDraining,
-} uart0_state_t;
+    kUartBackendDisabled,
+    kUartBackendRs485SharedDma,
+    kUartBackendRs232DualDma,
+} uart_backend_t;
+
+typedef enum
+{
+    kUartRxStopped,
+    kUartRxReceiving,
+    kUartRxFrameReady,
+} uart_rx_state_t;
+
+typedef enum
+{
+    kUartTxIdle,
+    kUartTxDma,
+    kUartTxDraining,
+} uart_tx_state_t;
 
 typedef struct
 {
     uint8_t rx[UART_BUFFER_SIZE];
     uint8_t tx[UART_BUFFER_SIZE];
-} uart_port_storage_t;
-
-/* Each logical UART owns permanently separate receive and transmit storage. */
-static uart_port_storage_t s_uartPortStorage[UART_PORT_COUNT];
-
-typedef struct
-{
-    volatile bool rxActive;
-    volatile bool txBusy;
-    volatile bool frameAvailable;
+    volatile uart_rx_state_t rxState;
+    volatile uart_tx_state_t txState;
     volatile size_t rxLength;
     volatile uint32_t errors;
     volatile uart_diagnostics_t diagnostics;
-} uart_full_duplex_runtime_t;
+} uart_runtime_t;
 
-#define s_uart0RxBuffer (s_uartPortStorage[kUartPort0].rx)
-#define s_uart0TxBuffer (s_uartPortStorage[kUartPort0].tx)
-static volatile uart0_state_t s_uart0State;
-static volatile size_t s_uart0RxLength;
-static volatile uint32_t s_uart0Errors;
-static volatile bool s_uart0FrameAvailable;
-static volatile uart0_diagnostics_t s_uart0Diagnostics;
-
-#define s_uart1RxBuffer (s_uartPortStorage[kUartPort1].rx)
-#define s_uart1TxBuffer (s_uartPortStorage[kUartPort1].tx)
-static uart_full_duplex_runtime_t s_uart1Runtime;
-
-static status_t Uart0_StartReceiveInternal(void);
-static status_t Uart0_StartTransmitInternal(const uint8_t *data, size_t size);
-
-static void Uart0_SaveDriverStatus(status_t status)
+typedef struct
 {
-    s_uart0Diagnostics.lastDriverStatus = status;
-}
+    uart_backend_t backend;
+    LPUART_Type *base;
+    IRQn_Type uartIrq;
+    uint32_t txDmaChannel;
+    uint32_t rxDmaChannel;
+    uint32_t txDmaRequest;
+    uint32_t rxDmaRequest;
+    IRQn_Type txDmaIrq;
+    IRQn_Type rxDmaIrq;
+    edma_handle_t *sharedDmaHandle;
+    edma_handle_t *txDmaHandle;
+    edma_handle_t *rxDmaHandle;
+    lpuart_edma_handle_t *lpuartEdmaHandle;
+    void (*setDirection)(bool transmit);
+} uart_port_config_t;
 
-static void Uart0_SaveDmaError(void)
+static uart_runtime_t s_uartRuntime[UART_PORT_COUNT];
+
+static void Uart0_SetDirection(bool transmit)
 {
-    if ((EDMA_GetChannelStatusFlags(DMA0, DMA0_CH0_DMA_CHANNEL) & kEDMA_ErrorFlag) != 0U)
-    {
-        /* Save CH_ES before clearing ERR; it contains the actual alignment/bus error cause. */
-        s_uart0Diagnostics.dmaChannelErrors = DMA0->CH[DMA0_CH0_DMA_CHANNEL].CH_ES;
-        s_uart0Diagnostics.dmaGlobalErrors  = EDMA_GetErrorStatusFlags(DMA0);
-        s_uart0Diagnostics.dmaErrorCount++;
-    }
-}
-
-static uint32_t Uart0_TakeErrors(void)
-{
-    const uint32_t irqMask = DisableGlobalIRQ();
-    const uint32_t errors = s_uart0Errors;
-
-    s_uart0Errors = 0U;
-    EnableGlobalIRQ(irqMask);
-    return errors;
+    /* U51 ties DE and /RE together: low receives, high transmits. */
+    GPIO_PinWrite(BOARD_INITPINS_RS485_EN_GPIO, BOARD_INITPINS_RS485_EN_GPIO_PIN,
+                  transmit ? 1U : 0U);
 }
 
 /*
- * U51 (SP3485) ties DE and /RE to P0_19 (RS485_EN):
- *   P0_19 = 0: DE=0 and /RE=0, transmitter disabled and receiver enabled.
- *   P0_19 = 1: DE=1 and /RE=1, transmitter enabled and receiver disabled.
- * Keep the two modes explicit; a generic "enable" boolean is easy to invert.
+ * Hardware ownership is centralized here. Add a generated port by filling one
+ * entry; protocol-independent state, buffers and frame ownership need no copy.
  */
-static void Uart0_EnterReceiveMode(void)
+static const uart_port_config_t s_uartConfig[UART_PORT_COUNT] = {
+    [kUartPort0] = {
+        .backend = kUartBackendRs485SharedDma,
+        .base = LPUART0,
+        .uartIrq = LPUART0_IRQn,
+        .txDmaChannel = DMA0_CH0_DMA_CHANNEL,
+        .rxDmaChannel = DMA0_CH0_DMA_CHANNEL,
+        .txDmaRequest = kDma0RequestLPUART0Tx,
+        .rxDmaRequest = kDma0RequestLPUART0Rx,
+        .txDmaIrq = DMA_CH0_IRQn,
+        .rxDmaIrq = DMA_CH0_IRQn,
+        .sharedDmaHandle = &DMA0_CH0_Handle,
+        .setDirection = Uart0_SetDirection,
+    },
+    [kUartPort1] = {
+        .backend = kUartBackendRs232DualDma,
+        .base = LPUART1,
+        .uartIrq = LPUART1_IRQn,
+        .txDmaChannel = LPUART1_TX_DMA_CHANNEL,
+        .rxDmaChannel = LPUART1_RX_DMA_CHANNEL,
+        .txDmaRequest = LPUART1_TX_DMA_REQUEST,
+        .rxDmaRequest = LPUART1_RX_DMA_REQUEST,
+        .txDmaIrq = DMA_CH5_IRQn,
+        .rxDmaIrq = DMA_CH6_IRQn,
+        .txDmaHandle = &LPUART1_TX_Handle,
+        .rxDmaHandle = &LPUART1_RX_Handle,
+        .lpuartEdmaHandle = &LPUART1_LPUART_eDMA_Handle,
+    },
+    [kUartPort2] = {.backend = kUartBackendDisabled},
+    [kUartPort3] = {.backend = kUartBackendDisabled},
+};
+
+static bool UartCore_IsValidPort(uart_port_id_t port)
 {
-    GPIO_PinWrite(BOARD_INITPINS_RS485_EN_GPIO, BOARD_INITPINS_RS485_EN_GPIO_PIN, 0U);
+    return ((uint32_t)port < UART_PORT_COUNT) &&
+           (s_uartConfig[port].backend != kUartBackendDisabled);
 }
 
-static void Uart0_EnterTransmitMode(void)
+static void UartCore_SaveStatus(uart_port_id_t port, status_t status)
 {
-    GPIO_PinWrite(BOARD_INITPINS_RS485_EN_GPIO, BOARD_INITPINS_RS485_EN_GPIO_PIN, 1U);
+    s_uartRuntime[port].diagnostics.lastDriverStatus = status;
 }
 
-static void Uart0_StopDma(void)
+static void UartCore_SaveDmaError(uart_port_id_t port, uint32_t channel)
 {
-    Uart0_SaveDmaError();
-    LPUART_EnableTxDMA(LPUART0, false);
-    LPUART_EnableRxDMA(LPUART0, false);
-    EDMA_AbortTransfer(&DMA0_CH0_Handle);
-    EDMA_ClearChannelStatusFlags(DMA0, DMA0_CH0_DMA_CHANNEL,
-                                 (uint32_t)kEDMA_DoneFlag | (uint32_t)kEDMA_ErrorFlag |
-                                     (uint32_t)kEDMA_InterruptFlag);
-    EDMA_SetChannelMux(DMA0, DMA0_CH0_DMA_CHANNEL, kDma0RequestDisabled);
-}
+    uart_runtime_t *runtime = &s_uartRuntime[port];
 
-/* Returns true when the active RX frame must not be passed to the application. */
-static bool Uart0_SaveAndClearErrors(uint32_t status)
-{
-    const uint32_t errors = status & UART_LINE_ERROR_FLAGS;
-
-    if (errors != 0U)
-    {
-        LPUART_ClearStatusFlags(LPUART0, errors);
-        s_uart0Errors |= errors;
-        s_uart0Diagnostics.uartErrors |= errors;
-        s_uart0Diagnostics.uartErrorCount++;
-        return true;
-    }
-
-    return false;
-}
-
-/*
- * Leave RS485 transmit mode only after LPUART reports TC.  TC means the final
- * stop bit is on the wire, unlike DMA completion which only means DATA was
- * written to the UART FIFO/register.
- */
-static void Uart0_CompleteTransmit(void)
-{
-    if (s_uart0State != kUart0TxDraining)
-    {
-        return;
-    }
-
-    LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable);
-    Uart0_EnterReceiveMode();
-    s_uart0State = kUart0Idle;
-    Uart0_SaveDriverStatus(Uart0_StartReceiveInternal());
-}
-
-static status_t Uart0_StartReceiveInternal(void)
-{
-    edma_transfer_config_t transfer;
-    status_t status;
-
-    Uart0_StopDma();
-    Uart0_EnterReceiveMode();
-    LPUART_ClearStatusFlags(LPUART0, kLPUART_IdleLineFlag);
-
-    EDMA_PrepareTransferConfig(&transfer, (void *)LPUART_GetDataRegisterAddress(LPUART0),
-                               1U << kEDMA_TransferSize1Bytes, 0, s_uart0RxBuffer,
-                               1U << kEDMA_TransferSize1Bytes, 1, 1U, UART0_RX_BUFFER_SIZE);
-    status = EDMA_SubmitTransfer(&DMA0_CH0_Handle, &transfer);
-    if (status != kStatus_Success)
-    {
-        Uart0_SaveDriverStatus(status);
-        return status;
-    }
-
-    s_uart0RxLength = 0U;
-    s_uart0State    = kUart0Receiving;
-    /* CH_MUX must be selected before StartTransfer: mux=0 starts a software request. */
-    EDMA_SetChannelMux(DMA0, DMA0_CH0_DMA_CHANNEL, kDma0RequestLPUART0Rx);
-    EDMA_EnableChannelInterrupts(DMA0, DMA0_CH0_DMA_CHANNEL, kEDMA_ErrorInterruptEnable);
-    EDMA_StartTransfer(&DMA0_CH0_Handle);
-    LPUART_EnableRxDMA(LPUART0, true);
-    Uart0_SaveDriverStatus(kStatus_Success);
-    return kStatus_Success;
-}
-
-static void Uart0_FinishReceive(void)
-{
-    const uint32_t remaining = EDMA_GetRemainingMajorLoopCount(DMA0, DMA0_CH0_DMA_CHANNEL);
-
-    s_uart0Diagnostics.lastRxRemaining = remaining;
-    Uart0_StopDma();
-    s_uart0State = kUart0Idle;
-    s_uart0RxLength = UART0_RX_BUFFER_SIZE - remaining;
-    s_uart0Diagnostics.lastRxLength = (uint32_t)s_uart0RxLength;
-    if (s_uart0RxLength != 0U)
-    {
-        s_uart0FrameAvailable = true;
-    }
-}
-
-void Uart0_Init(void)
-{
-    Uart0_StopDma();
-    LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable |
-                                         kLPUART_IdleLineInterruptEnable |
-                                         kLPUART_RxOverrunInterruptEnable |
-                                         kLPUART_NoiseErrorInterruptEnable |
-                                         kLPUART_FramingErrorInterruptEnable |
-                                         kLPUART_ParityErrorInterruptEnable);
-    LPUART_ClearStatusFlags(LPUART0, kLPUART_AllClearFlags);
-    /* One received byte must generate one DMA request for IDLE-delimited frames. */
-    LPUART_SetRxFifoWatermark(LPUART0, 0U);
-    Uart0_EnterReceiveMode();
-
-    s_uart0State          = kUart0Idle;
-    s_uart0RxLength       = 0U;
-    s_uart0Errors         = 0U;
-    s_uart0FrameAvailable = false;
-    Uart0_ClearDiagnostics();
-
-    NVIC_ClearPendingIRQ(LPUART0_IRQn);
-    NVIC_SetPriority(LPUART0_IRQn, 5U);
-    EnableIRQ(LPUART0_IRQn);
-    LPUART_EnableInterrupts(LPUART0, kLPUART_IdleLineInterruptEnable |
-                                         kLPUART_RxOverrunInterruptEnable |
-                                         kLPUART_NoiseErrorInterruptEnable |
-                                         kLPUART_FramingErrorInterruptEnable |
-                                         kLPUART_ParityErrorInterruptEnable);
-    Uart0_SaveDriverStatus(Uart0_StartReceiveInternal());
-}
-
-status_t Uart0_StartReceive(void)
-{
-    if (s_uart0FrameAvailable || (s_uart0State != kUart0Idle))
-    {
-        return kStatus_Busy;
-    }
-
-    return Uart0_StartReceiveInternal();
-}
-
-static status_t Uart0_StartTransmitInternal(const uint8_t *data, size_t size)
-{
-    edma_transfer_config_t transfer;
-    status_t status;
-
-    if ((data == NULL) || (size == 0U) || (size > UART0_TX_BUFFER_SIZE))
-    {
-        return kStatus_InvalidArgument;
-    }
-    if ((s_uart0State == kUart0TxDma) || (s_uart0State == kUart0TxDraining))
-    {
-        return kStatus_Busy;
-    }
-
-    (void)memcpy(s_uart0TxBuffer, data, size);
-    Uart0_StopDma();
-    /* Enable the line driver before the first DMA byte reaches LPUART0. */
-    Uart0_EnterTransmitMode();
-    EDMA_PrepareTransferConfig(&transfer, s_uart0TxBuffer, 1U << kEDMA_TransferSize1Bytes, 1,
-                               (void *)LPUART_GetDataRegisterAddress(LPUART0),
-                               1U << kEDMA_TransferSize1Bytes, 0, 1U, (uint32_t)size);
-    status = EDMA_SubmitTransfer(&DMA0_CH0_Handle, &transfer);
-    if (status != kStatus_Success)
-    {
-        Uart0_EnterReceiveMode();
-        Uart0_SaveDriverStatus(status);
-        if (Uart0_StartReceiveInternal() != kStatus_Success)
-        {
-            /* The original TX setup error remains the most useful reported status. */
-            Uart0_SaveDriverStatus(status);
-        }
-        return status;
-    }
-
-    s_uart0State = kUart0TxDma;
-    /* Select the peripheral request before enabling this shared DMA channel. */
-    EDMA_SetChannelMux(DMA0, DMA0_CH0_DMA_CHANNEL, kDma0RequestLPUART0Tx);
-    EDMA_EnableChannelInterrupts(DMA0, DMA0_CH0_DMA_CHANNEL, kEDMA_ErrorInterruptEnable);
-    EDMA_StartTransfer(&DMA0_CH0_Handle);
-    LPUART_EnableTxDMA(LPUART0, true);
-    Uart0_SaveDriverStatus(kStatus_Success);
-    return kStatus_Success;
-}
-
-status_t Uart0_Send(const uint8_t *data, size_t size)
-{
-    if (s_uart0FrameAvailable)
-    {
-        return kStatus_Busy;
-    }
-
-    return Uart0_StartTransmitInternal(data, size);
-}
-
-status_t Uart0_Reply(const uint8_t *data, size_t size)
-{
-    if (!s_uart0FrameAvailable)
-    {
-        return kStatus_NoTransferInProgress;
-    }
-    if ((data == NULL) || (size == 0U) || (size > UART0_TX_BUFFER_SIZE))
-    {
-        return kStatus_InvalidArgument;
-    }
-
-    /* Uart0_FinishReceive() already stopped RX DMA and left the port idle. */
-    s_uart0FrameAvailable = false;
-    return Uart0_StartTransmitInternal(data, size);
-}
-
-void Uart0_Abort(void)
-{
-    Uart0_StopDma();
-    LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable);
-    Uart0_EnterReceiveMode();
-    s_uart0State          = kUart0Idle;
-    s_uart0RxLength       = 0U;
-    s_uart0FrameAvailable = false;
-}
-
-bool Uart0_IsBusy(void)
-{
-    return (s_uart0State == kUart0TxDma) || (s_uart0State == kUart0TxDraining);
-}
-
-bool Uart0_IsFrameAvailable(void)
-{
-    return s_uart0FrameAvailable;
-}
-
-const uint8_t *Uart0_GetFrame(size_t *length)
-{
-    if (length != NULL)
-    {
-        *length = s_uart0FrameAvailable ? s_uart0RxLength : 0U;
-    }
-    return s_uart0FrameAvailable ? s_uart0RxBuffer : NULL;
-}
-
-status_t Uart0_ReleaseFrame(void)
-{
-    if (!s_uart0FrameAvailable)
-    {
-        return kStatus_NoTransferInProgress;
-    }
-
-    status_t status = Uart0_StartReceiveInternal();
-    if (status == kStatus_Success)
-    {
-        s_uart0FrameAvailable = false;
-    }
-    return status;
-}
-
-uint32_t Uart0_GetAndClearErrors(void)
-{
-    return Uart0_TakeErrors();
-}
-
-void Uart0_GetDiagnostics(uart0_diagnostics_t *diagnostics)
-{
-    uint32_t irqMask;
-
-    if (diagnostics == NULL)
-    {
-        return;
-    }
-
-    irqMask = DisableGlobalIRQ();
-    diagnostics->uartErrors       = s_uart0Diagnostics.uartErrors;
-    diagnostics->uartErrorCount   = s_uart0Diagnostics.uartErrorCount;
-    diagnostics->dmaChannelErrors = s_uart0Diagnostics.dmaChannelErrors;
-    diagnostics->dmaGlobalErrors  = s_uart0Diagnostics.dmaGlobalErrors;
-    diagnostics->dmaErrorCount    = s_uart0Diagnostics.dmaErrorCount;
-    diagnostics->discardedFrameCount = s_uart0Diagnostics.discardedFrameCount;
-    diagnostics->lastRxRemaining  = s_uart0Diagnostics.lastRxRemaining;
-    diagnostics->lastRxLength     = s_uart0Diagnostics.lastRxLength;
-    diagnostics->lastDriverStatus = s_uart0Diagnostics.lastDriverStatus;
-    EnableGlobalIRQ(irqMask);
-}
-
-void Uart0_ClearDiagnostics(void)
-{
-    const uint32_t irqMask = DisableGlobalIRQ();
-
-    s_uart0Diagnostics.uartErrors       = 0U;
-    s_uart0Diagnostics.uartErrorCount   = 0U;
-    s_uart0Diagnostics.dmaChannelErrors = 0U;
-    s_uart0Diagnostics.dmaGlobalErrors  = 0U;
-    s_uart0Diagnostics.dmaErrorCount    = 0U;
-    s_uart0Diagnostics.discardedFrameCount = 0U;
-    s_uart0Diagnostics.lastRxRemaining  = UART0_RX_BUFFER_SIZE;
-    s_uart0Diagnostics.lastRxLength     = 0U;
-    s_uart0Diagnostics.lastDriverStatus = kStatus_Success;
-    EnableGlobalIRQ(irqMask);
-}
-
-/*
- * Full-duplex LPUART/eDMA backend used by RS232 ports. TX and RX have separate
- * DMA channels, so receiving remains armed while a transmission is running.
- */
-static void Uart1_SaveDriverStatus(status_t status)
-{
-    s_uart1Runtime.diagnostics.lastDriverStatus = status;
-}
-
-static void Uart1_SaveDmaError(uint32_t channel)
-{
     if ((EDMA_GetChannelStatusFlags(DMA0, channel) & kEDMA_ErrorFlag) != 0U)
     {
-        s_uart1Runtime.diagnostics.dmaChannelErrors = DMA0->CH[channel].CH_ES;
-        s_uart1Runtime.diagnostics.dmaGlobalErrors  = EDMA_GetErrorStatusFlags(DMA0);
-        s_uart1Runtime.diagnostics.dmaErrorCount++;
+        runtime->diagnostics.dmaChannelErrors = DMA0->CH[channel].CH_ES;
+        runtime->diagnostics.dmaGlobalErrors = EDMA_GetErrorStatusFlags(DMA0);
+        runtime->diagnostics.dmaErrorCount++;
     }
 }
 
-static status_t Uart1_StartReceiveInternal(void)
+static void UartCore_ResetRuntime(uart_port_id_t port)
 {
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+
+    (void)memset(runtime, 0, sizeof(*runtime));
+    runtime->rxState = kUartRxStopped;
+    runtime->txState = kUartTxIdle;
+    runtime->diagnostics.lastRxRemaining = UART_BUFFER_SIZE;
+    runtime->diagnostics.lastDriverStatus = kStatus_Success;
+}
+
+static void UartCore_EnableUartInterrupts(const uart_port_config_t *config)
+{
+    LPUART_EnableInterrupts(config->base, kLPUART_IdleLineInterruptEnable |
+                                             kLPUART_RxOverrunInterruptEnable |
+                                             kLPUART_NoiseErrorInterruptEnable |
+                                             kLPUART_FramingErrorInterruptEnable |
+                                             kLPUART_ParityErrorInterruptEnable);
+}
+
+static void UartCore_StopSharedDma(uart_port_id_t port)
+{
+    const uart_port_config_t *config = &s_uartConfig[port];
+
+    UartCore_SaveDmaError(port, config->rxDmaChannel);
+    LPUART_EnableTxDMA(config->base, false);
+    LPUART_EnableRxDMA(config->base, false);
+    EDMA_AbortTransfer(config->sharedDmaHandle);
+    EDMA_ClearChannelStatusFlags(DMA0, config->rxDmaChannel,
+                                 (uint32_t)kEDMA_DoneFlag | (uint32_t)kEDMA_ErrorFlag |
+                                     (uint32_t)kEDMA_InterruptFlag);
+    EDMA_SetChannelMux(DMA0, config->rxDmaChannel, kDma0RequestDisabled);
+}
+
+static status_t UartCore_StartSharedReceive(uart_port_id_t port)
+{
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+    edma_transfer_config_t transfer;
+    status_t status;
+
+    UartCore_StopSharedDma(port);
+    config->setDirection(false);
+    LPUART_ClearStatusFlags(config->base, kLPUART_IdleLineFlag);
+    EDMA_PrepareTransferConfig(&transfer, (void *)LPUART_GetDataRegisterAddress(config->base),
+                               1U << kEDMA_TransferSize1Bytes, 0, runtime->rx,
+                               1U << kEDMA_TransferSize1Bytes, 1, 1U, UART_BUFFER_SIZE);
+    status = EDMA_SubmitTransfer(config->sharedDmaHandle, &transfer);
+    if (status != kStatus_Success)
+    {
+        runtime->rxState = kUartRxStopped;
+        UartCore_SaveStatus(port, status);
+        return status;
+    }
+
+    runtime->rxLength = 0U;
+    runtime->rxState = kUartRxReceiving;
+    EDMA_SetChannelMux(DMA0, config->rxDmaChannel, config->rxDmaRequest);
+    EDMA_EnableChannelInterrupts(DMA0, config->rxDmaChannel, kEDMA_ErrorInterruptEnable);
+    EDMA_StartTransfer(config->sharedDmaHandle);
+    LPUART_EnableRxDMA(config->base, true);
+    UartCore_SaveStatus(port, kStatus_Success);
+    return kStatus_Success;
+}
+
+static status_t UartCore_StartDualReceive(uart_port_id_t port)
+{
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
     lpuart_transfer_t transfer = {
-        .rxData   = s_uart1RxBuffer,
+        .rxData = runtime->rx,
         .dataSize = UART_BUFFER_SIZE,
     };
     status_t status;
 
-    LPUART_ClearStatusFlags(LPUART1, kLPUART_IdleLineFlag);
-    s_uart1Runtime.rxLength = 0U;
-    s_uart1Runtime.rxActive = true;
-    status = LPUART_ReceiveEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle, &transfer);
+    LPUART_ClearStatusFlags(config->base, kLPUART_IdleLineFlag);
+    runtime->rxLength = 0U;
+    runtime->rxState = kUartRxReceiving;
+    status = LPUART_ReceiveEDMA(config->base, config->lpuartEdmaHandle, &transfer);
     if (status != kStatus_Success)
     {
-        /* NXP sets rxState busy before submitting the TCD; undo it on failure. */
-        LPUART_TransferAbortReceiveEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-        s_uart1Runtime.rxActive = false;
-        Uart1_SaveDmaError(LPUART1_RX_DMA_CHANNEL);
+        /* NXP sets rxState busy before TCD submission; abort resets it. */
+        LPUART_TransferAbortReceiveEDMA(config->base, config->lpuartEdmaHandle);
+        runtime->rxState = kUartRxStopped;
+        UartCore_SaveDmaError(port, config->rxDmaChannel);
     }
-    Uart1_SaveDriverStatus(status);
+    UartCore_SaveStatus(port, status);
     return status;
 }
 
-static void Uart1_FinishReceive(void)
+static status_t UartCore_StartReceiveInternal(uart_port_id_t port)
 {
-    uint32_t count = 0U;
-    const status_t status =
-        LPUART_TransferGetReceiveCountEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle, &count);
+    const uart_port_config_t *config = &s_uartConfig[port];
 
-    if (status == kStatus_Success)
+    if (config->backend == kUartBackendRs485SharedDma)
     {
-        LPUART_TransferAbortReceiveEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-        s_uart1Runtime.rxActive = false;
-        s_uart1Runtime.rxLength = (size_t)count;
-        s_uart1Runtime.diagnostics.lastRxLength = count;
-        s_uart1Runtime.diagnostics.lastRxRemaining = UART_BUFFER_SIZE - count;
-        if (count != 0U)
+        return UartCore_StartSharedReceive(port);
+    }
+    return UartCore_StartDualReceive(port);
+}
+
+static status_t UartCore_StartSharedTransmit(uart_port_id_t port, size_t size, bool replying)
+{
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+    edma_transfer_config_t transfer;
+    status_t status;
+
+    UartCore_StopSharedDma(port);
+    runtime->rxState = kUartRxStopped;
+    config->setDirection(true);
+    EDMA_PrepareTransferConfig(&transfer, runtime->tx, 1U << kEDMA_TransferSize1Bytes, 1,
+                               (void *)LPUART_GetDataRegisterAddress(config->base),
+                               1U << kEDMA_TransferSize1Bytes, 0, 1U, (uint32_t)size);
+    status = EDMA_SubmitTransfer(config->sharedDmaHandle, &transfer);
+    if (status != kStatus_Success)
+    {
+        config->setDirection(false);
+        runtime->txState = kUartTxIdle;
+        UartCore_SaveStatus(port, status);
+        if (replying)
         {
-            s_uart1Runtime.frameAvailable = true;
+            /* The completed RX frame is still valid and can be retried/released. */
+            runtime->rxState = kUartRxFrameReady;
         }
         else
         {
-            (void)Uart1_StartReceiveInternal();
+            (void)UartCore_StartReceiveInternal(port);
         }
+        UartCore_SaveStatus(port, status);
+        return status;
     }
-    else
+
+    runtime->txState = kUartTxDma;
+    EDMA_SetChannelMux(DMA0, config->txDmaChannel, config->txDmaRequest);
+    EDMA_EnableChannelInterrupts(DMA0, config->txDmaChannel, kEDMA_ErrorInterruptEnable);
+    EDMA_StartTransfer(config->sharedDmaHandle);
+    LPUART_EnableTxDMA(config->base, true);
+    UartCore_SaveStatus(port, kStatus_Success);
+    return kStatus_Success;
+}
+
+static status_t UartCore_StartDualTransmit(uart_port_id_t port, size_t size)
+{
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+    lpuart_transfer_t transfer = {
+        .txData = runtime->tx,
+        .dataSize = size,
+    };
+    status_t status;
+
+    runtime->txState = kUartTxDma;
+    status = LPUART_SendEDMA(config->base, config->lpuartEdmaHandle, &transfer);
+    if (status != kStatus_Success)
     {
-        Uart1_SaveDriverStatus(status);
+        /* NXP sets txState busy before TCD submission; abort resets it. */
+        LPUART_TransferAbortSendEDMA(config->base, config->lpuartEdmaHandle);
+        runtime->txState = kUartTxIdle;
+        UartCore_SaveDmaError(port, config->txDmaChannel);
+    }
+    UartCore_SaveStatus(port, status);
+    return status;
+}
+
+static status_t UartCore_StartTransmit(uart_port_id_t port, const uint8_t *data, size_t size,
+                                       bool replying)
+{
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+    uint32_t irqMask;
+
+    if ((data == NULL) || (size == 0U) || (size > UART_BUFFER_SIZE))
+    {
+        return kStatus_InvalidArgument;
+    }
+    /* Atomically reserve TX; DMA setup itself remains outside the critical section. */
+    irqMask = DisableGlobalIRQ();
+    if ((runtime->txState != kUartTxIdle) ||
+        (!replying && (config->backend == kUartBackendRs485SharedDma) &&
+         (runtime->rxState == kUartRxFrameReady)))
+    {
+        EnableGlobalIRQ(irqMask);
+        return kStatus_Busy;
+    }
+    runtime->txState = kUartTxDma;
+    if (config->backend == kUartBackendRs485SharedDma)
+    {
+        /* Reserving the half-duplex bus invalidates the active RX transaction. */
+        runtime->rxState = kUartRxStopped;
+    }
+    EnableGlobalIRQ(irqMask);
+
+    (void)memcpy(runtime->tx, data, size);
+    if (config->backend == kUartBackendRs485SharedDma)
+    {
+        return UartCore_StartSharedTransmit(port, size, replying);
+    }
+    return UartCore_StartDualTransmit(port, size);
+}
+
+static void UartCore_FinishSharedReceive(uart_port_id_t port)
+{
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+    const uint32_t remaining =
+        EDMA_GetRemainingMajorLoopCount(DMA0, config->rxDmaChannel);
+
+    runtime->diagnostics.lastRxRemaining = remaining;
+    UartCore_StopSharedDma(port);
+    runtime->rxLength = UART_BUFFER_SIZE - remaining;
+    runtime->diagnostics.lastRxLength = (uint32_t)runtime->rxLength;
+    runtime->rxState = (runtime->rxLength != 0U) ? kUartRxFrameReady : kUartRxStopped;
+    if (runtime->rxState == kUartRxStopped)
+    {
+        (void)UartCore_StartReceiveInternal(port);
     }
 }
 
-static bool Uart1_SaveAndClearErrors(uint32_t status)
+static void UartCore_FinishDualReceive(uart_port_id_t port)
 {
-    const uint32_t errors = status & UART_LINE_ERROR_FLAGS;
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+    uint32_t count = 0U;
+    const status_t status =
+        LPUART_TransferGetReceiveCountEDMA(config->base, config->lpuartEdmaHandle, &count);
+
+    if (status != kStatus_Success)
+    {
+        UartCore_SaveStatus(port, status);
+        return;
+    }
+
+    LPUART_TransferAbortReceiveEDMA(config->base, config->lpuartEdmaHandle);
+    runtime->rxLength = (size_t)count;
+    runtime->diagnostics.lastRxLength = count;
+    runtime->diagnostics.lastRxRemaining = UART_BUFFER_SIZE - count;
+    runtime->rxState = (count != 0U) ? kUartRxFrameReady : kUartRxStopped;
+    if (runtime->rxState == kUartRxStopped)
+    {
+        (void)UartCore_StartReceiveInternal(port);
+    }
+}
+
+static void UartCore_CompleteSharedTransmit(uart_port_id_t port)
+{
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+
+    if (runtime->txState != kUartTxDraining)
+    {
+        return;
+    }
+
+    LPUART_DisableInterrupts(config->base, kLPUART_TransmissionCompleteInterruptEnable);
+    config->setDirection(false);
+    runtime->txState = kUartTxIdle;
+    UartCore_SaveStatus(port, UartCore_StartReceiveInternal(port));
+}
+
+static bool UartCore_SaveAndClearLineErrors(uart_port_id_t port, uint32_t flags)
+{
+    const uint32_t errors = flags & UART_LINE_ERROR_FLAGS;
+    uart_runtime_t *runtime = &s_uartRuntime[port];
 
     if (errors == 0U)
     {
         return false;
     }
 
-    LPUART_ClearStatusFlags(LPUART1, errors);
-    s_uart1Runtime.errors |= errors;
-    s_uart1Runtime.diagnostics.uartErrors |= errors;
-    s_uart1Runtime.diagnostics.uartErrorCount++;
+    LPUART_ClearStatusFlags(s_uartConfig[port].base, errors);
+    runtime->errors |= errors;
+    runtime->diagnostics.uartErrors |= errors;
+    runtime->diagnostics.uartErrorCount++;
     return true;
 }
 
-void Uart1_Init(void)
+static void UartCore_RecoverReceiveError(uart_port_id_t port)
 {
-    LPUART_TransferAbortSendEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-    LPUART_TransferAbortReceiveEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-    LPUART_DisableInterrupts(LPUART1, kLPUART_AllInterruptEnable);
-    LPUART_ClearStatusFlags(LPUART1, kLPUART_AllClearFlags);
-    /* One byte in RX FIFO must be sufficient to issue one CH6 DMA request. */
-    LPUART_SetRxFifoWatermark(LPUART1, 0U);
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
 
-    (void)memset((void *)&s_uart1Runtime, 0, sizeof(s_uart1Runtime));
-    s_uart1Runtime.diagnostics.lastRxRemaining = UART_BUFFER_SIZE;
-    s_uart1Runtime.diagnostics.lastDriverStatus = kStatus_Success;
-
-    NVIC_ClearPendingIRQ(LPUART1_IRQn);
-    NVIC_SetPriority(LPUART1_IRQn, 5U);
-    NVIC_SetPriority(DMA_CH5_IRQn, 5U);
-    NVIC_SetPriority(DMA_CH6_IRQn, 5U);
-    EnableIRQ(LPUART1_IRQn);
-    EnableIRQ(DMA_CH5_IRQn);
-    EnableIRQ(DMA_CH6_IRQn);
-    LPUART_EnableInterrupts(LPUART1, kLPUART_IdleLineInterruptEnable |
-                                        kLPUART_RxOverrunInterruptEnable |
-                                        kLPUART_NoiseErrorInterruptEnable |
-                                        kLPUART_FramingErrorInterruptEnable |
-                                        kLPUART_ParityErrorInterruptEnable);
-    Uart1_SaveDriverStatus(Uart1_StartReceiveInternal());
+    if (config->backend == kUartBackendRs485SharedDma)
+    {
+        UartCore_StopSharedDma(port);
+        config->setDirection(false);
+    }
+    else
+    {
+        LPUART_TransferAbortReceiveEDMA(config->base, config->lpuartEdmaHandle);
+    }
+    runtime->rxState = kUartRxStopped;
+    runtime->rxLength = 0U;
+    runtime->diagnostics.discardedFrameCount++;
+    UartCore_SaveStatus(port, UartCore_StartReceiveInternal(port));
 }
 
-status_t Uart1_StartReceive(void)
+static void UartCore_HandleUartIrq(uart_port_id_t port)
 {
-    if (s_uart1Runtime.frameAvailable || s_uart1Runtime.rxActive)
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+    const uint32_t flags = LPUART_GetStatusFlags(config->base);
+    const bool lineError = UartCore_SaveAndClearLineErrors(port, flags);
+
+    if (lineError && (runtime->rxState == kUartRxReceiving))
     {
-        return kStatus_Busy;
+        UartCore_RecoverReceiveError(port);
     }
-    return Uart1_StartReceiveInternal();
-}
-
-status_t Uart1_Send(const uint8_t *data, size_t size)
-{
-    lpuart_transfer_t transfer;
-    status_t status;
-
-    if ((data == NULL) || (size == 0U) || (size > UART_BUFFER_SIZE))
+    else if (((flags & kLPUART_IdleLineFlag) != 0U) &&
+             (runtime->rxState == kUartRxReceiving))
     {
-        return kStatus_InvalidArgument;
-    }
-    if (s_uart1Runtime.txBusy)
-    {
-        return kStatus_Busy;
-    }
-
-    (void)memcpy(s_uart1TxBuffer, data, size);
-    transfer.txData   = s_uart1TxBuffer;
-    transfer.dataSize = size;
-    s_uart1Runtime.txBusy = true;
-    status = LPUART_SendEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle, &transfer);
-    if (status != kStatus_Success)
-    {
-        /* NXP sets txState busy before submitting the TCD; undo it on failure. */
-        LPUART_TransferAbortSendEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-        s_uart1Runtime.txBusy = false;
-        Uart1_SaveDmaError(LPUART1_TX_DMA_CHANNEL);
-    }
-    Uart1_SaveDriverStatus(status);
-    return status;
-}
-
-status_t Uart1_Reply(const uint8_t *data, size_t size)
-{
-    status_t status;
-
-    if (!s_uart1Runtime.frameAvailable)
-    {
-        return kStatus_NoTransferInProgress;
-    }
-
-    /* Uart1_Send copies the frame before CH6 is restarted and overwrites RX. */
-    status = Uart1_Send(data, size);
-    if (status == kStatus_Success)
-    {
-        const status_t rxStatus = Uart1_StartReceiveInternal();
-        if (rxStatus == kStatus_Success)
+        LPUART_ClearStatusFlags(config->base, kLPUART_IdleLineFlag);
+        if (config->backend == kUartBackendRs485SharedDma)
         {
-            s_uart1Runtime.frameAvailable = false;
+            UartCore_FinishSharedReceive(port);
+        }
+        else
+        {
+            UartCore_FinishDualReceive(port);
         }
     }
-    return status;
-}
-
-void Uart1_Abort(void)
-{
-    LPUART_TransferAbortSendEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-    LPUART_TransferAbortReceiveEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-    s_uart1Runtime.txBusy = false;
-    s_uart1Runtime.rxActive = false;
-    s_uart1Runtime.frameAvailable = false;
-    s_uart1Runtime.rxLength = 0U;
-}
-
-bool Uart1_IsBusy(void)
-{
-    return s_uart1Runtime.txBusy;
-}
-
-bool Uart1_IsFrameAvailable(void)
-{
-    return s_uart1Runtime.frameAvailable;
-}
-
-const uint8_t *Uart1_GetFrame(size_t *length)
-{
-    if (length != NULL)
+    else if ((flags & kLPUART_IdleLineFlag) != 0U)
     {
-        *length = s_uart1Runtime.frameAvailable ? s_uart1Runtime.rxLength : 0U;
-    }
-    return s_uart1Runtime.frameAvailable ? s_uart1RxBuffer : NULL;
-}
-
-status_t Uart1_ReleaseFrame(void)
-{
-    status_t status;
-
-    if (!s_uart1Runtime.frameAvailable)
-    {
-        return kStatus_NoTransferInProgress;
+        LPUART_ClearStatusFlags(config->base, kLPUART_IdleLineFlag);
     }
 
-    status = Uart1_StartReceiveInternal();
-    if (status == kStatus_Success)
+    if (config->backend == kUartBackendRs485SharedDma)
     {
-        s_uart1Runtime.frameAvailable = false;
+        if (((flags & kLPUART_TransmissionCompleteFlag) != 0U) &&
+            (runtime->txState == kUartTxDraining))
+        {
+            UartCore_CompleteSharedTransmit(port);
+        }
     }
-    return status;
-}
-
-uint32_t Uart1_GetAndClearErrors(void)
-{
-    const uint32_t irqMask = DisableGlobalIRQ();
-    const uint32_t errors = s_uart1Runtime.errors;
-
-    s_uart1Runtime.errors = 0U;
-    EnableGlobalIRQ(irqMask);
-    return errors;
-}
-
-void Uart1_GetDiagnostics(uart_diagnostics_t *diagnostics)
-{
-    uint32_t irqMask;
-
-    if (diagnostics == NULL)
+    else if (((flags & kLPUART_TransmissionCompleteFlag) != 0U) &&
+             ((config->base->CTRL & LPUART_CTRL_TCIE_MASK) != 0U))
     {
-        return;
+        /* Continue NXP's eDMA TX chain; this produces kStatus_LPUART_TxIdle. */
+        LPUART_TransferEdmaHandleIRQ(config->base, config->lpuartEdmaHandle);
     }
-
-    irqMask = DisableGlobalIRQ();
-    diagnostics->uartErrors = s_uart1Runtime.diagnostics.uartErrors;
-    diagnostics->uartErrorCount = s_uart1Runtime.diagnostics.uartErrorCount;
-    diagnostics->dmaChannelErrors = s_uart1Runtime.diagnostics.dmaChannelErrors;
-    diagnostics->dmaGlobalErrors = s_uart1Runtime.diagnostics.dmaGlobalErrors;
-    diagnostics->dmaErrorCount = s_uart1Runtime.diagnostics.dmaErrorCount;
-    diagnostics->discardedFrameCount = s_uart1Runtime.diagnostics.discardedFrameCount;
-    diagnostics->lastRxRemaining = s_uart1Runtime.diagnostics.lastRxRemaining;
-    diagnostics->lastRxLength = s_uart1Runtime.diagnostics.lastRxLength;
-    diagnostics->lastDriverStatus = s_uart1Runtime.diagnostics.lastDriverStatus;
-    EnableGlobalIRQ(irqMask);
 }
 
-void Uart1_ClearDiagnostics(void)
+static void UartCore_HandleSharedDmaDone(uart_port_id_t port, bool transferDone)
 {
-    const uint32_t irqMask = DisableGlobalIRQ();
-
-    (void)memset((void *)&s_uart1Runtime.diagnostics, 0, sizeof(s_uart1Runtime.diagnostics));
-    s_uart1Runtime.diagnostics.lastRxRemaining = UART_BUFFER_SIZE;
-    s_uart1Runtime.diagnostics.lastDriverStatus = kStatus_Success;
-    EnableGlobalIRQ(irqMask);
-}
-
-/* This name is selected in MCUXpresso Config Tools for DMA0 CH0. */
-void LPUART0_DMACallback(edma_handle_t *handle, void *userData, bool transferDone, uint32_t tcds)
-{
-    (void)handle;
-    (void)userData;
-    (void)tcds;
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
 
     if (!transferDone)
     {
         return;
     }
 
-    if (s_uart0State == kUart0TxDma)
+    if (runtime->txState == kUartTxDma)
     {
-        LPUART_EnableTxDMA(LPUART0, false);
-        EDMA_SetChannelMux(DMA0, DMA0_CH0_DMA_CHANNEL, kDma0RequestDisabled);
-        s_uart0State = kUart0TxDraining;
-
-        /* Avoid missing TC when the final byte completed before TCIE was set. */
-        if ((LPUART_GetStatusFlags(LPUART0) & kLPUART_TransmissionCompleteFlag) != 0U)
+        LPUART_EnableTxDMA(config->base, false);
+        EDMA_SetChannelMux(DMA0, config->txDmaChannel, kDma0RequestDisabled);
+        runtime->txState = kUartTxDraining;
+        if ((LPUART_GetStatusFlags(config->base) & kLPUART_TransmissionCompleteFlag) != 0U)
         {
-            Uart0_CompleteTransmit();
+            UartCore_CompleteSharedTransmit(port);
         }
         else
         {
-            LPUART_EnableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable);
+            LPUART_EnableInterrupts(config->base,
+                                    kLPUART_TransmissionCompleteInterruptEnable);
         }
     }
-    else if (s_uart0State == kUart0Receiving)
+    else if (runtime->rxState == kUartRxReceiving)
     {
-        /* The RX buffer is full; treat it as one frame. */
-        LPUART_EnableRxDMA(LPUART0, false);
-        EDMA_SetChannelMux(DMA0, DMA0_CH0_DMA_CHANNEL, kDma0RequestDisabled);
-        s_uart0State          = kUart0Idle;
-        s_uart0RxLength       = UART0_RX_BUFFER_SIZE;
-        s_uart0FrameAvailable = true;
+        LPUART_EnableRxDMA(config->base, false);
+        EDMA_SetChannelMux(DMA0, config->rxDmaChannel, kDma0RequestDisabled);
+        runtime->rxLength = UART_BUFFER_SIZE;
+        runtime->rxState = kUartRxFrameReady;
+        runtime->diagnostics.lastRxRemaining = 0U;
+        runtime->diagnostics.lastRxLength = UART_BUFFER_SIZE;
     }
 }
 
-void LPUART1_DMACallback(LPUART_Type *base, lpuart_edma_handle_t *handle, status_t status, void *userData)
+static void UartCore_HandleDualDmaCallback(uart_port_id_t port, status_t status)
+{
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+
+    UartCore_SaveStatus(port, status);
+    if (status == kStatus_LPUART_TxIdle)
+    {
+        runtime->txState = kUartTxIdle;
+    }
+    else if (status == kStatus_LPUART_RxIdle)
+    {
+        runtime->rxLength = UART_BUFFER_SIZE;
+        runtime->rxState = kUartRxFrameReady;
+        runtime->diagnostics.lastRxRemaining = 0U;
+        runtime->diagnostics.lastRxLength = UART_BUFFER_SIZE;
+    }
+}
+
+static void UartCore_HandleSharedDmaIrq(uart_port_id_t port)
+{
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+
+    if ((EDMA_GetChannelStatusFlags(DMA0, config->rxDmaChannel) & kEDMA_ErrorFlag) != 0U)
+    {
+        if (runtime->rxState == kUartRxReceiving)
+        {
+            runtime->diagnostics.discardedFrameCount++;
+        }
+        /* StopSharedDma records the channel error once before clearing it. */
+        UartCore_StopSharedDma(port);
+        LPUART_DisableInterrupts(config->base, kLPUART_TransmissionCompleteInterruptEnable);
+        config->setDirection(false);
+        runtime->rxState = kUartRxStopped;
+        runtime->txState = kUartTxIdle;
+        runtime->rxLength = 0U;
+        UartCore_SaveStatus(port, UartCore_StartReceiveInternal(port));
+    }
+    else
+    {
+        EDMA_HandleIRQ(config->sharedDmaHandle);
+    }
+}
+
+static void UartCore_HandleDualDmaIrq(uart_port_id_t port, bool isTx)
+{
+    const uart_port_config_t *config = &s_uartConfig[port];
+    uart_runtime_t *runtime = &s_uartRuntime[port];
+    const uint32_t channel = isTx ? config->txDmaChannel : config->rxDmaChannel;
+    edma_handle_t *handle = isTx ? config->txDmaHandle : config->rxDmaHandle;
+
+    if ((EDMA_GetChannelStatusFlags(DMA0, channel) & kEDMA_ErrorFlag) == 0U)
+    {
+        EDMA_HandleIRQ(handle);
+        return;
+    }
+
+    UartCore_SaveDmaError(port, channel);
+    if (isTx)
+    {
+        LPUART_TransferAbortSendEDMA(config->base, config->lpuartEdmaHandle);
+        runtime->txState = kUartTxIdle;
+    }
+    else
+    {
+        LPUART_TransferAbortReceiveEDMA(config->base, config->lpuartEdmaHandle);
+        runtime->rxState = kUartRxStopped;
+        runtime->rxLength = 0U;
+        runtime->diagnostics.discardedFrameCount++;
+    }
+    EDMA_ClearChannelStatusFlags(DMA0, channel,
+                                 (uint32_t)kEDMA_DoneFlag | (uint32_t)kEDMA_ErrorFlag |
+                                     (uint32_t)kEDMA_InterruptFlag);
+    UartCore_SaveStatus(port, kStatus_Fail);
+    if (!isTx)
+    {
+        UartCore_SaveStatus(port, UartCore_StartReceiveInternal(port));
+    }
+}
+
+void UartPort_Init(uart_port_id_t port)
+{
+    const uart_port_config_t *config;
+
+    if (!UartCore_IsValidPort(port))
+    {
+        return;
+    }
+    config = &s_uartConfig[port];
+
+    if (config->backend == kUartBackendRs485SharedDma)
+    {
+        UartCore_StopSharedDma(port);
+    }
+    else
+    {
+        LPUART_TransferAbortSendEDMA(config->base, config->lpuartEdmaHandle);
+        LPUART_TransferAbortReceiveEDMA(config->base, config->lpuartEdmaHandle);
+    }
+    LPUART_DisableInterrupts(config->base, kLPUART_AllInterruptEnable);
+    LPUART_ClearStatusFlags(config->base, kLPUART_AllClearFlags);
+    LPUART_SetRxFifoWatermark(config->base, 0U);
+    if (config->setDirection != NULL)
+    {
+        config->setDirection(false);
+    }
+    UartCore_ResetRuntime(port);
+
+    NVIC_ClearPendingIRQ(config->uartIrq);
+    NVIC_SetPriority(config->uartIrq, 5U);
+    EnableIRQ(config->uartIrq);
+    if (config->txDmaIrq != config->uartIrq)
+    {
+        NVIC_SetPriority(config->txDmaIrq, 5U);
+        EnableIRQ(config->txDmaIrq);
+    }
+    if (config->rxDmaIrq != config->txDmaIrq)
+    {
+        NVIC_SetPriority(config->rxDmaIrq, 5U);
+        EnableIRQ(config->rxDmaIrq);
+    }
+    UartCore_EnableUartInterrupts(config);
+    UartCore_SaveStatus(port, UartCore_StartReceiveInternal(port));
+}
+
+status_t UartPort_StartReceive(uart_port_id_t port)
+{
+    if (!UartCore_IsValidPort(port))
+    {
+        return kStatus_Fail;
+    }
+    if (s_uartRuntime[port].rxState != kUartRxStopped)
+    {
+        return kStatus_Busy;
+    }
+    return UartCore_StartReceiveInternal(port);
+}
+
+status_t UartPort_Send(uart_port_id_t port, const uint8_t *data, size_t size)
+{
+    if (!UartCore_IsValidPort(port))
+    {
+        return kStatus_Fail;
+    }
+    return UartCore_StartTransmit(port, data, size, false);
+}
+
+status_t UartPort_Reply(uart_port_id_t port, const uint8_t *data, size_t size)
+{
+    status_t status;
+
+    if (!UartCore_IsValidPort(port))
+    {
+        return kStatus_Fail;
+    }
+    if (s_uartRuntime[port].rxState != kUartRxFrameReady)
+    {
+        return kStatus_NoTransferInProgress;
+    }
+
+    status = UartCore_StartTransmit(port, data, size, true);
+    if (status != kStatus_Success)
+    {
+        return status;
+    }
+
+    if (s_uartConfig[port].backend == kUartBackendRs485SharedDma)
+    {
+        /* TC completion restarts shared-channel RX. */
+        s_uartRuntime[port].rxState = kUartRxStopped;
+    }
+    else
+    {
+        const status_t rxStatus = UartCore_StartReceiveInternal(port);
+        if (rxStatus != kStatus_Success)
+        {
+            /* TX owns a copy, so retain the received frame if RX restart fails. */
+            s_uartRuntime[port].rxState = kUartRxFrameReady;
+        }
+    }
+    return status;
+}
+
+void UartPort_Abort(uart_port_id_t port)
+{
+    const uart_port_config_t *config;
+
+    if (!UartCore_IsValidPort(port))
+    {
+        return;
+    }
+    config = &s_uartConfig[port];
+    if (config->backend == kUartBackendRs485SharedDma)
+    {
+        UartCore_StopSharedDma(port);
+        LPUART_DisableInterrupts(config->base, kLPUART_TransmissionCompleteInterruptEnable);
+        config->setDirection(false);
+    }
+    else
+    {
+        LPUART_TransferAbortSendEDMA(config->base, config->lpuartEdmaHandle);
+        LPUART_TransferAbortReceiveEDMA(config->base, config->lpuartEdmaHandle);
+    }
+    s_uartRuntime[port].rxState = kUartRxStopped;
+    s_uartRuntime[port].txState = kUartTxIdle;
+    s_uartRuntime[port].rxLength = 0U;
+}
+
+bool UartPort_IsBusy(uart_port_id_t port)
+{
+    return UartCore_IsValidPort(port) && (s_uartRuntime[port].txState != kUartTxIdle);
+}
+
+bool UartPort_IsFrameAvailable(uart_port_id_t port)
+{
+    return UartCore_IsValidPort(port) &&
+           (s_uartRuntime[port].rxState == kUartRxFrameReady);
+}
+
+const uint8_t *UartPort_GetFrame(uart_port_id_t port, size_t *length)
+{
+    if (length != NULL)
+    {
+        *length = UartPort_IsFrameAvailable(port) ? s_uartRuntime[port].rxLength : 0U;
+    }
+    return UartPort_IsFrameAvailable(port) ? s_uartRuntime[port].rx : NULL;
+}
+
+status_t UartPort_ReleaseFrame(uart_port_id_t port)
+{
+    status_t status;
+
+    if (!UartCore_IsValidPort(port))
+    {
+        return kStatus_Fail;
+    }
+    if (s_uartRuntime[port].rxState != kUartRxFrameReady)
+    {
+        return kStatus_NoTransferInProgress;
+    }
+
+    s_uartRuntime[port].rxState = kUartRxStopped;
+    status = UartCore_StartReceiveInternal(port);
+    if (status != kStatus_Success)
+    {
+        s_uartRuntime[port].rxState = kUartRxFrameReady;
+    }
+    return status;
+}
+
+uint32_t UartPort_GetAndClearErrors(uart_port_id_t port)
+{
+    uint32_t errors;
+    uint32_t irqMask;
+
+    if (!UartCore_IsValidPort(port))
+    {
+        return 0U;
+    }
+    irqMask = DisableGlobalIRQ();
+    errors = s_uartRuntime[port].errors;
+    s_uartRuntime[port].errors = 0U;
+    EnableGlobalIRQ(irqMask);
+    return errors;
+}
+
+void UartPort_GetDiagnostics(uart_port_id_t port, uart_diagnostics_t *diagnostics)
+{
+    uint32_t irqMask;
+    const volatile uart_diagnostics_t *source;
+
+    if (!UartCore_IsValidPort(port) || (diagnostics == NULL))
+    {
+        return;
+    }
+    irqMask = DisableGlobalIRQ();
+    source = &s_uartRuntime[port].diagnostics;
+    diagnostics->uartErrors = source->uartErrors;
+    diagnostics->uartErrorCount = source->uartErrorCount;
+    diagnostics->dmaChannelErrors = source->dmaChannelErrors;
+    diagnostics->dmaGlobalErrors = source->dmaGlobalErrors;
+    diagnostics->dmaErrorCount = source->dmaErrorCount;
+    diagnostics->discardedFrameCount = source->discardedFrameCount;
+    diagnostics->lastRxRemaining = source->lastRxRemaining;
+    diagnostics->lastRxLength = source->lastRxLength;
+    diagnostics->lastDriverStatus = source->lastDriverStatus;
+    EnableGlobalIRQ(irqMask);
+}
+
+void UartPort_ClearDiagnostics(uart_port_id_t port)
+{
+    uint32_t irqMask;
+
+    if (!UartCore_IsValidPort(port))
+    {
+        return;
+    }
+    irqMask = DisableGlobalIRQ();
+    (void)memset((void *)&s_uartRuntime[port].diagnostics, 0,
+                 sizeof(s_uartRuntime[port].diagnostics));
+    s_uartRuntime[port].diagnostics.lastRxRemaining = UART_BUFFER_SIZE;
+    s_uartRuntime[port].diagnostics.lastDriverStatus = kStatus_Success;
+    EnableGlobalIRQ(irqMask);
+}
+
+/* Port-specific API remains thin and contains no hardware policy. */
+#define UART_DEFINE_PORT_API(n)                                                              \
+    void Uart##n##_Init(void) { UartPort_Init(kUartPort##n); }                               \
+    status_t Uart##n##_StartReceive(void) { return UartPort_StartReceive(kUartPort##n); }    \
+    status_t Uart##n##_Send(const uint8_t *data, size_t size)                               \
+    { return UartPort_Send(kUartPort##n, data, size); }                                      \
+    status_t Uart##n##_Reply(const uint8_t *data, size_t size)                              \
+    { return UartPort_Reply(kUartPort##n, data, size); }                                     \
+    void Uart##n##_Abort(void) { UartPort_Abort(kUartPort##n); }                             \
+    bool Uart##n##_IsBusy(void) { return UartPort_IsBusy(kUartPort##n); }                    \
+    bool Uart##n##_IsFrameAvailable(void) { return UartPort_IsFrameAvailable(kUartPort##n); } \
+    const uint8_t *Uart##n##_GetFrame(size_t *length)                                       \
+    { return UartPort_GetFrame(kUartPort##n, length); }                                      \
+    status_t Uart##n##_ReleaseFrame(void) { return UartPort_ReleaseFrame(kUartPort##n); }    \
+    uint32_t Uart##n##_GetAndClearErrors(void)                                               \
+    { return UartPort_GetAndClearErrors(kUartPort##n); }                                     \
+    void Uart##n##_GetDiagnostics(uart_diagnostics_t *diagnostics)                          \
+    { UartPort_GetDiagnostics(kUartPort##n, diagnostics); }                                 \
+    void Uart##n##_ClearDiagnostics(void) { UartPort_ClearDiagnostics(kUartPort##n); }
+
+UART_DEFINE_PORT_API(0)
+UART_DEFINE_PORT_API(1)
+UART_DEFINE_PORT_API(2)
+UART_DEFINE_PORT_API(3)
+
+#undef UART_DEFINE_PORT_API
+
+/* Generated callback entry points are adapters into the common core. */
+void LPUART0_DMACallback(edma_handle_t *handle, void *userData, bool transferDone, uint32_t tcds)
+{
+    (void)handle;
+    (void)userData;
+    (void)tcds;
+    UartCore_HandleSharedDmaDone(kUartPort0, transferDone);
+}
+
+void LPUART1_DMACallback(LPUART_Type *base, lpuart_edma_handle_t *handle, status_t status,
+                         void *userData)
 {
     (void)base;
     (void)handle;
     (void)userData;
-
-    Uart1_SaveDriverStatus(status);
-    if (status == kStatus_LPUART_TxIdle)
-    {
-        /* NXP reports TxIdle only from the UART TC stage, after the stop bit. */
-        s_uart1Runtime.txBusy = false;
-    }
-    else if (status == kStatus_LPUART_RxIdle)
-    {
-        /* CH6 reached 256 bytes; the NXP callback has already aborted RX DMA. */
-        s_uart1Runtime.rxActive = false;
-        s_uart1Runtime.rxLength = UART_BUFFER_SIZE;
-        s_uart1Runtime.frameAvailable = true;
-        s_uart1Runtime.diagnostics.lastRxRemaining = 0U;
-        s_uart1Runtime.diagnostics.lastRxLength = UART_BUFFER_SIZE;
-    }
+    UartCore_HandleDualDmaCallback(kUartPort1, status);
 }
 
 void LPUART0_IRQHandler(void)
 {
-    const uint32_t status = LPUART_GetStatusFlags(LPUART0);
-    const bool lineError = Uart0_SaveAndClearErrors(status);
-
-    /*
-     * A line error invalidates the bytes already copied by RX DMA.  Do not
-     * process a coincident IDLE flag, otherwise a corrupt partial frame could
-     * become visible through Uart0_GetFrame().  TX has /RE disabled, so only
-     * RX owns this recovery path.
-     */
-    if (lineError && (s_uart0State == kUart0Receiving))
-    {
-        Uart0_StopDma();
-        Uart0_EnterReceiveMode();
-        s_uart0State          = kUart0Idle;
-        s_uart0RxLength       = 0U;
-        s_uart0FrameAvailable = false;
-        s_uart0Diagnostics.discardedFrameCount++;
-        Uart0_SaveDriverStatus(Uart0_StartReceiveInternal());
-        SDK_ISR_EXIT_BARRIER;
-        return;
-    }
-
-    if (((status & kLPUART_TransmissionCompleteFlag) != 0U) && (s_uart0State == kUart0TxDraining))
-    {
-        Uart0_CompleteTransmit();
-    }
-
-    if ((status & kLPUART_IdleLineFlag) != 0U)
-    {
-        LPUART_ClearStatusFlags(LPUART0, kLPUART_IdleLineFlag);
-        if (s_uart0State == kUart0Receiving)
-        {
-            Uart0_FinishReceive();
-            if (!s_uart0FrameAvailable)
-            {
-                (void)Uart0_StartReceiveInternal();
-            }
-        }
-    }
-
+    UartCore_HandleUartIrq(kUartPort0);
     SDK_ISR_EXIT_BARRIER;
 }
 
 void LPUART1_IRQHandler(void)
 {
-    const uint32_t status = LPUART_GetStatusFlags(LPUART1);
-    const bool lineError = Uart1_SaveAndClearErrors(status);
-
-    if (lineError && s_uart1Runtime.rxActive)
-    {
-        LPUART_TransferAbortReceiveEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-        s_uart1Runtime.rxActive = false;
-        s_uart1Runtime.rxLength = 0U;
-        s_uart1Runtime.frameAvailable = false;
-        s_uart1Runtime.diagnostics.discardedFrameCount++;
-        Uart1_SaveDriverStatus(Uart1_StartReceiveInternal());
-    }
-    else if (((status & kLPUART_IdleLineFlag) != 0U) && s_uart1Runtime.rxActive)
-    {
-        LPUART_ClearStatusFlags(LPUART1, kLPUART_IdleLineFlag);
-        Uart1_FinishReceive();
-    }
-    else if ((status & kLPUART_IdleLineFlag) != 0U)
-    {
-        LPUART_ClearStatusFlags(LPUART1, kLPUART_IdleLineFlag);
-    }
-
-    /* Continue the NXP eDMA TX chain only when its TC interrupt is armed. */
-    if (((status & kLPUART_TransmissionCompleteFlag) != 0U) &&
-        ((LPUART1->CTRL & LPUART_CTRL_TCIE_MASK) != 0U))
-    {
-        LPUART_TransferEdmaHandleIRQ(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-    }
-
+    UartCore_HandleUartIrq(kUartPort1);
     SDK_ISR_EXIT_BARRIER;
 }
 
-/* Explicit channel-0 ISR keeps the transactional callback independent of the startup weak wrapper. */
 void DMA_CH0_IRQHandler(void)
 {
-    if ((EDMA_GetChannelStatusFlags(DMA0, DMA0_CH0_DMA_CHANNEL) & kEDMA_ErrorFlag) != 0U)
-    {
-        /* A channel error has no transactional completion callback; recover explicitly. */
-        if (s_uart0State == kUart0Receiving)
-        {
-            s_uart0Diagnostics.discardedFrameCount++;
-        }
-        Uart0_StopDma();
-        LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable);
-        Uart0_EnterReceiveMode();
-        s_uart0State          = kUart0Idle;
-        s_uart0RxLength       = 0U;
-        s_uart0FrameAvailable = false;
-        Uart0_SaveDriverStatus(Uart0_StartReceiveInternal());
-        SDK_ISR_EXIT_BARRIER;
-        return;
-    }
-
-    EDMA_HandleIRQ(&DMA0_CH0_Handle);
+    UartCore_HandleSharedDmaIrq(kUartPort0);
     SDK_ISR_EXIT_BARRIER;
 }
 
 void DMA_CH5_IRQHandler(void)
 {
-    if ((EDMA_GetChannelStatusFlags(DMA0, LPUART1_TX_DMA_CHANNEL) & kEDMA_ErrorFlag) != 0U)
-    {
-        Uart1_SaveDmaError(LPUART1_TX_DMA_CHANNEL);
-        LPUART_TransferAbortSendEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-        EDMA_ClearChannelStatusFlags(DMA0, LPUART1_TX_DMA_CHANNEL,
-                                     (uint32_t)kEDMA_DoneFlag | (uint32_t)kEDMA_ErrorFlag |
-                                         (uint32_t)kEDMA_InterruptFlag);
-        s_uart1Runtime.txBusy = false;
-        Uart1_SaveDriverStatus(kStatus_Fail);
-    }
-    else
-    {
-        EDMA_HandleIRQ(&LPUART1_TX_Handle);
-    }
+    UartCore_HandleDualDmaIrq(kUartPort1, true);
     SDK_ISR_EXIT_BARRIER;
 }
 
 void DMA_CH6_IRQHandler(void)
 {
-    if ((EDMA_GetChannelStatusFlags(DMA0, LPUART1_RX_DMA_CHANNEL) & kEDMA_ErrorFlag) != 0U)
-    {
-        Uart1_SaveDmaError(LPUART1_RX_DMA_CHANNEL);
-        LPUART_TransferAbortReceiveEDMA(LPUART1, &LPUART1_LPUART_eDMA_Handle);
-        EDMA_ClearChannelStatusFlags(DMA0, LPUART1_RX_DMA_CHANNEL,
-                                     (uint32_t)kEDMA_DoneFlag | (uint32_t)kEDMA_ErrorFlag |
-                                         (uint32_t)kEDMA_InterruptFlag);
-        s_uart1Runtime.rxActive = false;
-        s_uart1Runtime.rxLength = 0U;
-        s_uart1Runtime.frameAvailable = false;
-        s_uart1Runtime.diagnostics.discardedFrameCount++;
-        Uart1_SaveDriverStatus(Uart1_StartReceiveInternal());
-    }
-    else
-    {
-        EDMA_HandleIRQ(&LPUART1_RX_Handle);
-    }
+    UartCore_HandleDualDmaIrq(kUartPort1, false);
     SDK_ISR_EXIT_BARRIER;
 }
-
-/*
- * Port facade.  Application code uses UartN_*; protocol-independent code can
- * use UartPort_* when it is deliberately written to serve several ports.
- *
- * UART0 and UART1 have generated hardware descriptors today. Returning
- * kStatus_Fail for UART2..3 is deliberate: a port must never touch
- * an invented DMA channel or LPUART instance.
- */
-void UartPort_Init(uart_port_id_t port)
-{
-    if (port == kUartPort0)
-    {
-        Uart0_Init();
-    }
-    else if (port == kUartPort1)
-    {
-        Uart1_Init();
-    }
-}
-
-status_t UartPort_StartReceive(uart_port_id_t port)
-{
-    return (port == kUartPort0) ? Uart0_StartReceive() :
-           (port == kUartPort1) ? Uart1_StartReceive() : kStatus_Fail;
-}
-
-status_t UartPort_Send(uart_port_id_t port, const uint8_t *data, size_t size)
-{
-    return (port == kUartPort0) ? Uart0_Send(data, size) :
-           (port == kUartPort1) ? Uart1_Send(data, size) : kStatus_Fail;
-}
-
-status_t UartPort_Reply(uart_port_id_t port, const uint8_t *data, size_t size)
-{
-    return (port == kUartPort0) ? Uart0_Reply(data, size) :
-           (port == kUartPort1) ? Uart1_Reply(data, size) : kStatus_Fail;
-}
-
-void UartPort_Abort(uart_port_id_t port)
-{
-    if (port == kUartPort0)
-    {
-        Uart0_Abort();
-    }
-    else if (port == kUartPort1)
-    {
-        Uart1_Abort();
-    }
-}
-
-bool UartPort_IsBusy(uart_port_id_t port)
-{
-    return ((port == kUartPort0) && Uart0_IsBusy()) ||
-           ((port == kUartPort1) && Uart1_IsBusy());
-}
-
-bool UartPort_IsFrameAvailable(uart_port_id_t port)
-{
-    return ((port == kUartPort0) && Uart0_IsFrameAvailable()) ||
-           ((port == kUartPort1) && Uart1_IsFrameAvailable());
-}
-
-const uint8_t *UartPort_GetFrame(uart_port_id_t port, size_t *length)
-{
-    if (port == kUartPort0)
-    {
-        return Uart0_GetFrame(length);
-    }
-    if (port == kUartPort1)
-    {
-        return Uart1_GetFrame(length);
-    }
-    if (length != NULL)
-    {
-        *length = 0U;
-    }
-    return NULL;
-}
-
-status_t UartPort_ReleaseFrame(uart_port_id_t port)
-{
-    return (port == kUartPort0) ? Uart0_ReleaseFrame() :
-           (port == kUartPort1) ? Uart1_ReleaseFrame() : kStatus_Fail;
-}
-
-uint32_t UartPort_GetAndClearErrors(uart_port_id_t port)
-{
-    return (port == kUartPort0) ? Uart0_GetAndClearErrors() :
-           (port == kUartPort1) ? Uart1_GetAndClearErrors() : 0U;
-}
-
-void UartPort_GetDiagnostics(uart_port_id_t port, uart_diagnostics_t *diagnostics)
-{
-    if ((port == kUartPort0) && (diagnostics != NULL))
-    {
-        Uart0_GetDiagnostics(diagnostics);
-    }
-    else if ((port == kUartPort1) && (diagnostics != NULL))
-    {
-        Uart1_GetDiagnostics(diagnostics);
-    }
-}
-
-void UartPort_ClearDiagnostics(uart_port_id_t port)
-{
-    if (port == kUartPort0)
-    {
-        Uart0_ClearDiagnostics();
-    }
-    else if (port == kUartPort1)
-    {
-        Uart1_ClearDiagnostics();
-    }
-}
-
-#define UART_DEFINE_FUTURE_PORT_API(n)                                                     \
-    void Uart##n##_Init(void) { UartPort_Init(kUartPort##n); }                              \
-    status_t Uart##n##_StartReceive(void) { return UartPort_StartReceive(kUartPort##n); }   \
-    status_t Uart##n##_Send(const uint8_t *data, size_t size)                              \
-    { return UartPort_Send(kUartPort##n, data, size); }                                     \
-    status_t Uart##n##_Reply(const uint8_t *data, size_t size)                             \
-    { return UartPort_Reply(kUartPort##n, data, size); }                                    \
-    void Uart##n##_Abort(void) { UartPort_Abort(kUartPort##n); }                            \
-    bool Uart##n##_IsBusy(void) { return UartPort_IsBusy(kUartPort##n); }                   \
-    bool Uart##n##_IsFrameAvailable(void) { return UartPort_IsFrameAvailable(kUartPort##n); } \
-    const uint8_t *Uart##n##_GetFrame(size_t *length)                                      \
-    { return UartPort_GetFrame(kUartPort##n, length); }                                     \
-    status_t Uart##n##_ReleaseFrame(void) { return UartPort_ReleaseFrame(kUartPort##n); }   \
-    uint32_t Uart##n##_GetAndClearErrors(void)                                              \
-    { return UartPort_GetAndClearErrors(kUartPort##n); }                                    \
-    void Uart##n##_GetDiagnostics(uart_diagnostics_t *diagnostics)                         \
-    { UartPort_GetDiagnostics(kUartPort##n, diagnostics); }                                \
-    void Uart##n##_ClearDiagnostics(void) { UartPort_ClearDiagnostics(kUartPort##n); }
-
-UART_DEFINE_FUTURE_PORT_API(2)
-UART_DEFINE_FUTURE_PORT_API(3)
-
-#undef UART_DEFINE_FUTURE_PORT_API

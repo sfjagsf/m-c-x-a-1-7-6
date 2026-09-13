@@ -48,7 +48,9 @@ status_t UartPort_Reply(uart_port_id_t port, const uint8_t *data, size_t size);
 void UartPort_Abort(uart_port_id_t port);
 bool UartPort_IsBusy(uart_port_id_t port);
 bool UartPort_IsFrameAvailable(uart_port_id_t port);
+/* Returned RX data is valid until ReleaseFrame/Reply starts the next receive. */
 const uint8_t *UartPort_GetFrame(uart_port_id_t port, size_t *length);
+/* RX buffers are not cleared; length defines valid bytes and the next DMA overwrites them. */
 status_t UartPort_ReleaseFrame(uart_port_id_t port);
 uint32_t UartPort_GetAndClearErrors(uart_port_id_t port);
 void UartPort_GetDiagnostics(uart_port_id_t port, uart_diagnostics_t *diagnostics);
