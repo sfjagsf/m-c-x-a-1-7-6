@@ -70,6 +70,14 @@ int main(void) {
         }
     }
 
+    if (!Uart1EchoTask_Create())
+    {
+        for (;;)
+        {
+            __asm volatile ("nop");
+        }
+    }
+
     (void)osKernelStart();
 
     for (;;)

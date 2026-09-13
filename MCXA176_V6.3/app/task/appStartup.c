@@ -31,3 +31,14 @@ bool UartEchoTask_Create(void)
 
     return osThreadNew(UartEchoTask, NULL, &uartEchoTaskAttributes) != NULL;
 }
+
+bool Uart1EchoTask_Create(void)
+{
+    static const osThreadAttr_t uart1EchoTaskAttributes = {
+        .name       = "Uart1Echo",
+        .priority   = osPriorityNormal,
+        .stack_size = 512U,
+    };
+
+    return osThreadNew(Uart1EchoTask, NULL, &uart1EchoTaskAttributes) != NULL;
+}
