@@ -22,6 +22,7 @@
 #include "fsl_dac.h"
 #include "fsl_lpspi.h"
 #include "fsl_lpuart.h"
+#include "fsl_lpuart_edma.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -61,6 +62,24 @@ extern "C" {
 #define LPUART0_NVIC_IRQ_PRIORITY 5
 /* NVIC interrupt handler identifier. */
 #define LPUART0_NVIC_IRQHANDLER LPUART0_IRQHandler
+/* NVIC interrupt vector ID (number). */
+#define LPUART1_NVIC_IRQN LPUART1_IRQn
+/* NVIC interrupt vector priority. */
+#define LPUART1_NVIC_IRQ_PRIORITY 5
+/* NVIC interrupt handler identifier. */
+#define LPUART1_NVIC_IRQHANDLER LPUART1_IRQHandler
+/* NVIC interrupt vector ID (number). */
+#define DMA_CH6_IRQN_IRQN DMA_CH6_IRQn
+/* NVIC interrupt vector priority. */
+#define DMA_CH6_IRQN_IRQ_PRIORITY 5
+/* NVIC interrupt handler identifier. */
+#define DMA_CH6_IRQN_IRQHANDLER DMA_CH6_IRQHandler
+/* NVIC interrupt vector ID (number). */
+#define DMA_CH5_IRQN_IRQN DMA_CH5_IRQn
+/* NVIC interrupt vector priority. */
+#define DMA_CH5_IRQN_IRQ_PRIORITY 5
+/* NVIC interrupt handler identifier. */
+#define DMA_CH5_IRQN_IRQHANDLER DMA_CH5_IRQHandler
 /* GPIO, 19 signal defines */
 /* Definition of the pin direction */
 #define BOARD_INITPINS_RS485_EN_PIN_DIRECTION kHAL_GpioDirectionOut
@@ -186,6 +205,22 @@ extern "C" {
 #define LPUART0_PERIPHERAL LPUART0
 /* Definition of the clock source frequency */
 #define LPUART0_CLOCK_SOURCE 180000000UL
+/* Definition of peripheral ID */
+#define LPUART1_PERIPHERAL LPUART1
+/* Definition of the clock source frequency */
+#define LPUART1_CLOCK_SOURCE 180000000UL
+/* LPUART1 eDMA source request. */
+#define LPUART1_RX_DMA_REQUEST kDma0RequestLPUART1Rx
+/* Selected eDMA channel number. */
+#define LPUART1_RX_DMA_CHANNEL 6
+/* Used DMA device. */
+#define LPUART1_RX_DMA_BASEADDR DMA0
+/* LPUART1 eDMA source request. */
+#define LPUART1_TX_DMA_REQUEST kDma0RequestLPUART1Tx
+/* Selected eDMA channel number. */
+#define LPUART1_TX_DMA_CHANNEL 5
+/* Used DMA device. */
+#define LPUART1_TX_DMA_BASEADDR DMA0
 
 /***********************************************************************************************************************
  * Global variables
@@ -227,6 +262,10 @@ extern const dac_config_t DAC0_config;
 extern const lpspi_master_config_t LPSPI0_config;
 extern const lpspi_master_config_t LPSPI1_config;
 extern const lpuart_config_t LPUART0_config;
+extern const lpuart_config_t LPUART1_config;
+extern edma_handle_t LPUART1_RX_Handle;
+extern edma_handle_t LPUART1_TX_Handle;
+extern lpuart_edma_handle_t LPUART1_LPUART_eDMA_Handle;
 
 /***********************************************************************************************************************
  * Global functions
@@ -240,7 +279,9 @@ hal_gpio_pin_config_t createAdapterGpioPinConfig(GPIO_Type *port, uint8_t pin, h
 /* eDMA callback function for the 7 channel.*/
 extern void GpioDmaFilterDmaCallback(edma_handle_t*, void*, bool, uint32_t);
 /* eDMA callback function for the 0 channel.*/
-extern void RS485_DmaCallback(edma_handle_t*, void*, bool, uint32_t);
+extern void LPUART0_DMACallback(edma_handle_t*, void*, bool, uint32_t);
+/* LPUART eDMA callback function for the LPUART1 component (init. function BOARD_InitPeripherals)*/
+extern void LPUART1_DMACallback(LPUART_Type *,lpuart_edma_handle_t *,status_t ,void *);
 
 /***********************************************************************************************************************
  * Initialization functions

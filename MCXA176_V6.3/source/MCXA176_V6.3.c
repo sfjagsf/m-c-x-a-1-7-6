@@ -33,6 +33,7 @@ int main(void) {
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
     Uart0_Init();
+    Uart1_Init();
 
     if (!GpioDmaFilterStart())
     {

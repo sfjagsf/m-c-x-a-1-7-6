@@ -83,6 +83,8 @@ instance:
     - dma_table:
       - 0: []
       - 1: []
+      - 2: []
+      - 3: []
     - edma_channels:
       - 0:
         - apiMode: 'trans'
@@ -172,7 +174,7 @@ instance:
         - loopTransfer: 'false'
         - no_init_uid: '1789190821989'
         - init_callback: 'true'
-        - callback_function: 'RS485_DmaCallback'
+        - callback_function: 'LPUART0_DMACallback'
         - callback_user_data: ''
         - channel_enabled_interrupts: ''
         - interrupt_channel:
@@ -216,7 +218,7 @@ static void DMA0_init(void) {
   /* DMA0 channel 0 reset */
   EDMA_ResetChannel(DMA0_DMA_BASEADDR, DMA0_CH0_DMA_CHANNEL);
   /* DMA callback initialization */
-  EDMA_SetCallback(&DMA0_CH0_Handle, RS485_DmaCallback, NULL);
+  EDMA_SetCallback(&DMA0_CH0_Handle, LPUART0_DMACallback, NULL);
   /* Interrupt vector DMA_CH0_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(DMA0_DMA_CH_INT_DONE_0_IRQN, DMA0_DMA_CH_INT_DONE_0_IRQ_PRIORITY);
   /* DMA0 hardware channel 7 request auto stop */
@@ -246,11 +248,38 @@ instance:
       - 0: []
       - 1: []
       - 2: []
+      - 3: []
+      - 4: []
+      - 5: []
     - interrupts:
       - 0:
         - channelId: 'LPUART0_NVIC'
         - interrupt_t:
           - IRQn: 'LPUART0_IRQn'
+          - enable_interrrupt: 'enabled'
+          - enable_priority: 'true'
+          - priority: '5'
+          - enable_custom_name: 'false'
+      - 1:
+        - channelId: 'LPUART1_NVIC'
+        - interrupt_t:
+          - IRQn: 'LPUART1_IRQn'
+          - enable_interrrupt: 'enabled'
+          - enable_priority: 'true'
+          - priority: '5'
+          - enable_custom_name: 'false'
+      - 2:
+        - channelId: 'DMA_CH6_IRQn'
+        - interrupt_t:
+          - IRQn: 'DMA_CH6_IRQn'
+          - enable_interrrupt: 'enabled'
+          - enable_priority: 'true'
+          - priority: '5'
+          - enable_custom_name: 'false'
+      - 3:
+        - channelId: 'DMA_CH5_IRQn'
+        - interrupt_t:
+          - IRQn: 'DMA_CH5_IRQn'
           - enable_interrrupt: 'enabled'
           - enable_priority: 'true'
           - priority: '5'
@@ -1022,14 +1051,143 @@ static void LPUART0_init(void) {
 }
 
 /***********************************************************************************************************************
+ * LPUART1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'LPUART1'
+- type: 'lpuart'
+- mode: 'edma'
+- custom_name_enabled: 'false'
+- type_id: 'lpuart_2.11.0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'LPUART1'
+- config_sets:
+  - lpuartConfig_t:
+    - lpuartConfig:
+      - clockSource: 'LpuartClock'
+      - lpuartSrcClkFreq: 'ClocksTool_DefaultInit'
+      - baudRate_Bps: '115200'
+      - parityMode: 'kLPUART_ParityDisabled'
+      - dataBitsCount: 'kLPUART_EightDataBits'
+      - isMsb: 'false'
+      - stopBitCount: 'kLPUART_OneStopBit'
+      - enableMatchAddress1: 'false'
+      - matchAddress1: '0'
+      - enableMatchAddress2: 'false'
+      - matchAddress2: '0'
+      - txFifoWatermark: '0'
+      - rxFifoWatermark: '1'
+      - enableRxRTS: 'false'
+      - enableTxRTS: 'false'
+      - enableTxCTS: 'false'
+      - txCtsSource: 'kLPUART_CtsSourcePin'
+      - txCtsConfig: 'kLPUART_CtsSampleAtStart'
+      - txRtsPolarity: 'kLPUART_RtsPolarityLow'
+      - rtsWatermark: '0'
+      - rxIdleType: 'kLPUART_IdleTypeStartBit'
+      - rxIdleConfig: 'kLPUART_IdleCharacter4'
+      - enableTx: 'true'
+      - enableRx: 'true'
+      - swapTxdRxd: 'false'
+      - inverseTxd: 'false'
+  - edmaCfg:
+    - edma_channels:
+      - enable_rx_edma_channel: 'true'
+      - edma_rx_channel:
+        - uid: '1789271517310'
+        - eDMAn: '6'
+        - eDMA_source: 'kDma0RequestLPUART1Rx'
+        - init_channel_priority: 'false'
+        - edma_channel_Preemption:
+          - enableChannelPreemption: 'false'
+          - enablePreemptAbility: 'false'
+          - channelPriority: '0'
+        - masterIdReplicationEnable: 'noInit'
+        - protectionLevel: 'noInit'
+        - enable_custom_name: 'false'
+      - enable_tx_edma_channel: 'true'
+      - edma_tx_channel:
+        - uid: '1789271517311'
+        - eDMAn: '5'
+        - eDMA_source: 'kDma0RequestLPUART1Tx'
+        - init_channel_priority: 'false'
+        - edma_channel_Preemption:
+          - enableChannelPreemption: 'false'
+          - enablePreemptAbility: 'false'
+          - channelPriority: '0'
+        - masterIdReplicationEnable: 'noInit'
+        - protectionLevel: 'noInit'
+        - enable_custom_name: 'false'
+    - lpuart_edma_handle:
+      - enable_custom_name: 'false'
+      - init_callback: 'true'
+      - callback_fcn: 'LPUART1_DMACallback'
+      - user_data: ''
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const lpuart_config_t LPUART1_config = {
+  .baudRate_Bps = 115200UL,
+  .parityMode = kLPUART_ParityDisabled,
+  .dataBitsCount = kLPUART_EightDataBits,
+  .isMsb = false,
+  .stopBitCount = kLPUART_OneStopBit,
+  .txFifoWatermark = 0U,
+  .rxFifoWatermark = 1U,
+  .enableRxRTS = false,
+  .enableTxRTS = false,
+  .enableTxCTS = false,
+  .txCtsSource = kLPUART_CtsSourcePin,
+  .txCtsConfig = kLPUART_CtsSampleAtStart,
+  .txRtsPolarity = kLPUART_RtsPolarityLow,
+  .rtsWatermark = 0U,
+  .rxIdleType = kLPUART_IdleTypeStartBit,
+  .rxIdleConfig = kLPUART_IdleCharacter4,
+  .enableTx = true,
+  .enableRx = true,
+  .swapTxdRxd = false,
+  .inverseTxd = false
+};
+edma_handle_t LPUART1_RX_Handle;
+edma_handle_t LPUART1_TX_Handle;
+lpuart_edma_handle_t LPUART1_LPUART_eDMA_Handle;
+
+static void LPUART1_init(void) {
+  LPUART_Init(LPUART1_PERIPHERAL, &LPUART1_config, LPUART1_CLOCK_SOURCE);
+  /* Set the kDma0RequestLPUART1Rx request */
+  EDMA_SetChannelMux(LPUART1_RX_DMA_BASEADDR, LPUART1_RX_DMA_CHANNEL, LPUART1_RX_DMA_REQUEST);
+  /* Set the kDma0RequestLPUART1Tx request */
+  EDMA_SetChannelMux(LPUART1_TX_DMA_BASEADDR, LPUART1_TX_DMA_CHANNEL, LPUART1_TX_DMA_REQUEST);
+  /* Create the eDMA LPUART1_RX_Handle handle */
+  EDMA_CreateHandle(&LPUART1_RX_Handle, LPUART1_RX_DMA_BASEADDR, LPUART1_RX_DMA_CHANNEL);
+  /* Create the eDMA LPUART1_TX_Handle handle */
+  EDMA_CreateHandle(&LPUART1_TX_Handle, LPUART1_TX_DMA_BASEADDR, LPUART1_TX_DMA_CHANNEL);
+  /* Create the LPUART eDMA handle */
+  LPUART_TransferCreateHandleEDMA(LPUART1_PERIPHERAL, &LPUART1_LPUART_eDMA_Handle, LPUART1_DMACallback, NULL, &LPUART1_TX_Handle, &LPUART1_RX_Handle);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 static void BOARD_InitPeripherals_CommonPostInit(void)
 {
   /* Interrupt vector LPUART0_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(LPUART0_NVIC_IRQN, LPUART0_NVIC_IRQ_PRIORITY);
+  /* Interrupt vector LPUART1_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(LPUART1_NVIC_IRQN, LPUART1_NVIC_IRQ_PRIORITY);
+  /* Interrupt vector DMA_CH6_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA_CH6_IRQN_IRQN, DMA_CH6_IRQN_IRQ_PRIORITY);
+  /* Interrupt vector DMA_CH5_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA_CH5_IRQN_IRQN, DMA_CH5_IRQN_IRQ_PRIORITY);
   /* Enable interrupt LPUART0_NVIC_IRQN request in the NVIC */
   EnableIRQ(LPUART0_NVIC_IRQN);
+  /* Enable interrupt LPUART1_NVIC_IRQN request in the NVIC */
+  EnableIRQ(LPUART1_NVIC_IRQN);
+  /* Enable interrupt DMA_CH6_IRQN_IRQN request in the NVIC */
+  EnableIRQ(DMA_CH6_IRQN_IRQN);
+  /* Enable interrupt DMA_CH5_IRQN_IRQN request in the NVIC */
+  EnableIRQ(DMA_CH5_IRQN_IRQN);
 }
 
 void BOARD_InitPeripherals(void)
@@ -1054,6 +1212,7 @@ void BOARD_InitPeripherals(void)
   LPSPI0_init();
   LPSPI1_init();
   LPUART0_init();
+  LPUART1_init();
   /* Common post-initialization */
   BOARD_InitPeripherals_CommonPostInit();
 }

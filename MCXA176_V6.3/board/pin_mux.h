@@ -462,6 +462,24 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_RS485_EN_PIN_MASK (1U << 19U)      /*!<@brief PORT pin mask */
                                                           /* @} */
 
+/*! @name PORT3_8 (number 69), UART1_RX
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_UART1_RX_PORT PORT3               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_UART1_RX_PIN 8U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_UART1_RX_PIN_MASK (1U << 8U)      /*!<@brief PORT pin mask */
+                                                         /* @} */
+
+/*! @name PORT3_9 (number 68), UART1_TX
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_UART1_TX_PORT PORT3               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_UART1_TX_PIN 9U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_UART1_TX_PIN_MASK (1U << 9U)      /*!<@brief PORT pin mask */
+                                                         /* @} */
+
 /*!
  * @brief Configures pin routing and optionally pin electrical features.
  *

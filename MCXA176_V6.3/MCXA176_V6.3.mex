@@ -62,6 +62,8 @@
                <pin_label pin_num="87" pin_signal="P0_20/WUU0_IN4/LPUART0_RXD/CT_INP0/FLEXIO0_D4/SmartDMA_PIO10/ADC0_A10" label="UART0_RX" identifier="UART0_RX"/>
                <pin_label pin_num="88" pin_signal="P0_21/LPUART0_TXD/CT_INP1/FLEXIO0_D5/SmartDMA_PIO11/ADC0_A11" label="UART0_TX" identifier="UART0_TX"/>
                <pin_label pin_num="86" pin_signal="P0_19/WUU0_IN3/LPI2C0_SDAS/CT0_MAT3/FLEXIO0_D3/SmartDMA_PIO9/CMP1_OUT/ADC0_A9" label="RS485_EN" identifier="RS485_EN"/>
+               <pin_label pin_num="69" pin_signal="P3_8/WUU0_IN23/TRIG_IN3/LPSPI1_SDO/LPUART1_RXD/CT_INP4/PWM0_A1/FLEXIO0_D16/SmartDMA_PIO8/CLKOUT" label="UART1_RX" identifier="UART1_RX"/>
+               <pin_label pin_num="68" pin_signal="P3_9/TRIG_IN4/LPSPI1_SDI/LPUART1_TXD/CT_INP5/PWM0_B1/FLEXIO0_D17/SmartDMA_PIO9" label="UART1_TX" identifier="UART1_TX"/>
             </pin_labels>
             <external_user_signals>
                <properties/>
@@ -112,6 +114,11 @@
                      </feature>
                   </dependency>
                   <dependency resourceType="Peripheral" resourceId="LPUART0" description="Peripheral LPUART0 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="LPUART1" description="Peripheral LPUART1 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
                      <feature name="initialized" evaluation="equal">
                         <data>true</data>
                      </feature>
@@ -278,6 +285,8 @@
                         <pin_feature name="gpio_init_state" value="false"/>
                      </pin_features>
                   </pin>
+                  <pin peripheral="LPUART1" signal="RX" pin_num="69" pin_signal="P3_8/WUU0_IN23/TRIG_IN3/LPSPI1_SDO/LPUART1_RXD/CT_INP4/PWM0_A1/FLEXIO0_D16/SmartDMA_PIO8/CLKOUT"/>
+                  <pin peripheral="LPUART1" signal="TX" pin_num="68" pin_signal="P3_9/TRIG_IN4/LPSPI1_SDI/LPUART1_TXD/CT_INP5/PWM0_B1/FLEXIO0_D17/SmartDMA_PIO9"/>
                </pins>
             </function>
          </functions_list>
@@ -846,6 +855,31 @@
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="LPUART1_clock" description="LPUART1_clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPUART1.uart_tx" description="Signal TX is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="equal">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPUART1.uart_rx" description="Signal RX is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="equal">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.lpuart_edma" description="The fsl_uart_edma driver is missing in the project (required for the eDMA mode)." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="enabled" evaluation="equal">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.lpuart_edma" description="The compatible version of the fsl_uart_edma driver is not available in the project (required for the eDMA mode)." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="version" evaluation="compatible">
+                        <data type="Version">2.5.0</data>
+                     </feature>
+                  </dependency>
                </dependencies>
                <instances>
                   <instance name="NVIC" uuid="f9d970ff-8e91-4728-af1f-06d28b1b9ac4" type="nvic" type_id="nvic" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
@@ -854,12 +888,45 @@
                            <struct name="0"/>
                            <struct name="1"/>
                            <struct name="2"/>
+                           <struct name="3"/>
+                           <struct name="4"/>
+                           <struct name="5"/>
                         </array>
                         <array name="interrupts">
                            <struct name="0">
                               <setting name="channelId" value="LPUART0_NVIC"/>
                               <struct name="interrupt_t">
                                  <setting name="IRQn" value="LPUART0_IRQn"/>
+                                 <setting name="enable_interrrupt" value="enabled"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
+                                 <setting name="enable_custom_name" value="false"/>
+                              </struct>
+                           </struct>
+                           <struct name="1">
+                              <setting name="channelId" value="LPUART1_NVIC"/>
+                              <struct name="interrupt_t">
+                                 <setting name="IRQn" value="LPUART1_IRQn"/>
+                                 <setting name="enable_interrrupt" value="enabled"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
+                                 <setting name="enable_custom_name" value="false"/>
+                              </struct>
+                           </struct>
+                           <struct name="2">
+                              <setting name="channelId" value="DMA_CH6_IRQn"/>
+                              <struct name="interrupt_t">
+                                 <setting name="IRQn" value="DMA_CH6_IRQn"/>
+                                 <setting name="enable_interrrupt" value="enabled"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
+                                 <setting name="enable_custom_name" value="false"/>
+                              </struct>
+                           </struct>
+                           <struct name="3">
+                              <setting name="channelId" value="DMA_CH5_IRQn"/>
+                              <struct name="interrupt_t">
+                                 <setting name="IRQn" value="DMA_CH5_IRQn"/>
                                  <setting name="enable_interrrupt" value="enabled"/>
                                  <setting name="enable_priority" value="true"/>
                                  <setting name="priority" value="5"/>
@@ -1046,6 +1113,8 @@
                         <array name="dma_table">
                            <struct name="0"/>
                            <struct name="1"/>
+                           <struct name="2"/>
+                           <struct name="3"/>
                         </array>
                         <array name="edma_channels">
                            <struct name="0">
@@ -1149,7 +1218,7 @@
                               <setting name="loopTransfer" value="false"/>
                               <setting name="no_init_uid" value="1789190821989"/>
                               <setting name="init_callback" value="true"/>
-                              <setting name="callback_function" value="RS485_DmaCallback"/>
+                              <setting name="callback_function" value="LPUART0_DMACallback"/>
                               <setting name="callback_user_data" value=""/>
                               <set name="channel_enabled_interrupts">
                                  <selected/>
@@ -1348,6 +1417,78 @@
                            <setting name="enableRx" value="true"/>
                            <setting name="swapTxdRxd" value="false"/>
                            <setting name="inverseTxd" value="false"/>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="LPUART1" uuid="595ea8e2-8e7c-4ff7-9b5c-9363d70f475c" type="lpuart" type_id="lpuart_2.11.0" mode="edma" peripheral="LPUART1" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="lpuartConfig_t">
+                        <struct name="lpuartConfig">
+                           <setting name="clockSource" value="LpuartClock"/>
+                           <setting name="lpuartSrcClkFreq" value="ClocksTool_DefaultInit"/>
+                           <setting name="baudRate_Bps" value="115200"/>
+                           <setting name="parityMode" value="kLPUART_ParityDisabled"/>
+                           <setting name="dataBitsCount" value="kLPUART_EightDataBits"/>
+                           <setting name="isMsb" value="false"/>
+                           <setting name="stopBitCount" value="kLPUART_OneStopBit"/>
+                           <setting name="enableMatchAddress1" value="false"/>
+                           <setting name="matchAddress1" value="0"/>
+                           <setting name="enableMatchAddress2" value="false"/>
+                           <setting name="matchAddress2" value="0"/>
+                           <setting name="txFifoWatermark" value="0"/>
+                           <setting name="rxFifoWatermark" value="1"/>
+                           <setting name="enableRxRTS" value="false"/>
+                           <setting name="enableTxRTS" value="false"/>
+                           <setting name="enableTxCTS" value="false"/>
+                           <setting name="txCtsSource" value="kLPUART_CtsSourcePin"/>
+                           <setting name="txCtsConfig" value="kLPUART_CtsSampleAtStart"/>
+                           <setting name="txRtsPolarity" value="kLPUART_RtsPolarityLow"/>
+                           <setting name="rtsWatermark" value="0"/>
+                           <setting name="rxIdleType" value="kLPUART_IdleTypeStartBit"/>
+                           <setting name="rxIdleConfig" value="kLPUART_IdleCharacter4"/>
+                           <setting name="enableTx" value="true"/>
+                           <setting name="enableRx" value="true"/>
+                           <setting name="swapTxdRxd" value="false"/>
+                           <setting name="inverseTxd" value="false"/>
+                        </struct>
+                     </config_set>
+                     <config_set name="edmaCfg">
+                        <struct name="edma_channels">
+                           <setting name="enable_rx_edma_channel" value="true"/>
+                           <struct name="edma_rx_channel">
+                              <setting name="uid" value="1789271517310"/>
+                              <setting name="eDMAn" value="6"/>
+                              <setting name="eDMA_source" value="kDma0RequestLPUART1Rx"/>
+                              <setting name="init_channel_priority" value="false"/>
+                              <struct name="edma_channel_Preemption">
+                                 <setting name="enableChannelPreemption" value="false"/>
+                                 <setting name="enablePreemptAbility" value="false"/>
+                                 <setting name="channelPriority" value="0"/>
+                              </struct>
+                              <setting name="masterIdReplicationEnable" value="noInit"/>
+                              <setting name="protectionLevel" value="noInit"/>
+                              <setting name="enable_custom_name" value="false"/>
+                           </struct>
+                           <setting name="enable_tx_edma_channel" value="true"/>
+                           <struct name="edma_tx_channel">
+                              <setting name="uid" value="1789271517311"/>
+                              <setting name="eDMAn" value="5"/>
+                              <setting name="eDMA_source" value="kDma0RequestLPUART1Tx"/>
+                              <setting name="init_channel_priority" value="false"/>
+                              <struct name="edma_channel_Preemption">
+                                 <setting name="enableChannelPreemption" value="false"/>
+                                 <setting name="enablePreemptAbility" value="false"/>
+                                 <setting name="channelPriority" value="0"/>
+                              </struct>
+                              <setting name="masterIdReplicationEnable" value="noInit"/>
+                              <setting name="protectionLevel" value="noInit"/>
+                              <setting name="enable_custom_name" value="false"/>
+                           </struct>
+                        </struct>
+                        <struct name="lpuart_edma_handle">
+                           <setting name="enable_custom_name" value="false"/>
+                           <setting name="init_callback" value="true"/>
+                           <setting name="callback_fcn" value="LPUART1_DMACallback"/>
+                           <setting name="user_data" value=""/>
                         </struct>
                      </config_set>
                   </instance>

@@ -52,6 +52,8 @@ pin_labels:
 - {pin_num: '87', pin_signal: P0_20/WUU0_IN4/LPUART0_RXD/CT_INP0/FLEXIO0_D4/SmartDMA_PIO10/ADC0_A10, label: UART0_RX, identifier: UART0_RX}
 - {pin_num: '88', pin_signal: P0_21/LPUART0_TXD/CT_INP1/FLEXIO0_D5/SmartDMA_PIO11/ADC0_A11, label: UART0_TX, identifier: UART0_TX}
 - {pin_num: '86', pin_signal: P0_19/WUU0_IN3/LPI2C0_SDAS/CT0_MAT3/FLEXIO0_D3/SmartDMA_PIO9/CMP1_OUT/ADC0_A9, label: RS485_EN, identifier: RS485_EN}
+- {pin_num: '69', pin_signal: P3_8/WUU0_IN23/TRIG_IN3/LPSPI1_SDO/LPUART1_RXD/CT_INP4/PWM0_A1/FLEXIO0_D16/SmartDMA_PIO8/CLKOUT, label: UART1_RX, identifier: UART1_RX}
+- {pin_num: '68', pin_signal: P3_9/TRIG_IN4/LPSPI1_SDI/LPUART1_TXD/CT_INP5/PWM0_B1/FLEXIO0_D17/SmartDMA_PIO9, label: UART1_TX, identifier: UART1_TX}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -131,6 +133,8 @@ BOARD_InitPins:
   - {pin_num: '88', peripheral: LPUART0, signal: TX, pin_signal: P0_21/LPUART0_TXD/CT_INP1/FLEXIO0_D5/SmartDMA_PIO11/ADC0_A11}
   - {pin_num: '86', peripheral: GPIO0, signal: 'GPIO, 19', pin_signal: P0_19/WUU0_IN3/LPI2C0_SDAS/CT0_MAT3/FLEXIO0_D3/SmartDMA_PIO9/CMP1_OUT/ADC0_A9, direction: OUTPUT,
     gpio_init_state: 'false'}
+  - {pin_num: '69', peripheral: LPUART1, signal: RX, pin_signal: P3_8/WUU0_IN23/TRIG_IN3/LPSPI1_SDO/LPUART1_RXD/CT_INP4/PWM0_A1/FLEXIO0_D16/SmartDMA_PIO8/CLKOUT}
+  - {pin_num: '68', peripheral: LPUART1, signal: TX, pin_signal: P3_9/TRIG_IN4/LPSPI1_SDI/LPUART1_TXD/CT_INP5/PWM0_B1/FLEXIO0_D17/SmartDMA_PIO9}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -187,6 +191,8 @@ void BOARD_InitPins(void)
     RESET_ReleasePeripheralReset(kPORT3_RST_SHIFT_RSTn);
     /* LPI2C3 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kLPI2C3_RST_SHIFT_RSTn);
+    /* LPUART1 peripheral is released from reset */
+    RESET_ReleasePeripheralReset(kLPUART1_RST_SHIFT_RSTn);
 
     PORT0->PCR[0] = ((PORT0->PCR[0] &
                       /* Mask bits to zero which are setting */
@@ -565,6 +571,26 @@ void BOARD_InitPins(void)
 
                       /* Input Buffer Enable: Enables. */
                       | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    /* PORT3_8 (pin 69) is configured as LPUART1_RXD */
+    PORT_SetPinMux(BOARD_INITPINS_UART1_RX_PORT, BOARD_INITPINS_UART1_RX_PIN, kPORT_MuxAlt3);
+
+    PORT3->PCR[8] = ((PORT3->PCR[8] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_IBE_MASK)))
+
+                     /* Input Buffer Enable: Enables. */
+                     | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    /* PORT3_9 (pin 68) is configured as LPUART1_TXD */
+    PORT_SetPinMux(BOARD_INITPINS_UART1_TX_PORT, BOARD_INITPINS_UART1_TX_PIN, kPORT_MuxAlt3);
+
+    PORT3->PCR[9] = ((PORT3->PCR[9] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_IBE_MASK)))
+
+                     /* Input Buffer Enable: Enables. */
+                     | PORT_PCR_IBE(PCR_IBE_ibe1));
 
     gpio_pin_config_t RS485_EN_config = {
         .pinDirection = kGPIO_DigitalOutput,
