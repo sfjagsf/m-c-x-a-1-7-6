@@ -27,9 +27,11 @@ typedef enum
 typedef struct
 {
     uint32_t uartErrors;       /* Accumulated kLPUART_* line-error flags. */
+    uint32_t uartErrorCount;   /* Number of UART line-error IRQs. */
     uint32_t dmaChannelErrors; /* Last DMA channel CH_ES value. */
     uint32_t dmaGlobalErrors;  /* Last DMA module MP_ES value. */
     uint32_t dmaErrorCount;
+    uint32_t discardedFrameCount; /* Frames deliberately discarded after RX errors. */
     uint32_t lastRxRemaining;
     uint32_t lastRxLength;
     status_t lastDriverStatus;

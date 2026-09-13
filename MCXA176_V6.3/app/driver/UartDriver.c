@@ -100,7 +100,8 @@ static void Uart0_StopDma(void)
     EDMA_SetChannelMux(DMA0, DMA0_CH0_DMA_CHANNEL, kDma0RequestDisabled);
 }
 
-static void Uart0_SaveAndClearErrors(uint32_t status)
+/* Returns true when the active RX frame must not be passed to the application. */
+static bool Uart0_SaveAndClearErrors(uint32_t status)
 {
     const uint32_t errors = status & UART0_LINE_ERROR_FLAGS;
 
@@ -109,7 +110,11 @@ static void Uart0_SaveAndClearErrors(uint32_t status)
         LPUART_ClearStatusFlags(LPUART0, errors);
         s_uart0Errors |= errors;
         s_uart0Diagnostics.uartErrors |= errors;
+        s_uart0Diagnostics.uartErrorCount++;
+        return true;
     }
+
+    return false;
 }
 
 /*
@@ -346,9 +351,11 @@ void Uart0_GetDiagnostics(uart0_diagnostics_t *diagnostics)
 
     irqMask = DisableGlobalIRQ();
     diagnostics->uartErrors       = s_uart0Diagnostics.uartErrors;
+    diagnostics->uartErrorCount   = s_uart0Diagnostics.uartErrorCount;
     diagnostics->dmaChannelErrors = s_uart0Diagnostics.dmaChannelErrors;
     diagnostics->dmaGlobalErrors  = s_uart0Diagnostics.dmaGlobalErrors;
     diagnostics->dmaErrorCount    = s_uart0Diagnostics.dmaErrorCount;
+    diagnostics->discardedFrameCount = s_uart0Diagnostics.discardedFrameCount;
     diagnostics->lastRxRemaining  = s_uart0Diagnostics.lastRxRemaining;
     diagnostics->lastRxLength     = s_uart0Diagnostics.lastRxLength;
     diagnostics->lastDriverStatus = s_uart0Diagnostics.lastDriverStatus;
@@ -360,9 +367,11 @@ void Uart0_ClearDiagnostics(void)
     const uint32_t irqMask = DisableGlobalIRQ();
 
     s_uart0Diagnostics.uartErrors       = 0U;
+    s_uart0Diagnostics.uartErrorCount   = 0U;
     s_uart0Diagnostics.dmaChannelErrors = 0U;
     s_uart0Diagnostics.dmaGlobalErrors  = 0U;
     s_uart0Diagnostics.dmaErrorCount    = 0U;
+    s_uart0Diagnostics.discardedFrameCount = 0U;
     s_uart0Diagnostics.lastRxRemaining  = UART0_RX_BUFFER_SIZE;
     s_uart0Diagnostics.lastRxLength     = 0U;
     s_uart0Diagnostics.lastDriverStatus = kStatus_Success;
@@ -411,8 +420,27 @@ void RS485_DmaCallback(edma_handle_t *handle, void *userData, bool transferDone,
 void LPUART0_IRQHandler(void)
 {
     const uint32_t status = LPUART_GetStatusFlags(LPUART0);
+    const bool lineError = Uart0_SaveAndClearErrors(status);
 
-    Uart0_SaveAndClearErrors(status);
+    /*
+     * A line error invalidates the bytes already copied by RX DMA.  Do not
+     * process a coincident IDLE flag, otherwise a corrupt partial frame could
+     * become visible through Uart0_GetFrame().  TX has /RE disabled, so only
+     * RX owns this recovery path.
+     */
+    if (lineError && (s_uart0State == kUart0Receiving))
+    {
+        Uart0_StopDma();
+        Uart0_EnterReceiveMode();
+        s_uart0State          = kUart0Idle;
+        s_uart0RxLength       = 0U;
+        s_uart0FrameAvailable = false;
+        s_uart0Diagnostics.discardedFrameCount++;
+        Uart0_SaveDriverStatus(Uart0_StartReceiveInternal());
+        SDK_ISR_EXIT_BARRIER;
+        return;
+    }
+
     if (((status & kLPUART_TransmissionCompleteFlag) != 0U) && (s_uart0State == kUart0TxDraining))
     {
         Uart0_CompleteTransmit();
@@ -440,6 +468,10 @@ void DMA_CH0_IRQHandler(void)
     if ((EDMA_GetChannelStatusFlags(DMA0, DMA0_CH0_DMA_CHANNEL) & kEDMA_ErrorFlag) != 0U)
     {
         /* A channel error has no transactional completion callback; recover explicitly. */
+        if (s_uart0State == kUart0Receiving)
+        {
+            s_uart0Diagnostics.discardedFrameCount++;
+        }
         Uart0_StopDma();
         LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable);
         Uart0_EnterReceiveMode();
