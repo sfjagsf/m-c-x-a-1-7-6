@@ -18,6 +18,8 @@
 #include "cmsis_os2.h"
 #include "GpioDmaFilter.h"
 #include "GpioInputTask.h"
+#include "Crc16Driver.h"
+#include "../Modbus/Inc/ModbusApp.h"
 #include "UartDriver.h"
 #include "UartEchoTask.h"
 
@@ -32,8 +34,17 @@ int main(void) {
     BOARD_InitBootPins();
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
+    Crc16Driver_Init();
     Uart0_Init();
     Uart1_Init();
+
+    if (!ModbusApp_Init())
+    {
+        for (;;)
+        {
+            __asm volatile ("nop");
+        }
+    }
 
     if (!GpioDmaFilterStart())
     {
@@ -62,7 +73,8 @@ int main(void) {
         }
     }
 
-    if (!UartEchoTask_Create())
+    /* UART0 is owned by the Modbus RTU service; do not also start its echo task. */
+    if (!ModbusApp_Create())
     {
         for (;;)
         {

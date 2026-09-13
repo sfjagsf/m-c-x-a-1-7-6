@@ -1,0 +1,9 @@
+Embedded Modbus RTU adaptation
+
+Protocol behavior was adapted from libmodbus 3.2.0:
+https://github.com/stephane/libmodbus
+
+libmodbus copyright (C) Stephane Raimbault and contributors.
+The upstream and adapted source files are licensed under LGPL-2.1-or-later.
+Desktop-only POSIX, Win32 and Modbus TCP backends are not included in this MCU
+port.
