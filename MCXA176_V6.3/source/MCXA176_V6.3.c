@@ -14,10 +14,12 @@
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
-#include "fsl_debug_console.h"
+//#include "fsl_debug_console.h"
 #include "cmsis_os2.h"
 #include "GpioDmaFilter.h"
 #include "GpioInputTask.h"
+#include "UartDriver.h"
+#include "UartEchoTask.h"
 
 /* TODO: insert other definitions and declarations here. */
 
@@ -30,14 +32,11 @@ int main(void) {
     BOARD_InitBootPins();
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
-#ifndef BOARD_INIT_DEBUG_CONSOLE_PERIPHERAL
-    /* Init FSL debug console. */
-    BOARD_InitDebugConsole();
-#endif
+    Uart0_Init();
 
     if (!GpioDmaFilterStart())
     {
-        PRINTF("GPIO DMA filter start failed\r\n");
+//        PRINTF("GPIO DMA filter start failed\r\n");
         for (;;)
         {
             __asm volatile ("nop");
@@ -55,6 +54,14 @@ int main(void) {
     }
 
     if (!GpioUpdateTask_Create())
+    {
+        for (;;)
+        {
+            __asm volatile ("nop");
+        }
+    }
+
+    if (!UartEchoTask_Create())
     {
         for (;;)
         {

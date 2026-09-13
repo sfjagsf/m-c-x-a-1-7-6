@@ -21,6 +21,7 @@
 #include "fsl_spc.h"
 #include "fsl_dac.h"
 #include "fsl_lpspi.h"
+#include "fsl_lpuart.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -46,11 +47,25 @@ extern "C" {
 #define DMA0_DMA_CH_INT_DONE_7_IRQ_PRIORITY 5
 /* Transfer structure index 0 definition */
 #define DMA0_CH7_TRANSFER0_CONFIG DMA0_CH7_Transfers_config[0]
-/* GPIO, 18 signal defines */
+
+  /* Channel CH0 definitions */
+/* Selected eDMA channel number. */
+#define DMA0_CH0_DMA_CHANNEL 0
+/* DMA0 interrupt vector ID (number). */
+#define DMA0_DMA_CH_INT_DONE_0_IRQN DMA_CH0_IRQn
+/* DMA0 interrupt vector priority. */
+#define DMA0_DMA_CH_INT_DONE_0_IRQ_PRIORITY 5
+/* NVIC interrupt vector ID (number). */
+#define LPUART0_NVIC_IRQN LPUART0_IRQn
+/* NVIC interrupt vector priority. */
+#define LPUART0_NVIC_IRQ_PRIORITY 5
+/* NVIC interrupt handler identifier. */
+#define LPUART0_NVIC_IRQHANDLER LPUART0_IRQHandler
+/* GPIO, 19 signal defines */
 /* Definition of the pin direction */
 #define BOARD_INITPINS_RS485_EN_PIN_DIRECTION kHAL_GpioDirectionOut
 /* Definition of the pin level after initialization */
-#define BOARD_INITPINS_RS485_EN_PIN_LEVEL 1U
+#define BOARD_INITPINS_RS485_EN_PIN_LEVEL 0U
 /* GPIO, 23 signal defines */
 /* Definition of the pin direction */
 #define BOARD_INITPINS_EN_15V_PIN_DIRECTION kHAL_GpioDirectionOut
@@ -95,7 +110,7 @@ extern "C" {
 /* Definition of the pin direction */
 #define BOARD_INITPINS_RS485_EN2_PIN_DIRECTION kHAL_GpioDirectionOut
 /* Definition of the pin level after initialization */
-#define BOARD_INITPINS_RS485_EN2_PIN_LEVEL 1U
+#define BOARD_INITPINS_RS485_EN2_PIN_LEVEL 0U
 /* GPIO, 17 signal defines */
 /* Definition of the pin direction */
 #define BOARD_INITPINS_IN5_PIN_DIRECTION kHAL_GpioDirectionIn
@@ -167,6 +182,10 @@ extern "C" {
 #define LPSPI1_PERIPHERAL LPSPI1
 /* Definition of clock source */
 #define LPSPI1_CLOCK_FREQ 90000000UL
+/* Definition of peripheral ID */
+#define LPUART0_PERIPHERAL LPUART0
+/* Definition of the clock source frequency */
+#define LPUART0_CLOCK_SOURCE 180000000UL
 
 /***********************************************************************************************************************
  * Global variables
@@ -177,6 +196,7 @@ extern volatile uint32_t g_gpio3SampleBuf[8];
 extern edma_handle_t DMA0_CH7_Handle;
 /* Transactional transfer configurations */
 extern edma_transfer_config_t DMA0_CH7_Transfers_config[1];
+extern edma_handle_t DMA0_CH0_Handle;
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_RS485_EN_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_EN_15V_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_LED_handle);
@@ -206,6 +226,7 @@ extern rtc_datetime_t RTC0_dateTimeStruct;
 extern const dac_config_t DAC0_config;
 extern const lpspi_master_config_t LPSPI0_config;
 extern const lpspi_master_config_t LPSPI1_config;
+extern const lpuart_config_t LPUART0_config;
 
 /***********************************************************************************************************************
  * Global functions
@@ -218,6 +239,8 @@ hal_gpio_pin_config_t createAdapterGpioPinConfig(GPIO_Type *port, uint8_t pin, h
  **********************************************************************************************************************/
 /* eDMA callback function for the 7 channel.*/
 extern void GpioDmaFilterDmaCallback(edma_handle_t*, void*, bool, uint32_t);
+/* eDMA callback function for the 0 channel.*/
+extern void RS485_DmaCallback(edma_handle_t*, void*, bool, uint32_t);
 
 /***********************************************************************************************************************
  * Initialization functions

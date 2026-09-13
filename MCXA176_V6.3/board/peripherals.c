@@ -75,13 +75,14 @@ instance:
     - dmamux_devices: []
     - common_settings:
       - vars: []
-      - enableHaltOnError: 'true'
+      - enableHaltOnError: 'false'
       - enableDebugMode: 'false'
       - enableRoundRobinArbitration: 'fixedPriority'
       - enableGlobalChannelLink: 'true'
       - enableMasterIdReplication: 'false'
     - dma_table:
       - 0: []
+      - 1: []
     - edma_channels:
       - 0:
         - apiMode: 'trans'
@@ -144,18 +145,53 @@ instance:
           - IRQn: 'DMA_CH7_IRQn'
           - enable_priority: 'true'
           - priority: '5'
+      - 1:
+        - apiMode: 'trans'
+        - edma_channel:
+          - channel_prefix_id: 'CH0'
+          - uid: '1789190821978'
+          - eDMAn: '0'
+          - eDMA_source: 'dmaDisable'
+          - init_channel_priority: 'false'
+          - edma_channel_Preemption:
+            - enableChannelPreemption: 'false'
+            - enablePreemptAbility: 'false'
+            - channelPriority: '0'
+          - masterIdReplicationEnable: 'noInit'
+          - protectionLevel: 'noInit'
+          - enable_custom_name: 'false'
+        - resetChannel: 'true'
+        - enableChannelRequest: 'false'
+        - enableAsyncRequest: 'false'
+        - enableAutoStop: 'true'
+        - tcd_pool_enable: 'false'
+        - tcd_settings:
+          - tcd_size: '1'
+          - tcd_memory_ptr_id: 'default'
+        - transfer_config: []
+        - loopTransfer: 'false'
+        - no_init_uid: '1789190821989'
+        - init_callback: 'true'
+        - callback_function: 'RS485_DmaCallback'
+        - callback_user_data: ''
+        - channel_enabled_interrupts: ''
+        - interrupt_channel:
+          - IRQn: 'DMA_CH0_IRQn'
+          - enable_priority: 'true'
+          - priority: '5'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 edma_config_t DMA0_config = {
   .enableMasterIdReplication = false,
   .enableGlobalChannelLink = true,
-  .enableHaltOnError = true,
+  .enableHaltOnError = false,
   .enableDebugMode = false,
   .enableRoundRobinArbitration = false
 };
 /* Tansactional transfer configurations */
 edma_transfer_config_t DMA0_CH7_Transfers_config[1];
 edma_handle_t DMA0_CH7_Handle;
+edma_handle_t DMA0_CH0_Handle;
 
 static void DMA0_init(void) {
 
@@ -173,10 +209,22 @@ static void DMA0_init(void) {
   /* DMA0 transfer CH7_TRANSFER0 configuration */
   EDMA_PrepareTransferConfig(&DMA0_CH7_TRANSFER0_CONFIG, (void *) &GPIO3->PDIR, 1 << kEDMA_TransferSize4Bytes, 0, (void *) g_gpio3SampleBuf, 1 << kEDMA_TransferSize4Bytes, sizeof(g_gpio3SampleBuf[0]), 4U, 32U); 
   DMA0_CH7_TRANSFER0_CONFIG.dstMajorLoopOffset = -32;
+
+  /* Channel CH0 initialization */
+  /* Create the eDMA DMA0_CH0_Handle handle */
+  EDMA_CreateHandle(&DMA0_CH0_Handle, DMA0_DMA_BASEADDR, DMA0_CH0_DMA_CHANNEL);
+  /* DMA0 channel 0 reset */
+  EDMA_ResetChannel(DMA0_DMA_BASEADDR, DMA0_CH0_DMA_CHANNEL);
+  /* DMA callback initialization */
+  EDMA_SetCallback(&DMA0_CH0_Handle, RS485_DmaCallback, NULL);
+  /* Interrupt vector DMA_CH0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA0_DMA_CH_INT_DONE_0_IRQN, DMA0_DMA_CH_INT_DONE_0_IRQ_PRIORITY);
   /* DMA0 hardware channel 7 request auto stop */
   EDMA_EnableAutoStopRequest(DMA0_DMA_BASEADDR, DMA0_CH7_DMA_CHANNEL, true);
   /* DMA0 channel 7 peripheral request */
   EDMA_EnableChannelRequest(DMA0_DMA_BASEADDR, DMA0_CH7_DMA_CHANNEL);
+  /* DMA0 hardware channel 0 request auto stop */
+  EDMA_EnableAutoStopRequest(DMA0_DMA_BASEADDR, DMA0_CH0_DMA_CHANNEL, true);
 }
 
 /***********************************************************************************************************************
@@ -196,7 +244,17 @@ instance:
   - nvic:
     - interrupt_table:
       - 0: []
-    - interrupts: []
+      - 1: []
+      - 2: []
+    - interrupts:
+      - 0:
+        - channelId: 'LPUART0_NVIC'
+        - interrupt_t:
+          - IRQn: 'LPUART0_IRQn'
+          - enable_interrrupt: 'enabled'
+          - enable_priority: 'true'
+          - priority: '5'
+          - enable_custom_name: 'false'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -263,7 +321,7 @@ static void GPIO0_init(void) {
   static hal_gpio_pin_config_t gpioPinConfig;
   hal_gpio_status_t status;
   (void)status; // suppress warning in the run configuration
-  /* GPIO, 18 signal initialization */
+  /* GPIO, 19 signal initialization */
   gpioPinConfig = createAdapterGpioPinConfig(BOARD_INITPINS_RS485_EN_GPIO, BOARD_INITPINS_RS485_EN_PIN, BOARD_INITPINS_RS485_EN_PIN_DIRECTION, BOARD_INITPINS_RS485_EN_PIN_LEVEL);
   status = HAL_GpioInit(BOARD_INITPINS_RS485_EN_handle, &gpioPinConfig);
   assert(status == kStatus_HAL_GpioSuccess);
@@ -893,8 +951,87 @@ static void LPSPI1_init(void) {
 }
 
 /***********************************************************************************************************************
+ * LPUART0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'LPUART0'
+- type: 'lpuart'
+- mode: 'polling'
+- custom_name_enabled: 'false'
+- type_id: 'lpuart_2.11.0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'LPUART0'
+- config_sets:
+  - lpuartConfig_t:
+    - lpuartConfig:
+      - clockSource: 'LpuartClock'
+      - lpuartSrcClkFreq: 'ClocksTool_DefaultInit'
+      - baudRate_Bps: '115200'
+      - parityMode: 'kLPUART_ParityDisabled'
+      - dataBitsCount: 'kLPUART_EightDataBits'
+      - isMsb: 'false'
+      - stopBitCount: 'kLPUART_OneStopBit'
+      - enableMatchAddress1: 'false'
+      - matchAddress1: '0'
+      - enableMatchAddress2: 'false'
+      - matchAddress2: '0'
+      - txFifoWatermark: '0'
+      - rxFifoWatermark: '1'
+      - enableRxRTS: 'false'
+      - enableTxRTS: 'false'
+      - enableTxCTS: 'false'
+      - txCtsSource: 'kLPUART_CtsSourcePin'
+      - txCtsConfig: 'kLPUART_CtsSampleAtStart'
+      - txRtsPolarity: 'kLPUART_RtsPolarityLow'
+      - rtsWatermark: '0'
+      - rxIdleType: 'kLPUART_IdleTypeStartBit'
+      - rxIdleConfig: 'kLPUART_IdleCharacter4'
+      - enableTx: 'true'
+      - enableRx: 'true'
+      - swapTxdRxd: 'false'
+      - inverseTxd: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const lpuart_config_t LPUART0_config = {
+  .baudRate_Bps = 115200UL,
+  .parityMode = kLPUART_ParityDisabled,
+  .dataBitsCount = kLPUART_EightDataBits,
+  .isMsb = false,
+  .stopBitCount = kLPUART_OneStopBit,
+  .txFifoWatermark = 0U,
+  .rxFifoWatermark = 1U,
+  .enableRxRTS = false,
+  .enableTxRTS = false,
+  .enableTxCTS = false,
+  .txCtsSource = kLPUART_CtsSourcePin,
+  .txCtsConfig = kLPUART_CtsSampleAtStart,
+  .txRtsPolarity = kLPUART_RtsPolarityLow,
+  .rtsWatermark = 0U,
+  .rxIdleType = kLPUART_IdleTypeStartBit,
+  .rxIdleConfig = kLPUART_IdleCharacter4,
+  .enableTx = true,
+  .enableRx = true,
+  .swapTxdRxd = false,
+  .inverseTxd = false
+};
+
+static void LPUART0_init(void) {
+  LPUART_Init(LPUART0_PERIPHERAL, &LPUART0_config, LPUART0_CLOCK_SOURCE);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
+static void BOARD_InitPeripherals_CommonPostInit(void)
+{
+  /* Interrupt vector LPUART0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(LPUART0_NVIC_IRQN, LPUART0_NVIC_IRQ_PRIORITY);
+  /* Enable interrupt LPUART0_NVIC_IRQN request in the NVIC */
+  EnableIRQ(LPUART0_NVIC_IRQN);
+}
+
 void BOARD_InitPeripherals(void)
 {
   /* Global initialization */
@@ -916,6 +1053,9 @@ void BOARD_InitPeripherals(void)
   DAC0_init();
   LPSPI0_init();
   LPSPI1_init();
+  LPUART0_init();
+  /* Common post-initialization */
+  BOARD_InitPeripherals_CommonPostInit();
 }
 
 /***********************************************************************************************************************

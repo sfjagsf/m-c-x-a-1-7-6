@@ -69,27 +69,12 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_LED_PIN_MASK (1U << 8U)      /*!<@brief PORT pin mask */
                                                     /* @} */
 
-/*! @name PORT0_18 (number 85), RS485_EN
-  @{ */
-
-/* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_RS485_EN_GPIO GPIO0                /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_RS485_EN_INIT_GPIO_VALUE 1U        /*!<@brief GPIO output initial state */
-#define BOARD_INITPINS_RS485_EN_GPIO_PIN 18U              /*!<@brief GPIO pin number */
-#define BOARD_INITPINS_RS485_EN_GPIO_PIN_MASK (1U << 18U) /*!<@brief GPIO pin mask */
-
-/* Symbols to be used with PORT driver */
-#define BOARD_INITPINS_RS485_EN_PORT PORT0                /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_RS485_EN_PIN 18U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_RS485_EN_PIN_MASK (1U << 18U)      /*!<@brief PORT pin mask */
-                                                          /* @} */
-
 /*! @name PORT3_16 (number 59), RS485_EN2
   @{ */
 
 /* Symbols to be used with GPIO driver */
 #define BOARD_INITPINS_RS485_EN2_GPIO GPIO3                /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_RS485_EN2_INIT_GPIO_VALUE 1U        /*!<@brief GPIO output initial state */
+#define BOARD_INITPINS_RS485_EN2_INIT_GPIO_VALUE 0U        /*!<@brief GPIO output initial state */
 #define BOARD_INITPINS_RS485_EN2_GPIO_PIN 16U              /*!<@brief GPIO pin number */
 #define BOARD_INITPINS_RS485_EN2_GPIO_PIN_MASK (1U << 16U) /*!<@brief GPIO pin mask */
 
@@ -443,6 +428,39 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_DAC1_1_PIN 2U                   /*!<@brief PORT pin number */
 #define BOARD_INITPINS_DAC1_1_PIN_MASK (1U << 2U)      /*!<@brief PORT pin mask */
                                                        /* @} */
+
+/*! @name PORT0_20 (number 87), UART0_RX
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_UART0_RX_PORT PORT0                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_UART0_RX_PIN 20U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_UART0_RX_PIN_MASK (1U << 20U)      /*!<@brief PORT pin mask */
+                                                          /* @} */
+
+/*! @name PORT0_21 (number 88), UART0_TX
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_UART0_TX_PORT PORT0                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_UART0_TX_PIN 21U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_UART0_TX_PIN_MASK (1U << 21U)      /*!<@brief PORT pin mask */
+                                                          /* @} */
+
+/*! @name PORT0_19 (number 86), RS485_EN
+  @{ */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_RS485_EN_GPIO GPIO0                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_RS485_EN_INIT_GPIO_VALUE 0U        /*!<@brief GPIO output initial state */
+#define BOARD_INITPINS_RS485_EN_GPIO_PIN 19U              /*!<@brief GPIO pin number */
+#define BOARD_INITPINS_RS485_EN_GPIO_PIN_MASK (1U << 19U) /*!<@brief GPIO pin mask */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_RS485_EN_PORT PORT0                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_RS485_EN_PIN 19U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_RS485_EN_PIN_MASK (1U << 19U)      /*!<@brief PORT pin mask */
+                                                          /* @} */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

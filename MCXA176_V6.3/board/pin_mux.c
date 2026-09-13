@@ -15,7 +15,6 @@ processor_version: 26.06.20
 external_user_signals: {}
 pin_labels:
 - {pin_num: '1', pin_signal: P1_8/WUU0_IN10/FREQME_CLK_IN0/LPUART1_RXD/LPI2C2_SDA/CT_INP8/CT0_MAT2/FLEXIO0_D16/SmartDMA_PIO4/I3C0_SDA, label: LED, identifier: LED}
-- {pin_num: '85', pin_signal: P0_18/LPI2C0_SCLS/CT0_MAT2/FLEXIO0_D2/SmartDMA_PIO8/CMP0_OUT/ADC0_A8, label: RS485_EN, identifier: RS485_EN}
 - {pin_num: '59', pin_signal: P3_16/LPUART4_RTS_B/CT_INP8/FLEXIO0_D24/PWM1_A0/SmartDMA_PIO16, label: RS485_EN2, identifier: RS485_EN2}
 - {pin_num: '41', pin_signal: P2_21/TRIG_IN9/LPSPI1_PCS3/CT2_MAT1/FLEXIO0_D29/SmartDMA_PIO23, label: ADC_PWR, identifier: ADC_PWR}
 - {pin_num: '40', pin_signal: P2_20/TRIG_IN8/LPSPI1_PCS2/CT2_MAT0/FLEXIO0_D28/SmartDMA_PIO22, label: IO7, identifier: IO7}
@@ -50,6 +49,9 @@ pin_labels:
 - {pin_num: '11', pin_signal: P1_31/TRIG_IN4/LPI2C0_SCL/CT_INP17/FLEXIO0_D31/I3C0_SCL/EXTAL48M, label: OSC_IN, identifier: OSC_IN}
 - {pin_num: '10', pin_signal: P1_30/TRIG_OUT3/LPI2C0_SDA/CT_INP16/FLEXIO0_D30/I3C0_SDA/XTAL48M, label: OSC_OUT, identifier: OSC_OUT}
 - {pin_num: '24', pin_signal: P2_2/TRIG_IN6/LPUART0_RTS_B/LPUART2_TXD/CT_INP12/CT2_MAT2/FLEXIO0_D10/SmartDMA_PIO26/ADC0_A4/CMP0_IN0/DAC0_OUT, label: DAC1_1, identifier: DAC1_1}
+- {pin_num: '87', pin_signal: P0_20/WUU0_IN4/LPUART0_RXD/CT_INP0/FLEXIO0_D4/SmartDMA_PIO10/ADC0_A10, label: UART0_RX, identifier: UART0_RX}
+- {pin_num: '88', pin_signal: P0_21/LPUART0_TXD/CT_INP1/FLEXIO0_D5/SmartDMA_PIO11/ADC0_A11, label: UART0_TX, identifier: UART0_TX}
+- {pin_num: '86', pin_signal: P0_19/WUU0_IN3/LPI2C0_SDAS/CT0_MAT3/FLEXIO0_D3/SmartDMA_PIO9/CMP1_OUT/ADC0_A9, label: RS485_EN, identifier: RS485_EN}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -80,8 +82,7 @@ BOARD_InitPins:
   - {pin_num: '76', peripheral: SWD, signal: SWDIO, pin_signal: P0_0/TMS/SWDIO/LPUART0_RTS_B/LPSPI0_PCS0/CT_INP0/FLEXIO0_D0}
   - {pin_num: '1', peripheral: GPIO1, signal: 'GPIO, 8', pin_signal: P1_8/WUU0_IN10/FREQME_CLK_IN0/LPUART1_RXD/LPI2C2_SDA/CT_INP8/CT0_MAT2/FLEXIO0_D16/SmartDMA_PIO4/I3C0_SDA,
     direction: OUTPUT, gpio_init_state: 'false'}
-  - {pin_num: '85', peripheral: GPIO0, signal: 'GPIO, 18', pin_signal: P0_18/LPI2C0_SCLS/CT0_MAT2/FLEXIO0_D2/SmartDMA_PIO8/CMP0_OUT/ADC0_A8, direction: OUTPUT, gpio_init_state: 'true'}
-  - {pin_num: '59', peripheral: GPIO3, signal: 'GPIO, 16', pin_signal: P3_16/LPUART4_RTS_B/CT_INP8/FLEXIO0_D24/PWM1_A0/SmartDMA_PIO16, direction: OUTPUT, gpio_init_state: 'true'}
+  - {pin_num: '59', peripheral: GPIO3, signal: 'GPIO, 16', pin_signal: P3_16/LPUART4_RTS_B/CT_INP8/FLEXIO0_D24/PWM1_A0/SmartDMA_PIO16, direction: OUTPUT, gpio_init_state: 'false'}
   - {pin_num: '41', peripheral: GPIO2, signal: 'GPIO, 21', pin_signal: P2_21/TRIG_IN9/LPSPI1_PCS3/CT2_MAT1/FLEXIO0_D29/SmartDMA_PIO23, direction: OUTPUT, gpio_init_state: 'true'}
   - {pin_num: '40', peripheral: GPIO2, signal: 'GPIO, 20', pin_signal: P2_20/TRIG_IN8/LPSPI1_PCS2/CT2_MAT0/FLEXIO0_D28/SmartDMA_PIO22, direction: OUTPUT, gpio_init_state: 'true'}
   - {pin_num: '62', peripheral: GPIO3, signal: 'GPIO, 13', pin_signal: P3_13/LPUART2_CTS_B/LPUART3_RXD/CT1_MAT3/PWM0_X1/FLEXIO0_D21/PWM1_B2/SmartDMA_PIO13, direction: OUTPUT,
@@ -126,6 +127,10 @@ BOARD_InitPins:
   - {pin_num: '54', peripheral: GPIO3, signal: 'GPIO, 21', pin_signal: P3_21/TRIG_OUT1/LPI2C3_SCL/LPUART1_TXD/CT2_MAT3/PWM0_X3/FLEXIO0_D29/PWM1_B3/SmartDMA_PIO21,
     direction: INPUT, pull_select: up}
   - {pin_num: '24', peripheral: DAC0, signal: OUT, pin_signal: P2_2/TRIG_IN6/LPUART0_RTS_B/LPUART2_TXD/CT_INP12/CT2_MAT2/FLEXIO0_D10/SmartDMA_PIO26/ADC0_A4/CMP0_IN0/DAC0_OUT}
+  - {pin_num: '87', peripheral: LPUART0, signal: RX, pin_signal: P0_20/WUU0_IN4/LPUART0_RXD/CT_INP0/FLEXIO0_D4/SmartDMA_PIO10/ADC0_A10}
+  - {pin_num: '88', peripheral: LPUART0, signal: TX, pin_signal: P0_21/LPUART0_TXD/CT_INP1/FLEXIO0_D5/SmartDMA_PIO11/ADC0_A11}
+  - {pin_num: '86', peripheral: GPIO0, signal: 'GPIO, 19', pin_signal: P0_19/WUU0_IN3/LPI2C0_SDAS/CT0_MAT3/FLEXIO0_D3/SmartDMA_PIO9/CMP1_OUT/ADC0_A9, direction: OUTPUT,
+    gpio_init_state: 'false'}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -158,6 +163,8 @@ void BOARD_InitPins(void)
     RESET_ReleasePeripheralReset(kPORT0_RST_SHIFT_RSTn);
     /* GPIO0 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kGPIO0_RST_SHIFT_RSTn);
+    /* LPUART0 peripheral is released from reset */
+    RESET_ReleasePeripheralReset(kLPUART0_RST_SHIFT_RSTn);
     /* LPSPI0 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kLPSPI0_RST_SHIFT_RSTn);
     /* PORT1 peripheral is released from reset */
@@ -201,10 +208,30 @@ void BOARD_InitPins(void)
                      /* Input Buffer Enable: Enables. */
                      | PORT_PCR_IBE(PCR_IBE_ibe1));
 
-    /* PORT0_18 (pin 85) is configured as P0_18 */
+    /* PORT0_19 (pin 86) is configured as P0_19 */
     PORT_SetPinMux(BOARD_INITPINS_RS485_EN_PORT, BOARD_INITPINS_RS485_EN_PIN, kPORT_MuxAlt0);
 
-    PORT0->PCR[18] = ((PORT0->PCR[18] &
+    PORT0->PCR[19] = ((PORT0->PCR[19] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_IBE_MASK)))
+
+                      /* Input Buffer Enable: Enables. */
+                      | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    /* PORT0_20 (pin 87) is configured as LPUART0_RXD */
+    PORT_SetPinMux(BOARD_INITPINS_UART0_RX_PORT, BOARD_INITPINS_UART0_RX_PIN, kPORT_MuxAlt3);
+
+    PORT0->PCR[20] = ((PORT0->PCR[20] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_IBE_MASK)))
+
+                      /* Input Buffer Enable: Enables. */
+                      | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    /* PORT0_21 (pin 88) is configured as LPUART0_TXD */
+    PORT_SetPinMux(BOARD_INITPINS_UART0_TX_PORT, BOARD_INITPINS_UART0_TX_PIN, kPORT_MuxAlt3);
+
+    PORT0->PCR[21] = ((PORT0->PCR[21] &
                        /* Mask bits to zero which are setting */
                        (~(PORT_PCR_IBE_MASK)))
 
@@ -541,9 +568,9 @@ void BOARD_InitPins(void)
 
     gpio_pin_config_t RS485_EN_config = {
         .pinDirection = kGPIO_DigitalOutput,
-        .outputLogic = 1U
+        .outputLogic = 0U
     };
-    /* Initialize GPIO functionality on pin PIO0_18 (pin 85)  */
+    /* Initialize GPIO functionality on pin PIO0_19 (pin 86)  */
     GPIO_PinInit(BOARD_INITPINS_RS485_EN_GPIO, BOARD_INITPINS_RS485_EN_PIN, &RS485_EN_config);
 
     gpio_pin_config_t EN_15V_config = {
@@ -604,7 +631,7 @@ void BOARD_InitPins(void)
 
     gpio_pin_config_t RS485_EN2_config = {
         .pinDirection = kGPIO_DigitalOutput,
-        .outputLogic = 1U
+        .outputLogic = 0U
     };
     /* Initialize GPIO functionality on pin PIO3_16 (pin 59)  */
     GPIO_PinInit(BOARD_INITPINS_RS485_EN2_GPIO, BOARD_INITPINS_RS485_EN2_PIN, &RS485_EN2_config);

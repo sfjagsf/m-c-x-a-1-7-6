@@ -962,6 +962,7 @@ outputs:
 - {id: CLK16K_0_clock.outFreq, value: 16.384 kHz}
 - {id: CLK_1M_clock.outFreq, value: 1 MHz}
 - {id: CLK_45M_clock.outFreq, value: 45 MHz}
+- {id: CLK_IN_clock.outFreq, value: 8 MHz}
 - {id: CPU_clock.outFreq, value: 180 MHz}
 - {id: CTIMER0_clock.outFreq, value: 180 MHz}
 - {id: CTIMER1_clock.outFreq, value: 180 MHz}
@@ -985,12 +986,15 @@ outputs:
 - {id: LPUART3_clock.outFreq, value: 180 MHz}
 - {id: LPUART4_clock.outFreq, value: 180 MHz}
 - {id: MAIN_clock.outFreq, value: 180 MHz}
+- {id: PLL1_DIV_clock.outFreq, value: 719.3125/4 MHz}
+- {id: PLL1_clock.outFreq, value: 180 MHz, locked: true, accuracy: '0.001'}
 - {id: Slow_clock.outFreq, value: 30 MHz}
 - {id: System_clock.outFreq, value: 180 MHz}
 - {id: TRACE_clock.outFreq, value: 20 MHz}
 - {id: UTICK0_clock.outFreq, value: 1 MHz}
 - {id: WWDT0_clock.outFreq, value: 1 MHz}
 settings:
+- {id: PLL_MODE, value: Fractional}
 - {id: VDD_CORE, value: voltage_1v2}
 - {id: ADC_CLKDIV_MRCC0_MRCC_ADC_CLKDIV_HALT, value: 'ON'}
 - {id: CLK16K_0_clock, value: Enabled}
@@ -1034,8 +1038,14 @@ settings:
 - {id: MRCC.LPUART3_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
 - {id: MRCC.LPUART4_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
 - {id: MRCC.TRACE_CLKDIV.scale, value: '9'}
+- {id: PLL1CLKDIV_SYSCON_PLL1CLKDIV_HALT, value: RUN}
 - {id: SCG.FREQ_SEL.scale, value: '1', locked: true}
+- {id: SCG.MDIV.scale, value: '1508507648'}
+- {id: SOSC_SCG0_SOSCCFG_EREFS, value: INTERNAL}
+- {id: SOSC_SCG0_SOSCCSR_SOSCEN, value: ENABLED}
 - {id: SYSCON.FROHFDIV.scale, value: '1', locked: true}
+sources:
+- {id: SCG.SOSC.outFreq, value: 8 MHz, enabled: true}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -1044,8 +1054,26 @@ settings:
  ******************************************************************************/
 void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
 {
+    const pll_setup_t pll1Setup = {
+        .pllctrl = SCG_SPLLCTRL_SOURCE(0U) | SCG_SPLLCTRL_LIMUPOFF_MASK  | SCG_SPLLCTRL_SELI(4U) | SCG_SPLLCTRL_SELP(3U) | SCG_SPLLCTRL_SELR(4U),
+        .pllndiv = SCG_SPLLNDIV_NDIV(1U),
+        .pllpdiv = SCG_SPLLPDIV_PDIV(1U),
+        .pllsscg = {(SCG_SPLLSSCG0_SS_MDIV_LSB(0x59ea0000U)),
+                    ((SCG0->SPLLSSCG1 & ~SCG_SPLLSSCG1_SS_PD_MASK) |
+                     (SCG_SPLLSSCG1_SS_MDIV_MSB(0U)) |
+                     (uint32_t)(kSS_MF_512) |
+                     (uint32_t)(kSS_MR_K0) |
+                     (uint32_t)(kSS_MC_NOC) |
+                     SCG_SPLLSSCG1_SEL_SS_MDIV_MASK)},
+        .pllRate = 179828125U
+    };
 
     switch(module) {
+        case kClockModule_SOSC:
+            CLOCK_SetupExtClocking(8000000U);              /*!< Enable OSC with 8000000 HZ */
+            CLOCK_SetSysOscMonitorMode(kSCG_SysOscMonitorDisable);            /* System OSC Clock Monitor is disabled */
+            SCG0->SOSCCSR &= ~SCG_SOSCCSR_SOSCSTEN_MASK; /* SOSC is disabled in Deep Sleep mode */
+            break;
         case kClockModule_FIRC:
             CLOCK_SetClockDiv(kCLOCK_DivFRO_HF, 1U);       /* !< Set SYSCON.FROHFDIV divider to value 1 */
             CLOCK_SetupFROHFClocking(180000000U); /*!< Enable FRO HF 180000000Hz output */
@@ -1056,6 +1084,11 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
             break;
         case kClockModule_VBAT:
             CLOCK_SetupFRO16KClocking(0x1U);     /* Enable VBAT.CLK16K_1_clock */
+            break;
+        case kClockModule_PLL:
+            CLOCK_SetPLL1Freq(&pll1Setup);                       /*!< Configure PLL1 to the desired values */
+            CLOCK_SetPll1MonitorMode(kSCG_Pll1MonitorDisable);            /* Pll1 Monitor is disabled */
+            CLOCK_SetClockDiv(kCLOCK_DivPLL1CLK, 1U);      /* !< Set SYSCON.PLL1CLKDIV divider to value 1 */
             break;
         case kClockModule_SystemClk:
             CLOCK_SetClockDiv(kCLOCK_DivAHBCLK, 1U);       /* !< Set SYSCON.AHBCLKDIV divider to value 1 */
@@ -1200,9 +1233,11 @@ void BOARD_BootClockFROHF180M(void)
         sramOption.requestVoltageUpdate =  true;
         (void)SPC_SetSRAMOperateVoltage(SPC0, &sramOption);
     }
+    BOARD_BootClockFROHF180M_InitClockModule(kClockModule_SOSC);
     BOARD_BootClockFROHF180M_InitClockModule(kClockModule_SIRC);
     BOARD_BootClockFROHF180M_InitClockModule(kClockModule_FIRC);
     BOARD_BootClockFROHF180M_InitClockModule(kClockModule_VBAT);
+    BOARD_BootClockFROHF180M_InitClockModule(kClockModule_PLL);
     BOARD_BootClockFROHF180M_InitClockModule(kClockModule_SystemClk);
 
     /* The flow of decreasing voltage and frequency */
@@ -1444,6 +1479,7 @@ void BOARD_BootClockPLL180M(void)
         sramOption.requestVoltageUpdate =  true;
         (void)SPC_SetSRAMOperateVoltage(SPC0, &sramOption);
     }
+    BOARD_BootClockPLL180M_InitClockModule(kClockModule_SOSC);
     BOARD_BootClockPLL180M_InitClockModule(kClockModule_SIRC);
     BOARD_BootClockPLL180M_InitClockModule(kClockModule_FIRC);
     BOARD_BootClockPLL180M_InitClockModule(kClockModule_VBAT);
