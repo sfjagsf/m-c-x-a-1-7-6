@@ -15,7 +15,8 @@ status_t SpiTransportTransfer(const SpiTransport_t *bus,
                               uint8_t *rxData,
                               size_t dataSize)
 {
-    lpspi_transfer_t transfer;
+    /* Keep this initialization explicit if the SDK adds fields in a future update. */
+    lpspi_transfer_t transfer = {0};
 
     if ((bus == NULL) || (bus->base == NULL) || (txData == NULL) || (dataSize == 0U))
     {

@@ -22,10 +22,13 @@
 
 #define W25Q_PAGE_SIZE               (256U)
 #define W25Q_READ_CHUNK_SIZE         (256U)
+#define W25Q_MAX_3BYTE_ADDRESS        (0xFFFFFFUL)
 
 extern uint32_t SystemCoreClock;
 
-static W25Q_Information s_information;
+static W25Q_Information s_information = {
+    .status = FLASH_INIT_NO_EXITS,
+};
 
 static void W25qxxDelayMs(uint32_t delayMs)
 {
@@ -38,6 +41,12 @@ static void W25qxxDelayMs(uint32_t delayMs)
 static status_t W25qxxCommand(const uint8_t *command, size_t commandSize)
 {
     return MY_SPI0_Transmit(command, commandSize, NULL, 0U);
+}
+
+static bool W25qxxIsAddressRangeValid(uint32_t address, uint32_t size)
+{
+    return (address <= W25Q_MAX_3BYTE_ADDRESS) &&
+           (size <= ((W25Q_MAX_3BYTE_ADDRESS + 1UL) - address));
 }
 
 static void W25qxxBuildAddressCommand(uint8_t *command, uint8_t opcode, uint32_t address)
@@ -58,6 +67,13 @@ static bool W25qxxReadCommand(uint8_t opcode,
     uint8_t command[8];
     size_t commandSize = 1U;
 
+    if ((data == NULL) || (size == 0U) ||
+        (dummyBytes > (uint8_t)(sizeof(command) - 4U)) ||
+        (size > (MY_SPI0_MAX_TRANSACTION_BYTES - (hasAddress ? 4U : 1U) - dummyBytes)))
+    {
+        return false;
+    }
+
     command[0] = opcode;
     if (hasAddress)
     {
@@ -72,15 +88,23 @@ static bool W25qxxReadCommand(uint8_t opcode,
     return MY_SPI0_TransmitReceive(command, commandSize, data, size) == kStatus_Success;
 }
 
-static void W25qxxReset(void)
+static bool W25qxxReset(void)
 {
     uint8_t command = W25Q_CMD_ENABLE_RESET;
-    (void)W25qxxCommand(&command, 1U);
+
+    if (W25qxxCommand(&command, 1U) != kStatus_Success)
+    {
+        return false;
+    }
     W25qxxDelayMs(1U);
 
     command = W25Q_CMD_RESET_DEVICE;
-    (void)W25qxxCommand(&command, 1U);
+    if (W25qxxCommand(&command, 1U) != kStatus_Success)
+    {
+        return false;
+    }
     W25qxxDelayMs(2U);
+    return true;
 }
 
 bool W25qxxReadJedecId(uint8_t id[3])
@@ -101,32 +125,52 @@ uint16_t W25qxxReadID(void)
     return ((uint16_t)id[0] << 8U) | id[1];
 }
 
-uint8_t W25qxxReadSR(uint32_t reg)
+static bool W25qxxReadStatus(uint32_t reg, uint8_t *value)
 {
     static const uint8_t statusCommand[3] = {
         W25Q_CMD_READ_STATUS_1, W25Q_CMD_READ_STATUS_2, W25Q_CMD_READ_STATUS_3};
-    uint8_t value = 0xFFU;
 
-    if ((reg < 1U) || (reg > 3U))
+    if ((value == NULL) || (reg < 1U) || (reg > 3U))
     {
-        return value;
+        return false;
     }
 
-    (void)W25qxxReadCommand(statusCommand[reg - 1U], 0U, false, 0U, &value, 1U);
+    return W25qxxReadCommand(statusCommand[reg - 1U], 0U, false, 0U, value, 1U);
+}
+
+uint8_t W25qxxReadSR(uint32_t reg)
+{
+    uint8_t value = 0xFFU;
+
+    (void)W25qxxReadStatus(reg, &value);
     return value;
+}
+
+static bool W25qxxWriteEnableChecked(void)
+{
+    const uint8_t command = W25Q_CMD_WRITE_ENABLE;
+    uint8_t status;
+
+    return (W25qxxCommand(&command, 1U) == kStatus_Success) &&
+           W25qxxReadStatus(1U, &status) && ((status & 0x02U) != 0U);
 }
 
 void W25qxxWriteEnable(void)
 {
-    const uint8_t command = W25Q_CMD_WRITE_ENABLE;
-    (void)W25qxxCommand(&command, 1U);
+    (void)W25qxxWriteEnableChecked();
 }
 
 bool W25qxxWaitBusy(uint32_t timeoutMs)
 {
     do
     {
-        if ((W25qxxReadSR(1U) & 0x01U) == 0U)
+        uint8_t status;
+
+        if (!W25qxxReadStatus(1U, &status))
+        {
+            return false;
+        }
+        if ((status & 0x01U) == 0U)
         {
             return true;
         }
@@ -142,7 +186,12 @@ bool W25qxxInit(uint8_t mode)
 
     (void)mode; /* This board wires standard single-bit SPI only. */
     (void)memset(&s_information, 0, sizeof(s_information));
-    W25qxxReset();
+    s_information.status = FLASH_INIT_NO_EXITS;
+
+    if (!W25qxxReset())
+    {
+        return false;
+    }
 
     if (!W25qxxReadJedecId(jedecId) || (jedecId[0] == 0x00U) || (jedecId[0] == 0xFFU))
     {
@@ -157,8 +206,13 @@ bool W25qxxInit(uint8_t mode)
     s_information.status = FLASH_INIT_SUCCESS;
 
     /* The UID command needs four dummy bytes after its opcode. */
-    (void)W25qxxReadCommand(W25Q_CMD_READ_UNIQUE_ID, 0U, false, 4U,
-                            s_information.uniqueID, FLASH_UNIQUEID_BYTE_SIZE);
+    if (!W25qxxReadCommand(W25Q_CMD_READ_UNIQUE_ID, 0U, false, 4U,
+                            s_information.uniqueID, FLASH_UNIQUEID_BYTE_SIZE))
+    {
+        s_information.status = FLASH_INIT_NO_EXITS;
+        return false;
+    }
+
     return true;
 }
 
@@ -166,7 +220,8 @@ bool W25qxxRead(uint32_t address, uint8_t *data, uint32_t size)
 {
     uint32_t chunk;
 
-    if ((s_information.status != FLASH_INIT_SUCCESS) || ((data == NULL) && (size != 0U)))
+    if ((s_information.status != FLASH_INIT_SUCCESS) || ((data == NULL) && (size != 0U)) ||
+        !W25qxxIsAddressRangeValid(address, size))
     {
         return false;
     }
@@ -192,7 +247,8 @@ bool W25qxxPageProgram(uint32_t address, const uint8_t *data, uint32_t size)
     uint32_t chunk;
     uint32_t pageRemaining;
 
-    if ((s_information.status != FLASH_INIT_SUCCESS) || ((data == NULL) && (size != 0U)))
+    if ((s_information.status != FLASH_INIT_SUCCESS) || ((data == NULL) && (size != 0U)) ||
+        !W25qxxIsAddressRangeValid(address, size))
     {
         return false;
     }
@@ -202,7 +258,10 @@ bool W25qxxPageProgram(uint32_t address, const uint8_t *data, uint32_t size)
         pageRemaining = W25Q_PAGE_SIZE - (address & (W25Q_PAGE_SIZE - 1U));
         chunk = (size < pageRemaining) ? size : pageRemaining;
 
-        W25qxxWriteEnable();
+        if (!W25qxxWriteEnableChecked())
+        {
+            return false;
+        }
         W25qxxBuildAddressCommand(command, W25Q_CMD_PAGE_PROGRAM, address);
         if (MY_SPI0_Transmit(command, sizeof(command), data, chunk) != kStatus_Success)
         {
@@ -225,12 +284,15 @@ bool W25qxxEraseSector(uint32_t address)
 {
     uint8_t command[4];
 
-    if (s_information.status != FLASH_INIT_SUCCESS)
+    if ((s_information.status != FLASH_INIT_SUCCESS) || !W25qxxIsAddressRangeValid(address, 1U))
     {
         return false;
     }
 
-    W25qxxWriteEnable();
+    if (!W25qxxWriteEnableChecked())
+    {
+        return false;
+    }
     W25qxxBuildAddressCommand(command, W25Q_CMD_SECTOR_ERASE, address & ~(NOR_FLASH_SECTOR_SIZE - 1UL));
     return (W25qxxCommand(command, sizeof(command)) == kStatus_Success) && W25qxxWaitBusy(500U);
 }
@@ -241,12 +303,15 @@ bool W25qxxEraseBlock(uint32_t address, bool erase64K)
     uint32_t blockSize = erase64K ? NOR_FLASH_BLOCK_64K : NOR_FLASH_BLOCK_32K;
     uint8_t opcode = erase64K ? W25Q_CMD_BLOCK_ERASE_64K : W25Q_CMD_BLOCK_ERASE_32K;
 
-    if (s_information.status != FLASH_INIT_SUCCESS)
+    if ((s_information.status != FLASH_INIT_SUCCESS) || !W25qxxIsAddressRangeValid(address, 1U))
     {
         return false;
     }
 
-    W25qxxWriteEnable();
+    if (!W25qxxWriteEnableChecked())
+    {
+        return false;
+    }
     W25qxxBuildAddressCommand(command, opcode, address & ~(blockSize - 1UL));
     return (W25qxxCommand(command, sizeof(command)) == kStatus_Success) && W25qxxWaitBusy(2500U);
 }

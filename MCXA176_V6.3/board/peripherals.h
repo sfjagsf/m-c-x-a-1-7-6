@@ -23,6 +23,7 @@
 #include "fsl_lpspi.h"
 #include "fsl_lpuart.h"
 #include "fsl_lpuart_edma.h"
+#include "fsl_pwm.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -221,6 +222,30 @@ extern "C" {
 #define LPUART1_TX_DMA_CHANNEL 5
 /* Used DMA device. */
 #define LPUART1_TX_DMA_BASEADDR DMA0
+/* Definition of peripheral ID */
+#define FLEXPWM0_PERIPHERAL FLEXPWM0
+/* Definition of submodule 0 ID */
+#define FLEXPWM0_SM0 kPWM_Module_0
+/* Definition of clock source of submodule 0 frequency in Hertz */
+#define FLEXPWM0_SM0_SM_CLK_SOURCE_FREQ_HZ 180000000U
+/* Definition of submodule 0 counter clock source frequency in Hertz - FLEXPWM0_SM0_SM_CLK_SOURCE_FREQ_HZ divided by prescaler */
+#define FLEXPWM0_SM0_COUNTER_CLK_SOURCE_FREQ_HZ 90000000U
+/* Definition of submodule 0 counter (PWM) frequency in Hertz */
+#define FLEXPWM0_SM0_COUNTER_FREQ_HZ 16000U
+/* Definition of submodule 0 channel A ID */
+#define FLEXPWM0_SM0_A kPWM_PwmA
+/* Definition of submodule 0 channel B ID */
+#define FLEXPWM0_SM0_B kPWM_PwmB
+/* Definition of submodule 0 channel X ID */
+#define FLEXPWM0_SM0_X kPWM_PwmX
+/* Definition of fault Fault0 ID */
+#define FLEXPWM0_F0_FAULT0 kPWM_Fault_0
+/* Definition of fault Fault1 ID */
+#define FLEXPWM0_F0_FAULT1 kPWM_Fault_1
+/* Definition of fault Fault2 ID */
+#define FLEXPWM0_F0_FAULT2 kPWM_Fault_2
+/* Definition of fault Fault3 ID */
+#define FLEXPWM0_F0_FAULT3 kPWM_Fault_3
 
 /***********************************************************************************************************************
  * Global variables
@@ -266,6 +291,14 @@ extern const lpuart_config_t LPUART1_config;
 extern edma_handle_t LPUART1_RX_Handle;
 extern edma_handle_t LPUART1_TX_Handle;
 extern lpuart_edma_handle_t LPUART1_LPUART_eDMA_Handle;
+extern pwm_config_t FLEXPWM0_SM0_config;
+
+extern pwm_signal_param_t FLEXPWM0_SM0_pwm_function_config[1];
+extern const pwm_fault_input_filter_param_t FLEXPWM0_faultInputFilter_config;
+extern const pwm_fault_param_t FLEXPWM0_Fault0_fault_config;
+extern const pwm_fault_param_t FLEXPWM0_Fault1_fault_config;
+extern const pwm_fault_param_t FLEXPWM0_Fault2_fault_config;
+extern const pwm_fault_param_t FLEXPWM0_Fault3_fault_config;
 
 /***********************************************************************************************************************
  * Global functions

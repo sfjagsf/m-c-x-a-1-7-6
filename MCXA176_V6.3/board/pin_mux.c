@@ -54,6 +54,7 @@ pin_labels:
 - {pin_num: '86', pin_signal: P0_19/WUU0_IN3/LPI2C0_SDAS/CT0_MAT3/FLEXIO0_D3/SmartDMA_PIO9/CMP1_OUT/ADC0_A9, label: RS485_EN, identifier: RS485_EN}
 - {pin_num: '69', pin_signal: P3_8/WUU0_IN23/TRIG_IN3/LPSPI1_SDO/LPUART1_RXD/CT_INP4/PWM0_A1/FLEXIO0_D16/SmartDMA_PIO8/CLKOUT, label: UART1_RX, identifier: UART1_RX}
 - {pin_num: '68', pin_signal: P3_9/TRIG_IN4/LPSPI1_SDI/LPUART1_TXD/CT_INP5/PWM0_B1/FLEXIO0_D17/SmartDMA_PIO9, label: UART1_TX, identifier: UART1_TX}
+- {pin_num: '73', pin_signal: P3_0/WUU0_IN22/TRIG_IN0/LPUART3_RXD/CT_INP16/PWM0_A0/FLEXIO0_D8/PWM1_X0/SmartDMA_PIO0, label: PWM0, identifier: PWM1;PWM0}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -135,6 +136,8 @@ BOARD_InitPins:
     gpio_init_state: 'false'}
   - {pin_num: '69', peripheral: LPUART1, signal: RX, pin_signal: P3_8/WUU0_IN23/TRIG_IN3/LPSPI1_SDO/LPUART1_RXD/CT_INP4/PWM0_A1/FLEXIO0_D16/SmartDMA_PIO8/CLKOUT}
   - {pin_num: '68', peripheral: LPUART1, signal: TX, pin_signal: P3_9/TRIG_IN4/LPSPI1_SDI/LPUART1_TXD/CT_INP5/PWM0_B1/FLEXIO0_D17/SmartDMA_PIO9}
+  - {pin_num: '73', peripheral: FLEXPWM0, signal: 'A, 0', pin_signal: P3_0/WUU0_IN22/TRIG_IN0/LPUART3_RXD/CT_INP16/PWM0_A0/FLEXIO0_D8/PWM1_X0/SmartDMA_PIO0, identifier: PWM0,
+    direction: OUTPUT}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -185,10 +188,12 @@ void BOARD_InitPins(void)
     RESET_ReleasePeripheralReset(kDAC0_RST_SHIFT_RSTn);
     /* GPIO2 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kGPIO2_RST_SHIFT_RSTn);
-    /* GPIO3 peripheral is released from reset */
-    RESET_ReleasePeripheralReset(kGPIO3_RST_SHIFT_RSTn);
+    /* FLEXPWM0 peripheral is released from reset */
+    RESET_ReleasePeripheralReset(kFLEXPWM0_RST_SHIFT_RSTn);
     /* PORT3 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kPORT3_RST_SHIFT_RSTn);
+    /* GPIO3 peripheral is released from reset */
+    RESET_ReleasePeripheralReset(kGPIO3_RST_SHIFT_RSTn);
     /* LPI2C3 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kLPI2C3_RST_SHIFT_RSTn);
     /* LPUART1 peripheral is released from reset */
@@ -416,6 +421,16 @@ void BOARD_InitPins(void)
 
                       /* Input Buffer Enable: Enables. */
                       | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    /* PORT3_0 (pin 73) is configured as PWM0_A0 */
+    PORT_SetPinMux(BOARD_INITPINS_PWM0_PORT, BOARD_INITPINS_PWM0_PIN, kPORT_MuxAlt5);
+
+    PORT3->PCR[0] = ((PORT3->PCR[0] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_IBE_MASK)))
+
+                     /* Input Buffer Enable: Enables. */
+                     | PORT_PCR_IBE(PCR_IBE_ibe1));
 
     /* PORT3_11 (pin 66) is configured as P3_11 */
     PORT_SetPinMux(BOARD_INITPINS_RESET_PORT, BOARD_INITPINS_RESET_PIN, kPORT_MuxAlt0);

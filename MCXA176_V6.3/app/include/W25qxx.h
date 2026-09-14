@@ -28,6 +28,7 @@ typedef struct
 #define FLASH_INIT_SUCCESS   (0U)
 #define FLASH_INIT_NO_EXITS  (3U)
 
+/* Resets and identifies the flash. Must succeed before read/program/erase APIs. */
 bool W25qxxInit(uint8_t mode);
 uint16_t W25qxxReadID(void);
 bool W25qxxReadJedecId(uint8_t id[3]);

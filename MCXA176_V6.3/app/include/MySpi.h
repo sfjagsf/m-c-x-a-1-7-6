@@ -2,7 +2,8 @@
  * SPI0 transaction adapter for the W25Qxx NOR flash.
  *
  * This is the MCXA/LPSPI equivalent of the reference project's my_spi layer:
- * it keeps PCS0 asserted while both data segments are clocked.
+ * it keeps PCS0 asserted while both data segments are clocked.  Calls are
+ * serialized; a concurrent call returns kStatus_Busy.
  */
 #ifndef APP_INCLUDE_MY_SPI_H_
 #define APP_INCLUDE_MY_SPI_H_

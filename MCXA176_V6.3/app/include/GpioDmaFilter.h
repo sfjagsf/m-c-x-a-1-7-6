@@ -32,7 +32,7 @@ bool GpioDmaFilterStart(void);
 /* Returns the current filtered GPIO3 PDIR shadow value. */
 uint32_t GpioDmaFilterGetPortState(void);
 
-/* Returns false for a low level and true for a high level. */
+/* Returns false for a low level or an input outside GPIO_DMA_FILTER_MASK. */
 bool GpioDmaFilterReadPin(uint32_t pinMask);
 
 /* Number of failed DMA rearms; useful during board bring-up. */

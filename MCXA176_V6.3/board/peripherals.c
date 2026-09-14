@@ -1168,6 +1168,210 @@ static void LPUART1_init(void) {
 }
 
 /***********************************************************************************************************************
+ * FLEXPWM0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'FLEXPWM0'
+- type: 'pwm'
+- mode: 'general'
+- custom_name_enabled: 'false'
+- type_id: 'pwm_2.6.0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'FLEXPWM0'
+- config_sets:
+  - fsl_pwm:
+    - clockSource: 'SystemClock'
+    - clockSourceFreq: 'ClocksTool_DefaultInit'
+    - submodules:
+      - 0:
+        - sm: 'kPWM_Module_0'
+        - sm_id: 'SM0'
+        - config:
+          - clockSource: 'kPWM_BusClock'
+          - prescale: 'kPWM_Prescale_Divide_2'
+          - pwmFreq: '16 kHz'
+          - pairOperation: 'kPWM_Independent'
+          - operationMode: 'kPWM_EdgeAligned'
+          - initializationControl: 'kPWM_Initialize_LocalSync'
+          - reloadLogic: 'kPWM_ReloadImmediate'
+          - reloadSelect: 'kPWM_LocalReload'
+          - reloadFrequency: 'kPWM_LoadEveryOportunity'
+          - forceTrigger: 'kPWM_Force_Local'
+          - enableDebugMode: 'true'
+          - enableWait: 'false'
+          - outputTrigger_sel: ''
+          - loadOK: 'true'
+          - startCounter: 'true'
+          - interrupt_sel: ''
+          - dma_used: 'false'
+          - dma:
+            - pwmDMA_activate: 'false'
+            - captureDMA_enable: ''
+            - captureDMA_source: 'kPWM_DMARequestDisable'
+            - captureDMA_watermark_control: 'kPWM_FIFOWatermarksOR'
+        - channels:
+          - 0:
+            - channel_id: 'A'
+            - functionSel: 'pwmOutput'
+            - pwm:
+              - dutyCyclePercent: '0'
+              - level: 'kPWM_LowTrue'
+              - fault_channel0:
+                - dismap: ''
+              - faultState: 'kPWM_PwmFaultState0'
+              - pwmchannelenable: 'true'
+              - deadtime_input_by_force: 'kPWM_UsePwm'
+              - clockSource: 'kPWM_BusClock'
+              - deadtimeValue: '0'
+              - interrupt_sel: ''
+          - 1:
+            - channel_id: 'B'
+            - functionSel: 'notUsed'
+          - 2:
+            - channel_id: 'X'
+            - functionSel: 'notUsed'
+        - common_interruptEn: 'false'
+        - common_interrupt:
+          - IRQn: 'FLEXPWM0_SUBMODULE0_IRQn'
+          - enable_interrrupt: 'enabled'
+          - enable_priority: 'false'
+          - priority: '0'
+          - enable_custom_name: 'false'
+    - faultChannels:
+      - 0:
+        - commonFaultSetting:
+          - clockSource: 'kPWM_BusClock'
+          - faultFilterPeriod: '1'
+          - faultFilterCount: '3'
+          - faultGlitchStretch: 'false'
+        - faults:
+          - 0:
+            - fault_id: 'Fault0'
+            - faultClearingMode: 'kPWM_Automatic'
+            - faultLevelR: 'low'
+            - enableCombinationalPathR: 'filtered'
+            - recoverMode: 'kPWM_NoRecovery'
+            - fault_int_source: 'false'
+          - 1:
+            - fault_id: 'Fault1'
+            - faultClearingMode: 'kPWM_Automatic'
+            - faultLevelR: 'low'
+            - enableCombinationalPathR: 'filtered'
+            - recoverMode: 'kPWM_NoRecovery'
+            - fault_int_source: 'false'
+          - 2:
+            - fault_id: 'Fault2'
+            - faultClearingMode: 'kPWM_Automatic'
+            - faultLevelR: 'low'
+            - enableCombinationalPathR: 'filtered'
+            - recoverMode: 'kPWM_NoRecovery'
+            - fault_int_source: 'false'
+          - 3:
+            - fault_id: 'Fault3'
+            - faultClearingMode: 'kPWM_Automatic'
+            - faultLevelR: 'low'
+            - enableCombinationalPathR: 'filtered'
+            - recoverMode: 'kPWM_NoRecovery'
+            - fault_int_source: 'false'
+    - fault_interruptEn: 'false'
+    - fault_interrupt:
+      - IRQn: 'FLEXPWM0_FAULT_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'false'
+      - priority: '0'
+      - enable_custom_name: 'false'
+    - error_interruptEn: 'false'
+    - error_interrupt:
+      - IRQn: 'FLEXPWM0_RELOAD_ERROR_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'false'
+      - priority: '0'
+      - enable_custom_name: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+/* PWM main configuration */
+pwm_config_t FLEXPWM0_SM0_config = {
+  .clockSource = kPWM_BusClock,
+  .prescale = kPWM_Prescale_Divide_2,
+  .pairOperation = kPWM_Independent,
+  .initializationControl = kPWM_Initialize_LocalSync,
+  .reloadLogic = kPWM_ReloadImmediate,
+  .reloadSelect = kPWM_LocalReload,
+  .reloadFrequency = kPWM_LoadEveryOportunity,
+  .forceTrigger = kPWM_Force_Local,
+  .enableDebugMode = true,
+  .enableWait = false
+};
+
+pwm_signal_param_t FLEXPWM0_SM0_pwm_function_config[1]= {
+  {
+    .pwmChannel = kPWM_PwmA,
+    .dutyCyclePercent = 0U,
+    .level = kPWM_LowTrue,
+    .faultState = kPWM_PwmFaultState0,
+    .pwmchannelenable = true,
+    .deadtimeValue = 0U
+  },
+};
+
+const pwm_fault_input_filter_param_t FLEXPWM0_faultInputFilter_config = {
+  .faultFilterPeriod = 1U,
+  .faultFilterCount = 3U,
+  .faultGlitchStretch = false
+};
+const pwm_fault_param_t FLEXPWM0_Fault0_fault_config = {
+  .faultClearingMode = kPWM_Automatic,
+  .faultLevel = false,
+  .enableCombinationalPath = true,
+  .recoverMode = kPWM_NoRecovery
+};
+const pwm_fault_param_t FLEXPWM0_Fault1_fault_config = {
+  .faultClearingMode = kPWM_Automatic,
+  .faultLevel = false,
+  .enableCombinationalPath = true,
+  .recoverMode = kPWM_NoRecovery
+};
+const pwm_fault_param_t FLEXPWM0_Fault2_fault_config = {
+  .faultClearingMode = kPWM_Automatic,
+  .faultLevel = false,
+  .enableCombinationalPath = true,
+  .recoverMode = kPWM_NoRecovery
+};
+const pwm_fault_param_t FLEXPWM0_Fault3_fault_config = {
+  .faultClearingMode = kPWM_Automatic,
+  .faultLevel = false,
+  .enableCombinationalPath = true,
+  .recoverMode = kPWM_NoRecovery
+};
+
+static void FLEXPWM0_init(void) {
+  /* Initialize PWM submodule SM0 main configuration */
+  PWM_Init(FLEXPWM0_PERIPHERAL, FLEXPWM0_SM0, &FLEXPWM0_SM0_config);
+  /* Initialize fault input filter configuration */
+  PWM_SetupFaultInputFilter(FLEXPWM0_PERIPHERAL, &FLEXPWM0_faultInputFilter_config);
+  /* Initialize fault channel 0 fault Fault0 configuration */
+  PWM_SetupFaults(FLEXPWM0_PERIPHERAL, FLEXPWM0_F0_FAULT0, &FLEXPWM0_Fault0_fault_config);
+  /* Initialize fault channel 0 fault Fault1 configuration */
+  PWM_SetupFaults(FLEXPWM0_PERIPHERAL, FLEXPWM0_F0_FAULT1, &FLEXPWM0_Fault1_fault_config);
+  /* Initialize fault channel 0 fault Fault2 configuration */
+  PWM_SetupFaults(FLEXPWM0_PERIPHERAL, FLEXPWM0_F0_FAULT2, &FLEXPWM0_Fault2_fault_config);
+  /* Initialize fault channel 0 fault Fault3 configuration */
+  PWM_SetupFaults(FLEXPWM0_PERIPHERAL, FLEXPWM0_F0_FAULT3, &FLEXPWM0_Fault3_fault_config);
+  /* Initialize submodule SM0 channel A output disable mapping to the selected faults */
+  PWM_SetupFaultDisableMap(FLEXPWM0_PERIPHERAL, FLEXPWM0_SM0, FLEXPWM0_SM0_A, kPWM_faultchannel_0, (0U));
+  /* Initialize deadtime logic input for the channel A */
+  PWM_SetupForceSignal(FLEXPWM0_PERIPHERAL, FLEXPWM0_SM0, FLEXPWM0_SM0_A, kPWM_UsePwm);
+  /* Setup PWM output setting for submodule SM0 */
+  PWM_SetupPwm(FLEXPWM0_PERIPHERAL, FLEXPWM0_SM0, FLEXPWM0_SM0_pwm_function_config, 1U, kPWM_EdgeAligned, FLEXPWM0_SM0_COUNTER_FREQ_HZ, FLEXPWM0_SM0_SM_CLK_SOURCE_FREQ_HZ);
+  /* Initialize LDOK for update of the working registers */
+  PWM_SetPwmLdok(FLEXPWM0_PERIPHERAL, (kPWM_Control_Module_0), true);
+  /* Start selected counters */
+  PWM_StartTimer(FLEXPWM0_PERIPHERAL, (kPWM_Control_Module_0));
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 static void BOARD_InitPeripherals_CommonPostInit(void)
@@ -1213,6 +1417,7 @@ void BOARD_InitPeripherals(void)
   LPSPI1_init();
   LPUART0_init();
   LPUART1_init();
+  FLEXPWM0_init();
   /* Common post-initialization */
   BOARD_InitPeripherals_CommonPostInit();
 }

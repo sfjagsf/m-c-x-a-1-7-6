@@ -64,11 +64,16 @@ void GpioDmaFilterDmaCallback(edma_handle_t *handle, void *userData, bool transf
     if (!transferDone)
     {
         s_dmaErrorCount++;
+        CTIMER_StopTimer(CTIMER4);
         return;
     }
 
     GpioDmaFilterUpdate();
-    (void)GpioDmaFilterArm();
+    if (!GpioDmaFilterArm())
+    {
+        /* Do not keep issuing timer DMA requests after a failed rearm. */
+        CTIMER_StopTimer(CTIMER4);
+    }
 }
 
 bool GpioDmaFilterStart(void)
@@ -88,6 +93,9 @@ bool GpioDmaFilterStart(void)
     s_gpio3FilteredPdir = GPIO3->PDIR;
     s_dmaErrorCount     = 0U;
 
+    /* Config Tools assigned CH7's priority but did not enable this IRQ. */
+    EnableIRQ(DMA0_DMA_CH_INT_DONE_7_IRQN);
+
     if (!GpioDmaFilterArm())
     {
         return false;
@@ -104,6 +112,11 @@ uint32_t GpioDmaFilterGetPortState(void)
 
 bool GpioDmaFilterReadPin(uint32_t pinMask)
 {
+    if ((pinMask == 0U) || ((pinMask & ~GPIO_DMA_FILTER_MASK) != 0U))
+    {
+        return false;
+    }
+
     return (GpioDmaFilterGetPortState() & pinMask) != 0U;
 }
 

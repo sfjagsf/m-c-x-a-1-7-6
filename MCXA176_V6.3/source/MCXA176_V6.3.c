@@ -22,6 +22,7 @@
 #include "../Modbus/Inc/ModbusApp.h"
 #include "UartDriver.h"
 #include "UartEchoTask.h"
+#include "PwmDacTestTask.h"
 
 /* TODO: insert other definitions and declarations here. */
 
@@ -83,6 +84,14 @@ int main(void) {
     }
 
     if (!Uart1EchoTask_Create())
+    {
+        for (;;)
+        {
+            __asm volatile ("nop");
+        }
+    }
+
+    if (!PwmDacTestTask_Create())
     {
         for (;;)
         {

@@ -5,6 +5,7 @@
  * override any creator with a same-named non-weak definition.
  */
 #include "GpioInputTask.h"
+#include "PwmDacTestTask.h"
 #include "UartEchoTask.h"
 
 #include "cmsis_os2.h"
@@ -41,4 +42,15 @@ bool Uart1EchoTask_Create(void)
     };
 
     return osThreadNew(Uart1EchoTask, NULL, &uart1EchoTaskAttributes) != NULL;
+}
+
+bool PwmDacTestTask_Create(void)
+{
+    static const osThreadAttr_t pwmDacTestTaskAttributes = {
+        .name       = "PwmDacTest",
+        .priority   = osPriorityNormal,
+        .stack_size = 512U,
+    };
+
+    return osThreadNew(PwmDacTestTask, NULL, &pwmDacTestTaskAttributes) != NULL;
 }
