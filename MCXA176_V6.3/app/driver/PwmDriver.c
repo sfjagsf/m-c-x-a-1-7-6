@@ -7,7 +7,6 @@ bool PwmDriverSetFrequencyDuty(uint32_t frequencyHz, uint8_t dutyPercent)
 {
     uint32_t periodCounts;
     uint32_t duty16;
-
     if ((frequencyHz == 0U) || (dutyPercent > 100U))
     {
         return false;
