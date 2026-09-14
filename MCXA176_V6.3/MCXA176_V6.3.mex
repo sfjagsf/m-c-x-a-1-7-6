@@ -569,7 +569,7 @@
                   <clock_output id="LPUART3_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
                   <clock_output id="LPUART4_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
                   <clock_output id="MAIN_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
-                  <clock_output id="PLL1_DIV_clock.outFreq" value="719.3125/4 MHz" locked="false" accuracy=""/>
+                  <clock_output id="PLL1_DIV_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
                   <clock_output id="PLL1_clock.outFreq" value="180 MHz" locked="true" accuracy="0.001"/>
                   <clock_output id="Slow_clock.outFreq" value="30 MHz" locked="false" accuracy=""/>
                   <clock_output id="System_clock.outFreq" value="180 MHz" locked="false" accuracy=""/>
@@ -579,6 +579,7 @@
                </clock_outputs>
                <clock_settings>
                   <setting id="PLL_MODE" value="Fractional" locked="false"/>
+                  <setting id="SCGMode" value="PLL1" locked="false"/>
                   <setting id="VDD_CORE" value="voltage_1v2" locked="false"/>
                   <setting id="ADC_CLKDIV_MRCC0_MRCC_ADC_CLKDIV_HALT" value="ON" locked="false"/>
                   <setting id="CLK16K_0_clock" value="Enabled" locked="false"/>
@@ -624,7 +625,9 @@
                   <setting id="MRCC.TRACE_CLKDIV.scale" value="9" locked="false"/>
                   <setting id="PLL1CLKDIV_SYSCON_PLL1CLKDIV_HALT" value="RUN" locked="false"/>
                   <setting id="SCG.FREQ_SEL.scale" value="1" locked="true"/>
-                  <setting id="SCG.MDIV.scale" value="1508507648" locked="false"/>
+                  <setting id="SCG.MDIV.scale" value="1509949440" locked="true"/>
+                  <setting id="SCG.NDIV.scale" value="1" locked="true"/>
+                  <setting id="SCG.SCGSCS_CLKSEL.sel" value="SCG.PLL1_clock" locked="false"/>
                   <setting id="SOSC_SCG0_SOSCCFG_EREFS" value="INTERNAL" locked="false"/>
                   <setting id="SOSC_SCG0_SOSCCSR_SOSCEN" value="ENABLED" locked="false"/>
                   <setting id="SYSCON.FROHFDIV.scale" value="1" locked="true"/>
@@ -1564,7 +1567,7 @@
                               <setting name="sm_id" value="SM0"/>
                               <struct name="config">
                                  <setting name="clockSource" value="kPWM_BusClock"/>
-                                 <setting name="prescale" value="kPWM_Prescale_Divide_2"/>
+                                 <setting name="prescale" value="kPWM_Prescale_Divide_1"/>
                                  <setting name="pwmFreq" value="16 kHz"/>
                                  <setting name="pairOperation" value="kPWM_Independent"/>
                                  <setting name="operationMode" value="kPWM_EdgeAligned"/>

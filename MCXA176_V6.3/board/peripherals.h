@@ -229,7 +229,7 @@ extern "C" {
 /* Definition of clock source of submodule 0 frequency in Hertz */
 #define FLEXPWM0_SM0_SM_CLK_SOURCE_FREQ_HZ 180000000U
 /* Definition of submodule 0 counter clock source frequency in Hertz - FLEXPWM0_SM0_SM_CLK_SOURCE_FREQ_HZ divided by prescaler */
-#define FLEXPWM0_SM0_COUNTER_CLK_SOURCE_FREQ_HZ 90000000U
+#define FLEXPWM0_SM0_COUNTER_CLK_SOURCE_FREQ_HZ 180000000U
 /* Definition of submodule 0 counter (PWM) frequency in Hertz */
 #define FLEXPWM0_SM0_COUNTER_FREQ_HZ 16000U
 /* Definition of submodule 0 channel A ID */

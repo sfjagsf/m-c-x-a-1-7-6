@@ -986,7 +986,7 @@ outputs:
 - {id: LPUART3_clock.outFreq, value: 180 MHz}
 - {id: LPUART4_clock.outFreq, value: 180 MHz}
 - {id: MAIN_clock.outFreq, value: 180 MHz}
-- {id: PLL1_DIV_clock.outFreq, value: 719.3125/4 MHz}
+- {id: PLL1_DIV_clock.outFreq, value: 180 MHz}
 - {id: PLL1_clock.outFreq, value: 180 MHz, locked: true, accuracy: '0.001'}
 - {id: Slow_clock.outFreq, value: 30 MHz}
 - {id: System_clock.outFreq, value: 180 MHz}
@@ -995,6 +995,7 @@ outputs:
 - {id: WWDT0_clock.outFreq, value: 1 MHz}
 settings:
 - {id: PLL_MODE, value: Fractional}
+- {id: SCGMode, value: PLL1}
 - {id: VDD_CORE, value: voltage_1v2}
 - {id: ADC_CLKDIV_MRCC0_MRCC_ADC_CLKDIV_HALT, value: 'ON'}
 - {id: CLK16K_0_clock, value: Enabled}
@@ -1040,7 +1041,9 @@ settings:
 - {id: MRCC.TRACE_CLKDIV.scale, value: '9'}
 - {id: PLL1CLKDIV_SYSCON_PLL1CLKDIV_HALT, value: RUN}
 - {id: SCG.FREQ_SEL.scale, value: '1', locked: true}
-- {id: SCG.MDIV.scale, value: '1508507648'}
+- {id: SCG.MDIV.scale, value: '1509949440', locked: true}
+- {id: SCG.NDIV.scale, value: '1', locked: true}
+- {id: SCG.SCGSCS_CLKSEL.sel, value: SCG.PLL1_clock}
 - {id: SOSC_SCG0_SOSCCFG_EREFS, value: INTERNAL}
 - {id: SOSC_SCG0_SOSCCSR_SOSCEN, value: ENABLED}
 - {id: SYSCON.FROHFDIV.scale, value: '1', locked: true}
@@ -1058,14 +1061,14 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
         .pllctrl = SCG_SPLLCTRL_SOURCE(0U) | SCG_SPLLCTRL_LIMUPOFF_MASK  | SCG_SPLLCTRL_SELI(4U) | SCG_SPLLCTRL_SELP(3U) | SCG_SPLLCTRL_SELR(4U),
         .pllndiv = SCG_SPLLNDIV_NDIV(1U),
         .pllpdiv = SCG_SPLLPDIV_PDIV(1U),
-        .pllsscg = {(SCG_SPLLSSCG0_SS_MDIV_LSB(0x59ea0000U)),
+        .pllsscg = {(SCG_SPLLSSCG0_SS_MDIV_LSB(0x5a000000U)),
                     ((SCG0->SPLLSSCG1 & ~SCG_SPLLSSCG1_SS_PD_MASK) |
                      (SCG_SPLLSSCG1_SS_MDIV_MSB(0U)) |
                      (uint32_t)(kSS_MF_512) |
                      (uint32_t)(kSS_MR_K0) |
                      (uint32_t)(kSS_MC_NOC) |
                      SCG_SPLLSSCG1_SEL_SS_MDIV_MASK)},
-        .pllRate = 179828125U
+        .pllRate = 180000000U
     };
 
     switch(module) {
@@ -1092,7 +1095,7 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
             break;
         case kClockModule_SystemClk:
             CLOCK_SetClockDiv(kCLOCK_DivAHBCLK, 1U);       /* !< Set SYSCON.AHBCLKDIV divider to value 1 */
-            CLOCK_AttachClk(kFRO_HF_to_MAIN_CLK);/* !< Switch MAIN_CLK to kFRO_HF */
+            CLOCK_AttachClk(kPll1Clk_to_MAIN_CLK);/* !< Switch MAIN_CLK to kPll1Clk */
             break;
         case kClockModule_ADCClk:
             CLOCK_AttachClk(kFRO_HF_to_ADC);               /* !< Switch ADC to FRO_HF */

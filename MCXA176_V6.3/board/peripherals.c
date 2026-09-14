@@ -1190,7 +1190,7 @@ instance:
         - sm_id: 'SM0'
         - config:
           - clockSource: 'kPWM_BusClock'
-          - prescale: 'kPWM_Prescale_Divide_2'
+          - prescale: 'kPWM_Prescale_Divide_1'
           - pwmFreq: '16 kHz'
           - pairOperation: 'kPWM_Independent'
           - operationMode: 'kPWM_EdgeAligned'
@@ -1294,7 +1294,7 @@ instance:
 /* PWM main configuration */
 pwm_config_t FLEXPWM0_SM0_config = {
   .clockSource = kPWM_BusClock,
-  .prescale = kPWM_Prescale_Divide_2,
+  .prescale = kPWM_Prescale_Divide_1,
   .pairOperation = kPWM_Independent,
   .initializationControl = kPWM_Initialize_LocalSync,
   .reloadLogic = kPWM_ReloadImmediate,

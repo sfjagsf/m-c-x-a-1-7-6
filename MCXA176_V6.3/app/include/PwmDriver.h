@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#define PWM_DRIVER_TEST_FREQUENCY_HZ (2000U)
+#define PWM_DRIVER_TEST_FREQUENCY_HZ (3000U)
 #define PWM_DRIVER_TEST_DUTY_PERCENT (50U)
 
 /*
