@@ -38,7 +38,7 @@ bool Uart1EchoTask_Create(void)
     static const osThreadAttr_t uart1EchoTaskAttributes = {
         .name       = "Uart1Echo",
         .priority   = osPriorityNormal,
-        .stack_size = 512U,
+        .stack_size = 1024U,
     };
 
     return osThreadNew(Uart1EchoTask, NULL, &uart1EchoTaskAttributes) != NULL;

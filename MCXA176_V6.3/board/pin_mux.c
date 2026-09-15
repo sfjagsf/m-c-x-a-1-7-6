@@ -55,7 +55,6 @@ pin_labels:
 - {pin_num: '69', pin_signal: P3_8/WUU0_IN23/TRIG_IN3/LPSPI1_SDO/LPUART1_RXD/CT_INP4/PWM0_A1/FLEXIO0_D16/SmartDMA_PIO8/CLKOUT, label: UART1_RX, identifier: UART1_RX}
 - {pin_num: '68', pin_signal: P3_9/TRIG_IN4/LPSPI1_SDI/LPUART1_TXD/CT_INP5/PWM0_B1/FLEXIO0_D17/SmartDMA_PIO9, label: UART1_TX, identifier: UART1_TX}
 - {pin_num: '73', pin_signal: P3_0/WUU0_IN22/TRIG_IN0/LPUART3_RXD/CT_INP16/PWM0_A0/FLEXIO0_D8/PWM1_X0/SmartDMA_PIO0, label: PWM0, identifier: PWM1;PWM0}
-- {pin_num: '78', pin_signal: P0_2/TDO/SWO/LPUART0_RXD/LPSPI0_SCK/CT0_MAT0/UTICK_CAP0/FLEXIO0_D2/I3C0_PUR, label: SPI0_SCK, identifier: SPI0_SCK}
 - {pin_num: '97', pin_signal: P1_4/WUU0_IN8/FREQME_CLK_IN0/LPSPI0_PCS3/LPUART2_RXD/CT1_MAT2/FLEXIO0_D12/SmartDMA_PIO0/ADC0_A20/CMP0_IN2, label: AD1, identifier: AD1}
 - {pin_num: '98', pin_signal: P1_5/FREQME_CLK_IN1/LPSPI0_PCS2/LPUART2_TXD/CT1_MAT3/FLEXIO0_D13/SmartDMA_PIO1/ADC0_A21/CMP1_IN2, label: AD2, identifier: AD2}
 - {pin_num: '99', pin_signal: P1_6/TRIG_IN2/LPSPI0_PCS1/LPUART2_RTS_B/CT_INP6/CT4_MAT0/FLEXIO0_D14/SmartDMA_PIO2/ADC0_A22, label: AD3, identifier: AD3}
@@ -119,7 +118,6 @@ BOARD_InitPins:
     identifier: SPI1_MOSI}
   - {pin_num: '38', peripheral: LPSPI1, signal: PCS0, pin_signal: P2_17/TRIG_IN9/LPSPI1_PCS0/LPUART1_CTS_B/CT3_MAT1/CT0_MAT3/FLEXIO0_D25/SmartDMA_PIO20/ADC1_A6}
   - {pin_num: '91', peripheral: LPSPI0, signal: OUT, pin_signal: P1_0/WUU0_IN6/LPTMR0_ALT3/TRIG_IN0/LPSPI0_SDO/LPI2C1_SDA/CT_INP4/CT0_MAT2/FLEXIO0_D8/ADC0_A16/CMP0_IN3}
-  - {pin_num: '78', peripheral: LPSPI0, signal: SCK, pin_signal: P0_2/TDO/SWO/LPUART0_RXD/LPSPI0_SCK/CT0_MAT0/UTICK_CAP0/FLEXIO0_D2/I3C0_PUR}
   - {pin_num: '93', peripheral: LPSPI0, signal: IN, pin_signal: P1_2/TRIG_OUT0/LPSPI0_SDI/LPI2C1_SDAS/CT1_MAT0/CT_INP0/FLEXIO0_D10/CAN0_TXD/ADC0_A18}
   - {pin_num: '94', peripheral: LPSPI0, signal: PCS0, pin_signal: P1_3/WUU0_IN7/TRIG_OUT1/LPSPI0_PCS0/LPI2C1_SCLS/CT1_MAT1/CT_INP1/FLEXIO0_D11/CAN0_RXD/ADC0_A19/CMP0_IN1,
     identifier: SPI0_CS}
@@ -169,6 +167,7 @@ BOARD_InitPins:
   - {pin_num: '7', peripheral: ADC1, signal: 'A, 12', pin_signal: P1_14/LPI2C1_SCLS/LPUART2_RTS_B/CT3_MAT0/FLEXIO0_D22/SmartDMA_PIO10/ADC1_A12}
   - {pin_num: '8', peripheral: ADC1, signal: 'A, 13', pin_signal: P1_15/WUU0_IN13/LPI2C1_SDAS/LPUART2_CTS_B/CT3_MAT1/FLEXIO0_D23/SmartDMA_PIO11/ADC1_A13}
   - {pin_num: '25', peripheral: ADC0, signal: 'A, 3', pin_signal: P2_3/WUU0_IN19/TRIG_IN7/LPUART0_CTS_B/LPUART2_RXD/CT_INP13/CT2_MAT3/FLEXIO0_D11/SmartDMA_PIO27/ADC0_A3/CMP1_IN0/ADC1_A4}
+  - {pin_num: '92', peripheral: LPSPI0, signal: SCK, pin_signal: P1_1/TRIG_IN1/LPSPI0_SCK/LPI2C1_SCL/CT_INP5/CT0_MAT3/FLEXIO0_D9/ADC0_A17/CMP1_IN3}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -201,10 +200,10 @@ void BOARD_InitPins(void)
     RESET_ReleasePeripheralReset(kPORT0_RST_SHIFT_RSTn);
     /* GPIO0 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kGPIO0_RST_SHIFT_RSTn);
-    /* LPSPI0 peripheral is released from reset */
-    RESET_ReleasePeripheralReset(kLPSPI0_RST_SHIFT_RSTn);
     /* LPUART0 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kLPUART0_RST_SHIFT_RSTn);
+    /* LPSPI0 peripheral is released from reset */
+    RESET_ReleasePeripheralReset(kLPSPI0_RST_SHIFT_RSTn);
     /* PORT1 peripheral is released from reset */
     RESET_ReleasePeripheralReset(kPORT1_RST_SHIFT_RSTn);
     /* ADC1 peripheral is released from reset */
@@ -264,16 +263,6 @@ void BOARD_InitPins(void)
                       /* Input Buffer Enable: Enables. */
                       | PORT_PCR_IBE(PCR_IBE_ibe1));
 
-    /* PORT0_2 (pin 78) is configured as LPSPI0_SCK */
-    PORT_SetPinMux(BOARD_INITPINS_SPI0_SCK_PORT, BOARD_INITPINS_SPI0_SCK_PIN, kPORT_MuxAlt3);
-
-    PORT0->PCR[2] = ((PORT0->PCR[2] &
-                      /* Mask bits to zero which are setting */
-                      (~(PORT_PCR_IBE_MASK)))
-
-                     /* Input Buffer Enable: Enables. */
-                     | PORT_PCR_IBE(PCR_IBE_ibe1));
-
     /* PORT0_20 (pin 87) is configured as LPUART0_RXD */
     PORT_SetPinMux(BOARD_INITPINS_UART0_RX_PORT, BOARD_INITPINS_UART0_RX_PIN, kPORT_MuxAlt3);
 
@@ -308,6 +297,16 @@ void BOARD_InitPins(void)
     PORT_SetPinMux(BOARD_INITPINS_SPI0_MOSI_PORT, BOARD_INITPINS_SPI0_MOSI_PIN, kPORT_MuxAlt2);
 
     PORT1->PCR[0] = ((PORT1->PCR[0] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_IBE_MASK)))
+
+                     /* Input Buffer Enable: Enables. */
+                     | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    /* PORT1_1 (pin 92) is configured as LPSPI0_SCK */
+    PORT_SetPinMux(BOARD_INITPINS_SPI0_SCK_PORT, BOARD_INITPINS_SPI0_SCK_PIN, kPORT_MuxAlt2);
+
+    PORT1->PCR[1] = ((PORT1->PCR[1] &
                       /* Mask bits to zero which are setting */
                       (~(PORT_PCR_IBE_MASK)))
 

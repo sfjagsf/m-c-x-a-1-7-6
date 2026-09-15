@@ -227,15 +227,6 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_SPI0_MOSI_PIN_MASK (1U << 0U)      /*!<@brief PORT pin mask */
                                                           /* @} */
 
-/*! @name PORT0_2 (number 78), SPI0_SCK
-  @{ */
-
-/* Symbols to be used with PORT driver */
-#define BOARD_INITPINS_SPI0_SCK_PORT PORT0               /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_SPI0_SCK_PIN 2U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_SPI0_SCK_PIN_MASK (1U << 2U)      /*!<@brief PORT pin mask */
-                                                         /* @} */
-
 /*! @name PORT1_2 (number 93), SPI0_MISO
   @{ */
 
@@ -617,6 +608,15 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_AD8_PIN 3U                   /*!<@brief PORT pin number */
 #define BOARD_INITPINS_AD8_PIN_MASK (1U << 3U)      /*!<@brief PORT pin mask */
                                                     /* @} */
+
+/*! @name PORT1_1 (number 92), SPI0_SCK
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_SPI0_SCK_PORT PORT1               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_SPI0_SCK_PIN 1U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_SPI0_SCK_PIN_MASK (1U << 1U)      /*!<@brief PORT pin mask */
+                                                         /* @} */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.
