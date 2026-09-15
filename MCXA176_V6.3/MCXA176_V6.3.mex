@@ -299,6 +299,7 @@
                         <pin_feature name="direction" value="OUTPUT"/>
                      </pin_features>
                   </pin>
+                  <pin peripheral="LPSPI1" signal="IN" pin_num="36" pin_signal="P2_15/WUU0_IN21/TRIG_OUT4/LPSPI1_SDI/LPUART1_RTS_B/CT4_MAT3/CT0_MAT2/FLEXIO0_D23/SmartDMA_PIO18/OPAMP0_OUT/ADC0_A2"/>
                </pins>
             </function>
          </functions_list>
@@ -1368,7 +1369,7 @@
                         <setting name="enable_dma" value="false"/>
                         <setting name="dac_dma" value="kDAC_FIFOEmptyDMAEnable"/>
                         <setting name="enable_DAC" value="true"/>
-                        <setting name="enable_convert" value="true"/>
+                        <setting name="enable_convert" value="false"/>
                         <setting name="convert_value" value="0"/>
                         <struct name="interrupt_config">
                            <set name="dac_interrupts">
@@ -1425,7 +1426,7 @@
                         <setting name="clockSource" value="LpspiClock"/>
                         <setting name="clockSourceFreq" value="ClocksTool_DefaultInit"/>
                         <struct name="master">
-                           <setting name="baudRate" value="20000000"/>
+                           <setting name="baudRate" value="50000000"/>
                            <setting name="bitsPerFrame" value="8"/>
                            <setting name="cpol" value="kLPSPI_ClockPolarityActiveHigh"/>
                            <setting name="cpha" value="kLPSPI_ClockPhaseFirstEdge"/>

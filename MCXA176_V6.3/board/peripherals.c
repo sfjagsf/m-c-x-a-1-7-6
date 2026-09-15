@@ -812,7 +812,7 @@ instance:
     - enable_dma: 'false'
     - dac_dma: 'kDAC_FIFOEmptyDMAEnable'
     - enable_DAC: 'true'
-    - enable_convert: 'true'
+    - enable_convert: 'false'
     - convert_value: '0'
     - interrupt_config:
       - dac_interrupts: ''
@@ -845,8 +845,6 @@ static void DAC0_init(void) {
   DAC_Init(DAC0_PERIPHERAL, &DAC0_config);
   /* Enable the LPDAC */
   DAC_Enable(DAC0_PERIPHERAL, true);
-  /* Set LPDAC value */
-  DAC_SetData(DAC0_PERIPHERAL, 0);
 }
 
 /***********************************************************************************************************************
@@ -933,7 +931,7 @@ instance:
     - clockSource: 'LpspiClock'
     - clockSourceFreq: 'ClocksTool_DefaultInit'
     - master:
-      - baudRate: '20000000'
+      - baudRate: '50000000'
       - bitsPerFrame: '8'
       - cpol: 'kLPSPI_ClockPolarityActiveHigh'
       - cpha: 'kLPSPI_ClockPhaseFirstEdge'
@@ -959,7 +957,7 @@ instance:
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const lpspi_master_config_t LPSPI1_config = {
-  .baudRate = 20000000UL,
+  .baudRate = 50000000UL,
   .bitsPerFrame = 8UL,
   .cpol = kLPSPI_ClockPolarityActiveHigh,
   .cpha = kLPSPI_ClockPhaseFirstEdge,

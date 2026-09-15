@@ -11,8 +11,8 @@ bool DacDriverWriteCode(uint16_t code)
     }
 
     /* DAC0 is configured for software-triggered, FIFO-disabled operation. */
-    DAC_SetData(DAC0_PERIPHERAL, code);
-    DAC_DoSoftwareTriggerFIFO(DAC0_PERIPHERAL);
+	DAC_SetData(DAC0_PERIPHERAL, 2048U);
+//    DAC_DoSoftwareTriggerFIFO(DAC0_PERIPHERAL);
     return true;
 }
 

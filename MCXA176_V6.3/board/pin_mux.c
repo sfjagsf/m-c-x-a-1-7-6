@@ -138,6 +138,7 @@ BOARD_InitPins:
   - {pin_num: '68', peripheral: LPUART1, signal: TX, pin_signal: P3_9/TRIG_IN4/LPSPI1_SDI/LPUART1_TXD/CT_INP5/PWM0_B1/FLEXIO0_D17/SmartDMA_PIO9}
   - {pin_num: '73', peripheral: FLEXPWM0, signal: 'A, 0', pin_signal: P3_0/WUU0_IN22/TRIG_IN0/LPUART3_RXD/CT_INP16/PWM0_A0/FLEXIO0_D8/PWM1_X0/SmartDMA_PIO0, identifier: PWM0,
     direction: OUTPUT}
+  - {pin_num: '36', peripheral: LPSPI1, signal: IN, pin_signal: P2_15/WUU0_IN21/TRIG_OUT4/LPSPI1_SDI/LPUART1_RTS_B/CT4_MAT3/CT0_MAT2/FLEXIO0_D23/SmartDMA_PIO18/OPAMP0_OUT/ADC0_A2}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -363,6 +364,16 @@ void BOARD_InitPins(void)
     PORT_SetPinMux(BOARD_INITPINS_SPI1_MOSI_PORT, BOARD_INITPINS_SPI1_MOSI_PIN, kPORT_MuxAlt2);
 
     PORT2->PCR[13] = ((PORT2->PCR[13] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_IBE_MASK)))
+
+                      /* Input Buffer Enable: Enables. */
+                      | PORT_PCR_IBE(PCR_IBE_ibe1));
+
+    /* PORT2_15 (pin 36) is configured as LPSPI1_SDI */
+    PORT_SetPinMux(PORT2, 15U, kPORT_MuxAlt2);
+
+    PORT2->PCR[15] = ((PORT2->PCR[15] &
                        /* Mask bits to zero which are setting */
                        (~(PORT_PCR_IBE_MASK)))
 
