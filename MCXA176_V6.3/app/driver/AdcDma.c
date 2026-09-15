@@ -115,7 +115,7 @@ static void AdcDmaFault(adc_dma_error_t error)
     s_diagnostics.lastError = error;
 }
 
-static bool AdcDmaAccumulateBlock(const uint32_t *results, uint32_t *sums)
+static bool AdcDmaAccumulateBlock(const uint32_t *results, uint32_t *sums, uint16_t *minimums, uint16_t *maximums)
 {
     uint8_t sampleCount[ADC_DMA_ADC0_CHANNEL_COUNT] = {0U};
     uint32_t sampleIndex;
@@ -135,7 +135,17 @@ static bool AdcDmaAccumulateBlock(const uint32_t *results, uint32_t *sums)
             return false;
         }
 
-        sums[channel] += (result & ADC_RESFIFO_D_MASK) >> ADC_DMA_STANDARD_RESULT_SHIFT;
+        const uint16_t value = (uint16_t)((result & ADC_RESFIFO_D_MASK) >> ADC_DMA_STANDARD_RESULT_SHIFT);
+
+        sums[channel] += value;
+        if (value < minimums[channel])
+        {
+            minimums[channel] = value;
+        }
+        if (value > maximums[channel])
+        {
+            maximums[channel] = value;
+        }
         sampleCount[channel]++;
     }
 
@@ -158,6 +168,8 @@ static bool AdcDmaUpdateLatest(void)
     uint32_t adc1Completed;
     uint32_t pairCompleted;
     uint32_t sums[ADC_DMA_CHANNEL_COUNT] = {0U};
+    uint16_t minimums[ADC_DMA_CHANNEL_COUNT];
+    uint16_t maximums[ADC_DMA_CHANNEL_COUNT] = {0U};
     uint32_t channel;
     uint8_t blockIndex;
     uint32_t irqMask;
@@ -183,9 +195,15 @@ static bool AdcDmaUpdateLatest(void)
         s_diagnostics.lastError = kAdcDmaErrorBufferOverrun;
     }
 
+    for (channel = 0U; channel < ADC_DMA_CHANNEL_COUNT; channel++)
+    {
+        minimums[channel] = UINT16_MAX;
+    }
+
     blockIndex = (uint8_t)((pairCompleted - 1U) & 1U);
-    if ((!AdcDmaAccumulateBlock(s_adc0Blocks[blockIndex], &sums[0U])) ||
-        (!AdcDmaAccumulateBlock(s_adc1Blocks[blockIndex], &sums[ADC_DMA_ADC0_CHANNEL_COUNT])))
+    if ((!AdcDmaAccumulateBlock(s_adc0Blocks[blockIndex], &sums[0U], &minimums[0U], &maximums[0U])) ||
+        (!AdcDmaAccumulateBlock(s_adc1Blocks[blockIndex], &sums[ADC_DMA_ADC0_CHANNEL_COUNT],
+                                &minimums[ADC_DMA_ADC0_CHANNEL_COUNT], &maximums[ADC_DMA_ADC0_CHANNEL_COUNT])))
     {
         AdcDmaFault(kAdcDmaErrorResultTag);
         return false;
@@ -193,7 +211,8 @@ static bool AdcDmaUpdateLatest(void)
 
     for (channel = 0U; channel < ADC_DMA_CHANNEL_COUNT; channel++)
     {
-        s_latestRaw[channel] = (uint16_t)(sums[channel] / ADC_DMA_SAMPLES_PER_CHANNEL);
+        s_latestRaw[channel] =
+            (uint16_t)((sums[channel] - minimums[channel] - maximums[channel]) / ADC_DMA_FILTERED_SAMPLE_COUNT);
     }
 
     s_lastConsumedPair = pairCompleted;

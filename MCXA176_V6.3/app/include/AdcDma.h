@@ -18,6 +18,7 @@ extern "C" {
 #define ADC_DMA_ADC1_CHANNEL_COUNT        (7U)
 #define ADC_DMA_CHANNEL_COUNT             (14U)
 #define ADC_DMA_SAMPLES_PER_CHANNEL       (10U)
+#define ADC_DMA_FILTERED_SAMPLE_COUNT      (ADC_DMA_SAMPLES_PER_CHANNEL - 2U)
 #define ADC_DMA_BUFFER_COUNT              (2U)
 #define ADC_DMA_BLOCK_WORD_COUNT          (ADC_DMA_ADC0_CHANNEL_COUNT * ADC_DMA_SAMPLES_PER_CHANNEL)
 #define ADC_DMA_SAMPLE_RATE_HZ            (1000U)
@@ -69,7 +70,9 @@ void AdcDmaStopContinuous(void);
 bool AdcDmaPoll(void);
 
 /*
- * Returns the newest complete ten-scan average without stopping acquisition.
+ * Returns the newest complete ten-scan filtered value without stopping acquisition.
+ * Each channel uses the STM32-compatible filter: discard one maximum and one
+ * minimum raw sample, then average the remaining eight samples.
  * Output order: AD1, AD2, AD3, AD4, ADC1_3, AD6, AD8, AD7, AD9..AD14.
  * Returns false until the first 10 ms block has completed or after a fault.
  */
