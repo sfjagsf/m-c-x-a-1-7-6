@@ -10,10 +10,7 @@
 #define ADC_DMA_TIMER_PWM_TICKS       ((CTIMER3_Match_0_config.matchValue + 1UL) / 2UL)
 /* Standard single-ended LPADC conversion is 12-bit left-aligned in RESFIFO.D[14:3]. */
 #define ADC_DMA_STANDARD_RESULT_SHIFT (3U)
-
-/* Command order is exactly the generated ADC0/ADC1 command-chain order. */
-static const uint8_t s_adc0CommandId[ADC_DMA_ADC0_CHANNEL_COUNT] = {1U, 2U, 3U, 4U, 5U, 6U, 7U};
-static const uint8_t s_adc1CommandId[ADC_DMA_ADC1_CHANNEL_COUNT] = {1U, 2U, 3U, 4U, 5U, 6U, 7U};
+#define ADC_DMA_FIRST_COMMAND_ID      (1U)
 
 /*
  * RESFIFO words remain 32-bit so VALID and CMDSRC are always checked.
@@ -118,10 +115,7 @@ static void AdcDmaFault(adc_dma_error_t error)
     s_diagnostics.lastError = error;
 }
 
-static bool AdcDmaAccumulateBlock(const uint32_t *results,
-                                  const uint8_t *commandIds,
-                                  uint8_t adcIndex,
-                                  uint32_t *sums)
+static bool AdcDmaAccumulateBlock(const uint32_t *results, uint32_t *sums)
 {
     uint8_t sampleCount[ADC_DMA_ADC0_CHANNEL_COUNT] = {0U};
     uint32_t sampleIndex;
@@ -130,35 +124,13 @@ static bool AdcDmaAccumulateBlock(const uint32_t *results,
     {
         const uint32_t result = results[sampleIndex];
         const uint8_t command = (uint8_t)((result & ADC_RESFIFO_CMDSRC_MASK) >> ADC_RESFIFO_CMDSRC_SHIFT);
-        uint32_t channel;
+        const uint32_t channel = (uint32_t)command - ADC_DMA_FIRST_COMMAND_ID;
 
-        if ((result & ADC_RESFIFO_VALID_MASK) == 0U)
+        /* Both generated command chains use contiguous CMD1..CMD7. */
+        if (((result & ADC_RESFIFO_VALID_MASK) == 0U) || (command < ADC_DMA_FIRST_COMMAND_ID) ||
+            (channel >= ADC_DMA_ADC0_CHANNEL_COUNT) || (sampleCount[channel] >= ADC_DMA_SAMPLES_PER_CHANNEL))
         {
             s_diagnostics.resultTagErrorCount++;
-            s_diagnostics.resultTagLastWord = result;
-            s_diagnostics.resultTagExpectedCommand = 0U;
-            s_diagnostics.resultTagActualCommand = command;
-            s_diagnostics.resultTagAdcIndex = adcIndex;
-            s_diagnostics.resultTagSampleIndex = (uint8_t)sampleIndex;
-            s_diagnostics.lastError = kAdcDmaErrorResultTag;
-            return false;
-        }
-
-        for (channel = 0U; channel < ADC_DMA_ADC0_CHANNEL_COUNT; channel++)
-        {
-            if (commandIds[channel] == command)
-            {
-                break;
-            }
-        }
-        if ((channel == ADC_DMA_ADC0_CHANNEL_COUNT) || (sampleCount[channel] >= ADC_DMA_SAMPLES_PER_CHANNEL))
-        {
-            s_diagnostics.resultTagErrorCount++;
-            s_diagnostics.resultTagLastWord = result;
-            s_diagnostics.resultTagExpectedCommand = 0U;
-            s_diagnostics.resultTagActualCommand = command;
-            s_diagnostics.resultTagAdcIndex = adcIndex;
-            s_diagnostics.resultTagSampleIndex = (uint8_t)sampleIndex;
             s_diagnostics.lastError = kAdcDmaErrorResultTag;
             return false;
         }
@@ -172,11 +144,6 @@ static bool AdcDmaAccumulateBlock(const uint32_t *results,
         if (sampleCount[sampleIndex] != ADC_DMA_SAMPLES_PER_CHANNEL)
         {
             s_diagnostics.resultTagErrorCount++;
-            s_diagnostics.resultTagLastWord = 0U;
-            s_diagnostics.resultTagExpectedCommand = commandIds[sampleIndex];
-            s_diagnostics.resultTagActualCommand = sampleCount[sampleIndex];
-            s_diagnostics.resultTagAdcIndex = adcIndex;
-            s_diagnostics.resultTagSampleIndex = 0U;
             s_diagnostics.lastError = kAdcDmaErrorResultTag;
             return false;
         }
@@ -217,9 +184,8 @@ static bool AdcDmaUpdateLatest(void)
     }
 
     blockIndex = (uint8_t)((pairCompleted - 1U) & 1U);
-    if ((!AdcDmaAccumulateBlock(s_adc0Blocks[blockIndex], s_adc0CommandId, 0U, &sums[0U])) ||
-        (!AdcDmaAccumulateBlock(s_adc1Blocks[blockIndex], s_adc1CommandId, 1U,
-                                &sums[ADC_DMA_ADC0_CHANNEL_COUNT])))
+    if ((!AdcDmaAccumulateBlock(s_adc0Blocks[blockIndex], &sums[0U])) ||
+        (!AdcDmaAccumulateBlock(s_adc1Blocks[blockIndex], &sums[ADC_DMA_ADC0_CHANNEL_COUNT])))
     {
         AdcDmaFault(kAdcDmaErrorResultTag);
         return false;

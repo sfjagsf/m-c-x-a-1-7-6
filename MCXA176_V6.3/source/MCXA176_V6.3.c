@@ -24,7 +24,6 @@
 #include "UartEchoTask.h"
 #include "PwmDacTestTask.h"
 #include "AdcDma.h"
-#include "AdcTestTask.h"
 
 /* TODO: insert other definitions and declarations here. */
 
@@ -38,7 +37,13 @@ int main(void) {
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
     AdcDma_Init();
-    (void)AdcDmaStartContinuous();
+    if (!AdcDmaStartContinuous())
+    {
+        for (;;)
+        {
+            __asm volatile ("nop");
+        }
+    }
     Crc16Driver_Init();
     Uart0_Init();
     Uart1_Init();
@@ -96,14 +101,6 @@ int main(void) {
     }
 
     if (!PwmDacTestTask_Create())
-    {
-        for (;;)
-        {
-            __asm volatile ("nop");
-        }
-    }
-
-    if (!AdcTestTask_Create())
     {
         for (;;)
         {

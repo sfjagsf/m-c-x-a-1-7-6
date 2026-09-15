@@ -53,11 +53,6 @@ typedef struct
     uint32_t dmaGlobalErrorFlags;
     uint32_t fifoOverflowCount;
     uint32_t resultTagErrorCount;
-    uint32_t resultTagLastWord;
-    uint8_t resultTagExpectedCommand;
-    uint8_t resultTagActualCommand;
-    uint8_t resultTagAdcIndex;
-    uint8_t resultTagSampleIndex;
     adc_dma_error_t lastError;
 } adc_dma_diagnostics_t;
 
