@@ -6,7 +6,7 @@
 
 /*
  * These buffers must not be automatic variables.  A read transaction needs
- * both buffers (522 bytes in total), which exceeds the 512-byte application
+ * both buffers (2058 bytes in total), which exceeds the 512-byte application
  * task stacks.  The lock makes a concurrent caller fail cleanly instead of
  * corrupting an in-progress SPI transaction.
  */

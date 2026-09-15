@@ -17,8 +17,8 @@
 extern "C" {
 #endif
 
-/* One W25Qxx page-program transaction: command + 24-bit address + 256 bytes. */
-#define MY_SPI0_MAX_TRANSACTION_BYTES (261U)
+/* One large Flash read transaction: command/address/dummy + 1024 data bytes. */
+#define MY_SPI0_MAX_TRANSACTION_BYTES (1029U)
 
 status_t MY_SPI0_Transmit(const uint8_t *firstData,
                           size_t firstSize,

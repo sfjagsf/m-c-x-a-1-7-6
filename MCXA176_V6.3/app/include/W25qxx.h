@@ -19,6 +19,7 @@ typedef struct
     uint8_t MF;
     uint8_t ID;
     bool ADS;
+    uint32_t capacityBytes;
     uint8_t uniqueID[FLASH_UNIQUEID_BYTE_SIZE];
     uint8_t mode;
     uint8_t status;
@@ -37,11 +38,15 @@ void W25qxxWriteEnable(void);
 bool W25qxxWriteDisable(void);
 bool W25qxxWriteStatus1(uint8_t value);
 bool W25qxxWaitBusy(uint32_t timeoutMs);
-/* Fast-read (0x0B) with a 24-bit address; reads are split into safe SPI transactions. */
+/* Returns false on an SPI error; busy is set while the Flash WIP bit is high. */
+bool W25qxxGetBusy(bool *busy);
+/* Fast-read (0x0B); reads use 3- or 4-byte addressing and 1 KiB SPI chunks. */
 bool W25qxxRead(uint32_t address, uint8_t *data, uint32_t size);
 /* Splits an arbitrary range at each physical 256-byte page boundary. */
 bool W25qxxPageProgram(uint32_t address, const uint8_t *data, uint32_t size);
 bool W25qxxEraseSector(uint32_t address);
+/* Starts erase then returns immediately; poll W25qxxGetBusy() until busy is false. */
+bool W25qxxStartEraseSector(uint32_t address);
 bool W25qxxEraseBlock(uint32_t address, bool erase64K);
 bool W25qxxChipErase(void);
 const W25Q_Information *W25qxxGetInformation(void);

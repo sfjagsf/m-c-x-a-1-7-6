@@ -115,6 +115,12 @@ bool Crc16Driver_Calculate(const uint8_t *data, size_t length, uint16_t *result)
         return false;
     }
 
+    if (length <= CRC16_MODBUS_SOFTWARE_THRESHOLD)
+    {
+        *result = Crc16Driver_CalculateSoftwareUnchecked(data, length);
+        return true;
+    }
+
     if (Crc16Driver_TryAcquireHardware())
     {
         /* Reinitialize every frame so its seed is exactly 0xFFFF. */

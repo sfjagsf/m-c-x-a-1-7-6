@@ -24,8 +24,8 @@ typedef struct
 bool RtcDriverGetDatetime(rtc_driver_datetime_t *datetime);
 
 /*
- * Sets RTC0's calendar value.  The RTC is stopped only for the hardware write
- * and restarted before this function returns, including invalid input cases.
+ * Sets RTC0's calendar value. Invalid dates (including non-leap-year Feb 29)
+ * are rejected without touching RTC0. The timer is stopped only for the write.
  */
 bool RtcDriverSetDatetime(const rtc_driver_datetime_t *datetime);
 

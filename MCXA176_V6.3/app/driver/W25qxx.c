@@ -22,9 +22,10 @@
 #define W25Q_CMD_RESET_DEVICE       (0x99U)
 #define W25Q_CMD_CHIP_ERASE         (0xC7U)
 #define W25Q_CMD_WRITE_DISABLE      (0x04U)
+#define W25Q_CMD_ENTER_4BYTE_ADDRESS (0xB7U)
 
 #define W25Q_PAGE_SIZE               (256U)
-#define W25Q_READ_CHUNK_SIZE         (256U)
+#define W25Q_READ_CHUNK_SIZE         (1024U)
 #define W25Q_MAX_3BYTE_ADDRESS        (0xFFFFFFUL)
 #define W25Q_STATUS_WRITE_TIMEOUT_MS  (500U)
 #define W25Q_CHIP_ERASE_TIMEOUT_MS    (120000U)
@@ -50,16 +51,28 @@ static status_t W25qxxCommand(const uint8_t *command, size_t commandSize)
 
 static bool W25qxxIsAddressRangeValid(uint32_t address, uint32_t size)
 {
-    return (address <= W25Q_MAX_3BYTE_ADDRESS) &&
-           (size <= ((W25Q_MAX_3BYTE_ADDRESS + 1UL) - address));
+    return (s_information.capacityBytes != 0U) && (address < s_information.capacityBytes) &&
+           (size <= (s_information.capacityBytes - address));
 }
 
-static void W25qxxBuildAddressCommand(uint8_t *command, uint8_t opcode, uint32_t address)
+static uint8_t W25qxxAddressByteCount(void)
 {
+    return s_information.ADS ? 4U : 3U;
+}
+
+static uint8_t W25qxxBuildAddressCommand(uint8_t *command, uint8_t opcode, uint32_t address)
+{
+    uint8_t index = 1U;
+
     command[0] = opcode;
-    command[1] = (uint8_t)(address >> 16U);
-    command[2] = (uint8_t)(address >> 8U);
-    command[3] = (uint8_t)address;
+    if (s_information.ADS)
+    {
+        command[index++] = (uint8_t)(address >> 24U);
+    }
+    command[index++] = (uint8_t)(address >> 16U);
+    command[index++] = (uint8_t)(address >> 8U);
+    command[index++] = (uint8_t)address;
+    return index;
 }
 
 static bool W25qxxReadCommand(uint8_t opcode,
@@ -73,8 +86,8 @@ static bool W25qxxReadCommand(uint8_t opcode,
     size_t commandSize = 1U;
 
     if ((data == NULL) || (size == 0U) ||
-        (dummyBytes > (uint8_t)(sizeof(command) - 4U)) ||
-        (size > (MY_SPI0_MAX_TRANSACTION_BYTES - (hasAddress ? 4U : 1U) - dummyBytes)))
+        (dummyBytes > (uint8_t)(sizeof(command) - 5U)) ||
+        (size > (MY_SPI0_MAX_TRANSACTION_BYTES - (hasAddress ? W25qxxAddressByteCount() + 1U : 1U) - dummyBytes)))
     {
         return false;
     }
@@ -82,8 +95,7 @@ static bool W25qxxReadCommand(uint8_t opcode,
     command[0] = opcode;
     if (hasAddress)
     {
-        W25qxxBuildAddressCommand(command, opcode, address);
-        commandSize = 4U;
+        commandSize = W25qxxBuildAddressCommand(command, opcode, address);
     }
     while (dummyBytes-- != 0U)
     {
@@ -119,10 +131,11 @@ bool W25qxxReadJedecId(uint8_t id[3])
 
 uint16_t W25qxxReadID(void)
 {
+    const uint8_t command[4] = {W25Q_CMD_MANUFACTURER_ID, 0U, 0U, 0U};
     uint8_t id[2] = {0U, 0U};
 
     /* 0x90 requires three address/dummy bytes before the two response bytes. */
-    if (!W25qxxReadCommand(W25Q_CMD_MANUFACTURER_ID, 0U, true, 0U, id, sizeof(id)))
+    if (MY_SPI0_TransmitReceive(command, sizeof(command), id, sizeof(id)) != kStatus_Success)
     {
         return 0U;
     }
@@ -201,6 +214,18 @@ bool W25qxxWaitBusy(uint32_t timeoutMs)
     return false;
 }
 
+bool W25qxxGetBusy(bool *busy)
+{
+    uint8_t status;
+
+    if ((busy == NULL) || (s_information.status != FLASH_INIT_SUCCESS) || !W25qxxReadStatus(1U, &status))
+    {
+        return false;
+    }
+    *busy = (status & 0x01U) != 0U;
+    return true;
+}
+
 bool W25qxxInit(uint8_t mode)
 {
     uint8_t jedecId[3];
@@ -222,7 +247,22 @@ bool W25qxxInit(uint8_t mode)
 
     s_information.MF = jedecId[0];
     s_information.ID = jedecId[2];
-    s_information.ADS = false;
+    s_information.capacityBytes = (jedecId[2] < 32U) ? (1UL << jedecId[2]) : 0U;
+    if ((s_information.capacityBytes == 0U) || (s_information.capacityBytes > (W25Q_MAX_3BYTE_ADDRESS + 1UL)))
+    {
+        const uint8_t command = W25Q_CMD_ENTER_4BYTE_ADDRESS;
+
+        if ((s_information.capacityBytes == 0U) || (W25qxxCommand(&command, sizeof(command)) != kStatus_Success))
+        {
+            s_information.status = FLASH_INIT_NO_EXITS;
+            return false;
+        }
+        s_information.ADS = true;
+    }
+    else
+    {
+        s_information.ADS = false;
+    }
     s_information.mode = FLASH_SPI_MODE;
     s_information.status = FLASH_INIT_SUCCESS;
 
@@ -264,7 +304,7 @@ bool W25qxxRead(uint32_t address, uint8_t *data, uint32_t size)
 
 bool W25qxxPageProgram(uint32_t address, const uint8_t *data, uint32_t size)
 {
-    uint8_t command[4];
+    uint8_t command[5];
     uint32_t chunk;
     uint32_t pageRemaining;
 
@@ -283,8 +323,7 @@ bool W25qxxPageProgram(uint32_t address, const uint8_t *data, uint32_t size)
         {
             return false;
         }
-        W25qxxBuildAddressCommand(command, W25Q_CMD_PAGE_PROGRAM, address);
-        if (MY_SPI0_Transmit(command, sizeof(command), data, chunk) != kStatus_Success)
+        if (MY_SPI0_Transmit(command, W25qxxBuildAddressCommand(command, W25Q_CMD_PAGE_PROGRAM, address), data, chunk) != kStatus_Success)
         {
             return false;
         }
@@ -303,24 +342,25 @@ bool W25qxxPageProgram(uint32_t address, const uint8_t *data, uint32_t size)
 
 bool W25qxxEraseSector(uint32_t address)
 {
-    uint8_t command[4];
+    return W25qxxStartEraseSector(address) && W25qxxWaitBusy(500U);
+}
 
-    if ((s_information.status != FLASH_INIT_SUCCESS) || !W25qxxIsAddressRangeValid(address, 1U))
+bool W25qxxStartEraseSector(uint32_t address)
+{
+    uint8_t command[5];
+
+    if ((s_information.status != FLASH_INIT_SUCCESS) || !W25qxxIsAddressRangeValid(address, 1U) ||
+        !W25qxxWriteEnableChecked())
     {
         return false;
     }
-
-    if (!W25qxxWriteEnableChecked())
-    {
-        return false;
-    }
-    W25qxxBuildAddressCommand(command, W25Q_CMD_SECTOR_ERASE, address & ~(NOR_FLASH_SECTOR_SIZE - 1UL));
-    return (W25qxxCommand(command, sizeof(command)) == kStatus_Success) && W25qxxWaitBusy(500U);
+    return W25qxxCommand(command, W25qxxBuildAddressCommand(command, W25Q_CMD_SECTOR_ERASE,
+                                                              address & ~(NOR_FLASH_SECTOR_SIZE - 1UL))) == kStatus_Success;
 }
 
 bool W25qxxEraseBlock(uint32_t address, bool erase64K)
 {
-    uint8_t command[4];
+    uint8_t command[5];
     uint32_t blockSize = erase64K ? NOR_FLASH_BLOCK_64K : NOR_FLASH_BLOCK_32K;
     uint8_t opcode = erase64K ? W25Q_CMD_BLOCK_ERASE_64K : W25Q_CMD_BLOCK_ERASE_32K;
 
@@ -333,8 +373,9 @@ bool W25qxxEraseBlock(uint32_t address, bool erase64K)
     {
         return false;
     }
-    W25qxxBuildAddressCommand(command, opcode, address & ~(blockSize - 1UL));
-    return (W25qxxCommand(command, sizeof(command)) == kStatus_Success) && W25qxxWaitBusy(2500U);
+    return (W25qxxCommand(command, W25qxxBuildAddressCommand(command, opcode,
+                                                                address & ~(blockSize - 1UL))) == kStatus_Success) &&
+           W25qxxWaitBusy(2500U);
 }
 
 bool W25qxxChipErase(void)

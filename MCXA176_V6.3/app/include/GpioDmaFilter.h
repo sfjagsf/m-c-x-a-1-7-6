@@ -38,6 +38,12 @@ bool GpioDmaFilterReadPin(uint32_t pinMask);
 /* Number of failed DMA rearms; useful during board bring-up. */
 uint32_t GpioDmaFilterGetErrorCount(void);
 
+/* Completed 8-sample windows; a non-changing value indicates a stopped sampler. */
+uint32_t GpioDmaFilterGetCompletedWindowCount(void);
+
+/* True when CTIMER4 sampling is running and no DMA rearm has failed. */
+bool GpioDmaFilterIsHealthy(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -13,6 +13,8 @@ extern "C" {
 #define CRC16_MODBUS_INITIAL_VALUE (0xFFFFU)
 #define CRC16_MODBUS_CHECK_VALUE   (0x4B37U)
 #define CRC16_MODBUS_MAX_DATA_SIZE (254U)
+/* Small frames are faster through the re-entrant flash-resident lookup table. */
+#define CRC16_MODBUS_SOFTWARE_THRESHOLD (16U)
 
 /*
  * Gives this module ownership of CRC0 and selects CRC-16/MODBUS parameters.
