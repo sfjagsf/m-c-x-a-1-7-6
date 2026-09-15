@@ -34,11 +34,16 @@ uint16_t W25qxxReadID(void);
 bool W25qxxReadJedecId(uint8_t id[3]);
 uint8_t W25qxxReadSR(uint32_t reg);
 void W25qxxWriteEnable(void);
+bool W25qxxWriteDisable(void);
+bool W25qxxWriteStatus1(uint8_t value);
 bool W25qxxWaitBusy(uint32_t timeoutMs);
+/* Fast-read (0x0B) with a 24-bit address; reads are split into safe SPI transactions. */
 bool W25qxxRead(uint32_t address, uint8_t *data, uint32_t size);
+/* Splits an arbitrary range at each physical 256-byte page boundary. */
 bool W25qxxPageProgram(uint32_t address, const uint8_t *data, uint32_t size);
 bool W25qxxEraseSector(uint32_t address);
 bool W25qxxEraseBlock(uint32_t address, bool erase64K);
+bool W25qxxChipErase(void);
 const W25Q_Information *W25qxxGetInformation(void);
 
 #ifdef __cplusplus

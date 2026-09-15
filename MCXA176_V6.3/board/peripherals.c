@@ -992,7 +992,7 @@ instance:
       - betweenTransferDelayInNanoSec: '100'
       - whichPcs: 'kLPSPI_Pcs0'
       - pcsActiveHighOrLow: 'kLPSPI_PcsActiveLow'
-      - pinCfg: 'kLPSPI_SdoInSdiOut'
+      - pinCfg: 'kLPSPI_SdiInSdoOut'
       - pcsFunc: 'kLPSPI_PcsAsCs'
       - dataOutConfig: 'kLpspiDataOutRetained'
       - enableInputDelay: 'false'
@@ -1018,7 +1018,7 @@ const lpspi_master_config_t LPSPI1_config = {
   .betweenTransferDelayInNanoSec = 100UL,
   .whichPcs = kLPSPI_Pcs0,
   .pcsActiveHighOrLow = kLPSPI_PcsActiveLow,
-  .pinCfg = kLPSPI_SdoInSdiOut,
+  .pinCfg = kLPSPI_SdiInSdoOut,
   .pcsFunc = kLPSPI_PcsAsCs,
   .dataOutConfig = kLpspiDataOutRetained,
   .enableInputDelay = false

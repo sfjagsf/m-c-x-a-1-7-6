@@ -11,13 +11,14 @@ void PwmDacTestTask(void *argument)
 {
     (void)argument;
 
-    /* P3_0: 2 kHz, 50% low-active PWM. P2_2: board-level 10.000 V command. */
-    g_pwmDacTestPassed = PwmDriverStartTestOutput() &&
-                         DacDriverSetOutputMilliVolts(DAC_DRIVER_OUTPUT_MAX_MV);
-    g_pwmDacTestDacCode = DacDriverReadCode();
+
 
     for (;;)
     {
-        (void)osDelay(1000U);
+		/* P3_0: 2 kHz, 50% low-active PWM. P2_2: board-level 10.000 V command. */
+		g_pwmDacTestPassed = PwmDriverStartTestOutput()
+				&& DacDriverSetOutputMilliVolts(5000U);
+		g_pwmDacTestDacCode = DacDriverReadCode();
+		(void) osDelay(100U);
     }
 }

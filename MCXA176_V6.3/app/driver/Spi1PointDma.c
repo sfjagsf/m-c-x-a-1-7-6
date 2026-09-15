@@ -29,6 +29,17 @@ status_t Spi1PointDmaStart(const uint16_t *points, uint32_t pointCount)
     CTIMER_Reset(CTIMER0_PERIPHERAL);
     s_spi1PointDmaRunning = false;
 
+    /*
+     * DMA writes TDR directly and therefore bypasses LPSPI_MasterTransfer().
+     * Keep PCS0 (P2_17 / SPI1_CS) under LPSPI hardware control: CONT=0 makes
+     * each 16-bit point one complete, active-low PCS pulse.  The board has no
+     * LPSPI1 receive path, so mask RX to prevent its FIFO from filling.
+     */
+    LPSPI1->TCR = (LPSPI_GetTcr(LPSPI1) &
+                    ~(LPSPI_TCR_CONT_MASK | LPSPI_TCR_CONTC_MASK | LPSPI_TCR_RXMSK_MASK |
+                      LPSPI_TCR_TXMSK_MASK | LPSPI_TCR_PCS_MASK)) |
+                   LPSPI_TCR_RXMSK(1U) | LPSPI_TCR_PCS((uint32_t)kLPSPI_Pcs0);
+
     /* One CTIMER0_M0 request transfers exactly one 16-bit point to LPSPI1. */
     EDMA_PrepareTransferConfig(&transfer, (void *)points, sizeof(points[0]), sizeof(points[0]),
                                (void *)LPSPI_GetTxRegisterAddress(LPSPI1), sizeof(uint16_t), 0,

@@ -7,6 +7,7 @@
 
 #define W25Q_CMD_WRITE_ENABLE       (0x06U)
 #define W25Q_CMD_READ_STATUS_1      (0x05U)
+#define W25Q_CMD_WRITE_STATUS_1     (0x01U)
 #define W25Q_CMD_READ_STATUS_2      (0x35U)
 #define W25Q_CMD_READ_STATUS_3      (0x15U)
 #define W25Q_CMD_PAGE_PROGRAM       (0x02U)
@@ -19,10 +20,14 @@
 #define W25Q_CMD_READ_UNIQUE_ID     (0x4BU)
 #define W25Q_CMD_ENABLE_RESET       (0x66U)
 #define W25Q_CMD_RESET_DEVICE       (0x99U)
+#define W25Q_CMD_CHIP_ERASE         (0xC7U)
+#define W25Q_CMD_WRITE_DISABLE      (0x04U)
 
 #define W25Q_PAGE_SIZE               (256U)
 #define W25Q_READ_CHUNK_SIZE         (256U)
 #define W25Q_MAX_3BYTE_ADDRESS        (0xFFFFFFUL)
+#define W25Q_STATUS_WRITE_TIMEOUT_MS  (500U)
+#define W25Q_CHIP_ERASE_TIMEOUT_MS    (120000U)
 
 extern uint32_t SystemCoreClock;
 
@@ -153,6 +158,22 @@ static bool W25qxxWriteEnableChecked(void)
 
     return (W25qxxCommand(&command, 1U) == kStatus_Success) &&
            W25qxxReadStatus(1U, &status) && ((status & 0x02U) != 0U);
+}
+
+bool W25qxxWriteStatus1(uint8_t value)
+{
+    const uint8_t command[2] = {W25Q_CMD_WRITE_STATUS_1, value};
+
+    return (s_information.status == FLASH_INIT_SUCCESS) && W25qxxWriteEnableChecked() &&
+           (W25qxxCommand(command, sizeof(command)) == kStatus_Success) &&
+           W25qxxWaitBusy(W25Q_STATUS_WRITE_TIMEOUT_MS);
+}
+
+bool W25qxxWriteDisable(void)
+{
+    const uint8_t command = W25Q_CMD_WRITE_DISABLE;
+
+    return W25qxxCommand(&command, sizeof(command)) == kStatus_Success;
 }
 
 void W25qxxWriteEnable(void)
@@ -314,6 +335,15 @@ bool W25qxxEraseBlock(uint32_t address, bool erase64K)
     }
     W25qxxBuildAddressCommand(command, opcode, address & ~(blockSize - 1UL));
     return (W25qxxCommand(command, sizeof(command)) == kStatus_Success) && W25qxxWaitBusy(2500U);
+}
+
+bool W25qxxChipErase(void)
+{
+    const uint8_t command = W25Q_CMD_CHIP_ERASE;
+
+    return (s_information.status == FLASH_INIT_SUCCESS) && W25qxxWriteEnableChecked() &&
+           (W25qxxCommand(&command, sizeof(command)) == kStatus_Success) &&
+           W25qxxWaitBusy(W25Q_CHIP_ERASE_TIMEOUT_MS);
 }
 
 const W25Q_Information *W25qxxGetInformation(void)
