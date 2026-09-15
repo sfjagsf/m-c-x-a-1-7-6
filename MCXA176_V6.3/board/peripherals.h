@@ -57,6 +57,16 @@ extern "C" {
 #define DMA0_DMA_CH_INT_DONE_0_IRQN DMA_CH0_IRQn
 /* DMA0 interrupt vector priority. */
 #define DMA0_DMA_CH_INT_DONE_0_IRQ_PRIORITY 5
+
+  /* Channel CH4 definitions */
+/* DMA0 eDMA source request. */
+#define DMA0_CH4_DMA_REQUEST kDma0RequestMuxCtimer0M0
+/* Selected eDMA channel number. */
+#define DMA0_CH4_DMA_CHANNEL 4
+/* DMA0 interrupt vector ID (number). */
+#define DMA0_DMA_CH_INT_DONE_4_IRQN DMA_CH4_IRQn
+/* DMA0 interrupt vector priority. */
+#define DMA0_DMA_CH_INT_DONE_4_IRQ_PRIORITY 5
 /* NVIC interrupt vector ID (number). */
 #define LPUART0_NVIC_IRQN LPUART0_IRQn
 /* NVIC interrupt vector priority. */
@@ -246,6 +256,16 @@ extern "C" {
 #define FLEXPWM0_F0_FAULT2 kPWM_Fault_2
 /* Definition of fault Fault3 ID */
 #define FLEXPWM0_F0_FAULT3 kPWM_Fault_3
+/* Definition of peripheral ID */
+#define CTIMER0_PERIPHERAL CTIMER0
+/* Timer tick frequency in Hz (input frequency of the timer) */
+#define CTIMER0_TICK_FREQ 180000000UL
+/* Timer tick period in ns (input period of the timer) */
+#define CTIMER0_TICK_PERIOD 6UL
+/* Definition of PWM period channel. */
+#define CTIMER0_PWM_PERIOD_CH kCTIMER_Match_0
+/* Definition of channel 0 ID */
+#define CTIMER0_MATCH_0_CHANNEL kCTIMER_Match_0
 
 /***********************************************************************************************************************
  * Global variables
@@ -257,6 +277,7 @@ extern edma_handle_t DMA0_CH7_Handle;
 /* Transactional transfer configurations */
 extern edma_transfer_config_t DMA0_CH7_Transfers_config[1];
 extern edma_handle_t DMA0_CH0_Handle;
+extern edma_handle_t DMA0_CH4_Handle;
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_RS485_EN_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_EN_15V_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_LED_handle);
@@ -299,6 +320,8 @@ extern const pwm_fault_param_t FLEXPWM0_Fault0_fault_config;
 extern const pwm_fault_param_t FLEXPWM0_Fault1_fault_config;
 extern const pwm_fault_param_t FLEXPWM0_Fault2_fault_config;
 extern const pwm_fault_param_t FLEXPWM0_Fault3_fault_config;
+extern const ctimer_config_t CTIMER0_config;
+extern const ctimer_match_config_t CTIMER0_Match_0_config;
 
 /***********************************************************************************************************************
  * Global functions

@@ -85,6 +85,7 @@ instance:
       - 1: []
       - 2: []
       - 3: []
+      - 4: []
     - edma_channels:
       - 0:
         - apiMode: 'trans'
@@ -181,6 +182,40 @@ instance:
           - IRQn: 'DMA_CH0_IRQn'
           - enable_priority: 'true'
           - priority: '5'
+      - 2:
+        - apiMode: 'trans'
+        - edma_channel:
+          - channel_prefix_id: 'CH4'
+          - uid: '1789436348251'
+          - eDMAn: '4'
+          - eDMA_source: 'kDma0RequestMuxCtimer0M0'
+          - init_channel_priority: 'false'
+          - edma_channel_Preemption:
+            - enableChannelPreemption: 'false'
+            - enablePreemptAbility: 'false'
+            - channelPriority: '0'
+          - masterIdReplicationEnable: 'noInit'
+          - protectionLevel: 'noInit'
+          - enable_custom_name: 'false'
+        - resetChannel: 'true'
+        - enableChannelRequest: 'true'
+        - enableAsyncRequest: 'false'
+        - enableAutoStop: 'false'
+        - tcd_pool_enable: 'false'
+        - tcd_settings:
+          - tcd_size: '1'
+          - tcd_memory_ptr_id: 'default'
+        - transfer_config: []
+        - loopTransfer: 'false'
+        - no_init_uid: '1789436348263'
+        - init_callback: 'false'
+        - callback_function: 'DMA_Callback'
+        - callback_user_data: ''
+        - channel_enabled_interrupts: ''
+        - interrupt_channel:
+          - IRQn: 'DMA_CH4_IRQn'
+          - enable_priority: 'true'
+          - priority: '5'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 edma_config_t DMA0_config = {
@@ -194,6 +229,7 @@ edma_config_t DMA0_config = {
 edma_transfer_config_t DMA0_CH7_Transfers_config[1];
 edma_handle_t DMA0_CH7_Handle;
 edma_handle_t DMA0_CH0_Handle;
+edma_handle_t DMA0_CH4_Handle;
 
 static void DMA0_init(void) {
 
@@ -221,12 +257,26 @@ static void DMA0_init(void) {
   EDMA_SetCallback(&DMA0_CH0_Handle, LPUART0_DMACallback, NULL);
   /* Interrupt vector DMA_CH0_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(DMA0_DMA_CH_INT_DONE_0_IRQN, DMA0_DMA_CH_INT_DONE_0_IRQ_PRIORITY);
+
+  /* Channel CH4 initialization */
+  /* Set the kDma0RequestMuxCtimer0M0 request */
+  EDMA_SetChannelMux(DMA0_DMA_BASEADDR, DMA0_CH4_DMA_CHANNEL, DMA0_CH4_DMA_REQUEST);
+  /* Create the eDMA DMA0_CH4_Handle handle */
+  EDMA_CreateHandle(&DMA0_CH4_Handle, DMA0_DMA_BASEADDR, DMA0_CH4_DMA_CHANNEL);
+  /* DMA0 channel 4 reset */
+  EDMA_ResetChannel(DMA0_DMA_BASEADDR, DMA0_CH4_DMA_CHANNEL);
+  /* Interrupt vector DMA_CH4_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA0_DMA_CH_INT_DONE_4_IRQN, DMA0_DMA_CH_INT_DONE_4_IRQ_PRIORITY);
   /* DMA0 hardware channel 7 request auto stop */
   EDMA_EnableAutoStopRequest(DMA0_DMA_BASEADDR, DMA0_CH7_DMA_CHANNEL, true);
   /* DMA0 channel 7 peripheral request */
   EDMA_EnableChannelRequest(DMA0_DMA_BASEADDR, DMA0_CH7_DMA_CHANNEL);
   /* DMA0 hardware channel 0 request auto stop */
   EDMA_EnableAutoStopRequest(DMA0_DMA_BASEADDR, DMA0_CH0_DMA_CHANNEL, true);
+  /* DMA0 hardware channel 4 request auto stop */
+  EDMA_EnableAutoStopRequest(DMA0_DMA_BASEADDR, DMA0_CH4_DMA_CHANNEL, false);
+  /* DMA0 channel 4 peripheral request */
+  EDMA_EnableChannelRequest(DMA0_DMA_BASEADDR, DMA0_CH4_DMA_CHANNEL);
 }
 
 /***********************************************************************************************************************
@@ -251,6 +301,7 @@ instance:
       - 3: []
       - 4: []
       - 5: []
+      - 6: []
     - interrupts:
       - 0:
         - channelId: 'LPUART0_NVIC'
@@ -931,8 +982,8 @@ instance:
     - clockSource: 'LpspiClock'
     - clockSourceFreq: 'ClocksTool_DefaultInit'
     - master:
-      - baudRate: '50000000'
-      - bitsPerFrame: '8'
+      - baudRate: '8000000'
+      - bitsPerFrame: '16'
       - cpol: 'kLPSPI_ClockPolarityActiveHigh'
       - cpha: 'kLPSPI_ClockPhaseFirstEdge'
       - direction: 'kLPSPI_MsbFirst'
@@ -941,7 +992,7 @@ instance:
       - betweenTransferDelayInNanoSec: '100'
       - whichPcs: 'kLPSPI_Pcs0'
       - pcsActiveHighOrLow: 'kLPSPI_PcsActiveLow'
-      - pinCfg: 'kLPSPI_SdiInSdoOut'
+      - pinCfg: 'kLPSPI_SdoInSdiOut'
       - pcsFunc: 'kLPSPI_PcsAsCs'
       - dataOutConfig: 'kLpspiDataOutRetained'
       - enableInputDelay: 'false'
@@ -957,8 +1008,8 @@ instance:
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const lpspi_master_config_t LPSPI1_config = {
-  .baudRate = 50000000UL,
-  .bitsPerFrame = 8UL,
+  .baudRate = 8000000UL,
+  .bitsPerFrame = 16UL,
   .cpol = kLPSPI_ClockPolarityActiveHigh,
   .cpha = kLPSPI_ClockPhaseFirstEdge,
   .direction = kLPSPI_MsbFirst,
@@ -967,7 +1018,7 @@ const lpspi_master_config_t LPSPI1_config = {
   .betweenTransferDelayInNanoSec = 100UL,
   .whichPcs = kLPSPI_Pcs0,
   .pcsActiveHighOrLow = kLPSPI_PcsActiveLow,
-  .pinCfg = kLPSPI_SdiInSdoOut,
+  .pinCfg = kLPSPI_SdoInSdiOut,
   .pcsFunc = kLPSPI_PcsAsCs,
   .dataOutConfig = kLpspiDataOutRetained,
   .enableInputDelay = false
@@ -1370,6 +1421,67 @@ static void FLEXPWM0_init(void) {
 }
 
 /***********************************************************************************************************************
+ * CTIMER0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'CTIMER0'
+- type: 'ctimer'
+- mode: 'Capture_Match'
+- custom_name_enabled: 'false'
+- type_id: 'ctimer_2.2.2'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'CTIMER0'
+- config_sets:
+  - fsl_ctimer:
+    - ctimerConfig:
+      - mode: 'kCTIMER_TimerMode'
+      - clockSource: 'FunctionClock'
+      - clockSourceFreq: 'ClocksTool_DefaultInit'
+      - timerPrescaler: '1'
+    - EnableTimerInInit: 'false'
+    - matchChannels:
+      - 0:
+        - matchChannelPrefixId: 'Match_0'
+        - matchChannel: 'kCTIMER_Match_0'
+        - matchValueStr: '2574'
+        - enableCounterReset: 'true'
+        - enableCounterStop: 'false'
+        - outControl: 'kCTIMER_Output_NoAction'
+        - outPinInitValue: 'low'
+        - enableInterrupt: 'false'
+    - captureChannels: []
+    - interruptCallbackConfig:
+      - interrupt:
+        - IRQn: 'CTIMER0_IRQn'
+        - enable_priority: 'false'
+        - priority: '0'
+      - callback: 'kCTIMER_NoCallback'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const ctimer_config_t CTIMER0_config = {
+  .mode = kCTIMER_TimerMode,
+  .input = kCTIMER_Capture_0,
+  .prescale = 0
+};
+const ctimer_match_config_t CTIMER0_Match_0_config = {
+  .matchValue = 2573,
+  .enableCounterReset = true,
+  .enableCounterStop = false,
+  .outControl = kCTIMER_Output_NoAction,
+  .outPinInitState = false,
+  .enableInterrupt = false
+};
+
+static void CTIMER0_init(void) {
+  /* CTIMER0 peripheral initialization */
+  CTIMER_Init(CTIMER0_PERIPHERAL, &CTIMER0_config);
+  /* Match channel 0 of CTIMER0 peripheral initialization */
+  CTIMER_SetupMatch(CTIMER0_PERIPHERAL, CTIMER0_MATCH_0_CHANNEL, &CTIMER0_Match_0_config);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 static void BOARD_InitPeripherals_CommonPostInit(void)
@@ -1416,6 +1528,7 @@ void BOARD_InitPeripherals(void)
   LPUART0_init();
   LPUART1_init();
   FLEXPWM0_init();
+  CTIMER0_init();
   /* Common post-initialization */
   BOARD_InitPeripherals_CommonPostInit();
 }
