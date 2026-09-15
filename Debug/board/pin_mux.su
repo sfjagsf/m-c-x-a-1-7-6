@@ -1,0 +1,5 @@
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\drivers/fsl_clock.h:786:20:CLOCK_EnableClock	32	static
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\drivers/fsl_reset.h:303:20:RESET_ReleasePeripheralReset	16	static
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\drivers/fsl_port.h:463:20:PORT_SetPinMux	24	static
+../board/pin_mux.c:32:6:BOARD_InitBootPins	8	static
+../board/pin_mux.c:58:6:BOARD_InitPins	16	static

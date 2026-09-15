@@ -35,6 +35,9 @@ void BOARD_InitBootPins(void);
 #define PORT2_PCR21_MUX_mux00 0x00u /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
 #define PORT2_PCR23_MUX_mux00 0x00u /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
 #define PORT2_PCR2_MUX_mux00 0x00u  /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
+#define PORT2_PCR4_MUX_mux00 0x00u  /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
+#define PORT2_PCR5_MUX_mux00 0x00u  /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
+#define PORT2_PCR6_MUX_mux00 0x00u  /*!<@brief Pin Multiplex Control: Alternative 0 (GPIO) */
 
 /*! @name PORT0_1 (number 77), SWCLK
   @{ */
@@ -224,13 +227,13 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_SPI0_MOSI_PIN_MASK (1U << 0U)      /*!<@brief PORT pin mask */
                                                           /* @} */
 
-/*! @name PORT1_1 (number 92), SPI0_SCK
+/*! @name PORT0_2 (number 78), SPI0_SCK
   @{ */
 
 /* Symbols to be used with PORT driver */
-#define BOARD_INITPINS_SPI0_SCK_PORT PORT1               /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_SPI0_SCK_PIN 1U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_SPI0_SCK_PIN_MASK (1U << 1U)      /*!<@brief PORT pin mask */
+#define BOARD_INITPINS_SPI0_SCK_PORT PORT0               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_SPI0_SCK_PIN 2U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_SPI0_SCK_PIN_MASK (1U << 2U)      /*!<@brief PORT pin mask */
                                                          /* @} */
 
 /*! @name PORT1_2 (number 93), SPI0_MISO
@@ -488,6 +491,132 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_PWM0_PIN 0U                   /*!<@brief PORT pin number */
 #define BOARD_INITPINS_PWM0_PIN_MASK (1U << 0U)      /*!<@brief PORT pin mask */
                                                      /* @} */
+
+/*! @name PORT1_4 (number 97), AD1
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD1_PORT PORT1               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD1_PIN 4U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD1_PIN_MASK (1U << 4U)      /*!<@brief PORT pin mask */
+                                                    /* @} */
+
+/*! @name PORT1_5 (number 98), AD2
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD2_PORT PORT1               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD2_PIN 5U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD2_PIN_MASK (1U << 5U)      /*!<@brief PORT pin mask */
+                                                    /* @} */
+
+/*! @name PORT1_6 (number 99), AD3
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD3_PORT PORT1               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD3_PIN 6U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD3_PIN_MASK (1U << 6U)      /*!<@brief PORT pin mask */
+                                                    /* @} */
+
+/*! @name PORT1_7 (number 100), AD4
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD4_PORT PORT1               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD4_PIN 7U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD4_PIN_MASK (1U << 7U)      /*!<@brief PORT pin mask */
+                                                    /* @} */
+
+/*! @name PORT2_4 (number 26), ADC1_3
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_ADC1_3_PORT PORT2               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_ADC1_3_PIN 4U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_ADC1_3_PIN_MASK (1U << 4U)      /*!<@brief PORT pin mask */
+                                                       /* @} */
+
+/*! @name PORT2_0 (number 22), AD6
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD6_PORT PORT2               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD6_PIN 0U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD6_PIN_MASK (1U << 0U)      /*!<@brief PORT pin mask */
+                                                    /* @} */
+
+/*! @name PORT2_1 (number 23), AD7
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD7_PORT PORT2               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD7_PIN 1U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD7_PIN_MASK (1U << 1U)      /*!<@brief PORT pin mask */
+                                                    /* @} */
+
+/*! @name PORT2_6 (number 28), AD12
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD12_PORT PORT2               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD12_PIN 6U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD12_PIN_MASK (1U << 6U)      /*!<@brief PORT pin mask */
+                                                     /* @} */
+
+/*! @name PORT2_5 (number 27), AD11
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD11_PORT PORT2               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD11_PIN 5U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD11_PIN_MASK (1U << 5U)      /*!<@brief PORT pin mask */
+                                                     /* @} */
+
+/*! @name PORT1_10 (number 3), AD9
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD9_PORT PORT1                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD9_PIN 10U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD9_PIN_MASK (1U << 10U)      /*!<@brief PORT pin mask */
+                                                     /* @} */
+
+/*! @name PORT1_11 (number 4), AD10
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD10_PORT PORT1                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD10_PIN 11U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD10_PIN_MASK (1U << 11U)      /*!<@brief PORT pin mask */
+                                                      /* @} */
+
+/*! @name PORT1_14 (number 7), AD14
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD14_PORT PORT1                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD14_PIN 14U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD14_PIN_MASK (1U << 14U)      /*!<@brief PORT pin mask */
+                                                      /* @} */
+
+/*! @name PORT1_15 (number 8), AD13
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD13_PORT PORT1                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD13_PIN 15U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD13_PIN_MASK (1U << 15U)      /*!<@brief PORT pin mask */
+                                                      /* @} */
+
+/*! @name PORT2_3 (number 25), AD8
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_AD8_PORT PORT2               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_AD8_PIN 3U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_AD8_PIN_MASK (1U << 3U)      /*!<@brief PORT pin mask */
+                                                    /* @} */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

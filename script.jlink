@@ -1,0 +1,7 @@
+ExitOnError 1
+r
+h
+loadfile "D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\Debug\MCXA176_UartDmaDemo.hex"
+qc
+
+qc

@@ -86,6 +86,8 @@ instance:
       - 2: []
       - 3: []
       - 4: []
+      - 5: []
+      - 6: []
     - edma_channels:
       - 0:
         - apiMode: 'trans'
@@ -216,6 +218,74 @@ instance:
           - IRQn: 'DMA_CH4_IRQn'
           - enable_priority: 'true'
           - priority: '5'
+      - 3:
+        - apiMode: 'trans'
+        - edma_channel:
+          - channel_prefix_id: 'CH1'
+          - uid: '1789458865203'
+          - eDMAn: '1'
+          - eDMA_source: 'kDma0RequestMuxAdc0FifoRequest'
+          - init_channel_priority: 'false'
+          - edma_channel_Preemption:
+            - enableChannelPreemption: 'false'
+            - enablePreemptAbility: 'false'
+            - channelPriority: '0'
+          - masterIdReplicationEnable: 'noInit'
+          - protectionLevel: 'noInit'
+          - enable_custom_name: 'false'
+        - resetChannel: 'true'
+        - enableChannelRequest: 'true'
+        - enableAsyncRequest: 'true'
+        - enableAutoStop: 'true'
+        - tcd_pool_enable: 'false'
+        - tcd_settings:
+          - tcd_size: '1'
+          - tcd_memory_ptr_id: 'default'
+        - transfer_config: []
+        - loopTransfer: 'false'
+        - no_init_uid: '1789458865217'
+        - init_callback: 'false'
+        - callback_function: 'DMA_Callback'
+        - callback_user_data: ''
+        - channel_enabled_interrupts: ''
+        - interrupt_channel:
+          - IRQn: 'DMA_CH1_IRQn'
+          - enable_priority: 'true'
+          - priority: '5'
+      - 4:
+        - apiMode: 'trans'
+        - edma_channel:
+          - channel_prefix_id: 'CH2'
+          - uid: '1789459137228'
+          - eDMAn: '2'
+          - eDMA_source: 'kDma0RequestMuxAdc1FifoRequest'
+          - init_channel_priority: 'false'
+          - edma_channel_Preemption:
+            - enableChannelPreemption: 'false'
+            - enablePreemptAbility: 'false'
+            - channelPriority: '0'
+          - masterIdReplicationEnable: 'noInit'
+          - protectionLevel: 'noInit'
+          - enable_custom_name: 'false'
+        - resetChannel: 'true'
+        - enableChannelRequest: 'true'
+        - enableAsyncRequest: 'true'
+        - enableAutoStop: 'true'
+        - tcd_pool_enable: 'false'
+        - tcd_settings:
+          - tcd_size: '1'
+          - tcd_memory_ptr_id: 'default'
+        - transfer_config: []
+        - loopTransfer: 'false'
+        - no_init_uid: '1789459137243'
+        - init_callback: 'false'
+        - callback_function: 'DMA_Callback'
+        - callback_user_data: ''
+        - channel_enabled_interrupts: ''
+        - interrupt_channel:
+          - IRQn: 'DMA_CH2_IRQn'
+          - enable_priority: 'true'
+          - priority: '5'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 edma_config_t DMA0_config = {
@@ -230,6 +300,8 @@ edma_transfer_config_t DMA0_CH7_Transfers_config[1];
 edma_handle_t DMA0_CH7_Handle;
 edma_handle_t DMA0_CH0_Handle;
 edma_handle_t DMA0_CH4_Handle;
+edma_handle_t DMA0_CH1_Handle;
+edma_handle_t DMA0_CH2_Handle;
 
 static void DMA0_init(void) {
 
@@ -267,6 +339,30 @@ static void DMA0_init(void) {
   EDMA_ResetChannel(DMA0_DMA_BASEADDR, DMA0_CH4_DMA_CHANNEL);
   /* Interrupt vector DMA_CH4_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(DMA0_DMA_CH_INT_DONE_4_IRQN, DMA0_DMA_CH_INT_DONE_4_IRQ_PRIORITY);
+
+  /* Channel CH1 initialization */
+  /* Set the kDma0RequestMuxAdc0FifoRequest request */
+  EDMA_SetChannelMux(DMA0_DMA_BASEADDR, DMA0_CH1_DMA_CHANNEL, DMA0_CH1_DMA_REQUEST);
+  /* Create the eDMA DMA0_CH1_Handle handle */
+  EDMA_CreateHandle(&DMA0_CH1_Handle, DMA0_DMA_BASEADDR, DMA0_CH1_DMA_CHANNEL);
+  /* DMA0 channel 1 reset */
+  EDMA_ResetChannel(DMA0_DMA_BASEADDR, DMA0_CH1_DMA_CHANNEL);
+  /* DMA0 channel 1 peripheral request */
+  EDMA_EnableAsyncRequest(DMA0_DMA_BASEADDR, DMA0_CH1_DMA_CHANNEL, true);
+  /* Interrupt vector DMA_CH1_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA0_DMA_CH_INT_DONE_1_IRQN, DMA0_DMA_CH_INT_DONE_1_IRQ_PRIORITY);
+
+  /* Channel CH2 initialization */
+  /* Set the kDma0RequestMuxAdc1FifoRequest request */
+  EDMA_SetChannelMux(DMA0_DMA_BASEADDR, DMA0_CH2_DMA_CHANNEL, DMA0_CH2_DMA_REQUEST);
+  /* Create the eDMA DMA0_CH2_Handle handle */
+  EDMA_CreateHandle(&DMA0_CH2_Handle, DMA0_DMA_BASEADDR, DMA0_CH2_DMA_CHANNEL);
+  /* DMA0 channel 2 reset */
+  EDMA_ResetChannel(DMA0_DMA_BASEADDR, DMA0_CH2_DMA_CHANNEL);
+  /* DMA0 channel 2 peripheral request */
+  EDMA_EnableAsyncRequest(DMA0_DMA_BASEADDR, DMA0_CH2_DMA_CHANNEL, true);
+  /* Interrupt vector DMA_CH2_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA0_DMA_CH_INT_DONE_2_IRQN, DMA0_DMA_CH_INT_DONE_2_IRQ_PRIORITY);
   /* DMA0 hardware channel 7 request auto stop */
   EDMA_EnableAutoStopRequest(DMA0_DMA_BASEADDR, DMA0_CH7_DMA_CHANNEL, true);
   /* DMA0 channel 7 peripheral request */
@@ -277,6 +373,14 @@ static void DMA0_init(void) {
   EDMA_EnableAutoStopRequest(DMA0_DMA_BASEADDR, DMA0_CH4_DMA_CHANNEL, false);
   /* DMA0 channel 4 peripheral request */
   EDMA_EnableChannelRequest(DMA0_DMA_BASEADDR, DMA0_CH4_DMA_CHANNEL);
+  /* DMA0 hardware channel 1 request auto stop */
+  EDMA_EnableAutoStopRequest(DMA0_DMA_BASEADDR, DMA0_CH1_DMA_CHANNEL, true);
+  /* DMA0 channel 1 peripheral request */
+  EDMA_EnableChannelRequest(DMA0_DMA_BASEADDR, DMA0_CH1_DMA_CHANNEL);
+  /* DMA0 hardware channel 2 request auto stop */
+  EDMA_EnableAutoStopRequest(DMA0_DMA_BASEADDR, DMA0_CH2_DMA_CHANNEL, true);
+  /* DMA0 channel 2 peripheral request */
+  EDMA_EnableChannelRequest(DMA0_DMA_BASEADDR, DMA0_CH2_DMA_CHANNEL);
 }
 
 /***********************************************************************************************************************
@@ -302,6 +406,8 @@ instance:
       - 4: []
       - 5: []
       - 6: []
+      - 7: []
+      - 8: []
     - interrupts:
       - 0:
         - channelId: 'LPUART0_NVIC'
@@ -1482,6 +1588,637 @@ static void CTIMER0_init(void) {
 }
 
 /***********************************************************************************************************************
+ * ADC1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'ADC1'
+- type: 'lpadc'
+- mode: 'LPADC'
+- custom_name_enabled: 'false'
+- type_id: 'lpadc_2.8.1'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'ADC1'
+- config_sets:
+  - fsl_lpadc:
+    - lpadcConfig:
+      - clockSource: 'AsynchronousFunctionClock'
+      - clockSourceFreq: 'ClocksTool_DefaultInit'
+      - enableJustifiedLeft: 'false'
+      - enableInDozeMode: 'false'
+      - conversionAverageMode: 'kLPADC_ConversionAverage16'
+      - offsetCalibration: 'no'
+      - autoCalibrate: 'true'
+      - enableAnalogPreliminary: 'true'
+      - powerUpDelay: '0x80'
+      - referenceVoltageSource: 'kLPADC_ReferenceVoltageAlt1'
+      - powerLevelMode: 'kLPADC_PowerLevelAlt1'
+      - triggerPriorityPolicy: 'kLPADC_ConvPreemptImmediatelyNotAutoResumed'
+      - enableConvPause: 'false'
+      - convPauseDelay: '0'
+      - FIFOWatermark: '0'
+      - FIFOWatermarkDMA: 'true'
+    - lpadcConvCommandConfig:
+      - 0:
+        - user_commandId: 'AD7'
+        - commandId: '1'
+        - chainedNextCommandNumber: '2'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.0'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - hardwareCompareMode: 'kLPADC_HardwareCompareDisabled'
+        - hardwareCompareValueHigh: '0'
+        - hardwareCompareValueLow: '0'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 1:
+        - user_commandId: 'AD9'
+        - commandId: '2'
+        - chainedNextCommandNumber: '3'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.8'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - hardwareCompareMode: 'kLPADC_HardwareCompareDisabled'
+        - hardwareCompareValueHigh: '0'
+        - hardwareCompareValueLow: '0'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 2:
+        - user_commandId: 'AD10'
+        - commandId: '3'
+        - chainedNextCommandNumber: '4'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.9'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - hardwareCompareMode: 'kLPADC_HardwareCompareDisabled'
+        - hardwareCompareValueHigh: '0'
+        - hardwareCompareValueLow: '0'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 3:
+        - user_commandId: 'AD11'
+        - commandId: '4'
+        - chainedNextCommandNumber: '5'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.1'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - hardwareCompareMode: 'kLPADC_HardwareCompareDisabled'
+        - hardwareCompareValueHigh: '0'
+        - hardwareCompareValueLow: '0'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 4:
+        - user_commandId: 'AD12'
+        - commandId: '5'
+        - chainedNextCommandNumber: '6'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.3'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 5:
+        - user_commandId: 'AD13'
+        - commandId: '6'
+        - chainedNextCommandNumber: '7'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.13'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 6:
+        - user_commandId: 'AD14'
+        - commandId: '7'
+        - chainedNextCommandNumber: '0'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.12'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+    - lpadcConvTriggerConfig:
+      - 0:
+        - user_triggerId: 'ADC1_TRIG0'
+        - triggerId: '0'
+        - targetCommandId: '1'
+        - delayPower: '0'
+        - priority: 'false'
+        - enableHardwareTrigger: 'true'
+    - IRQ_cfg:
+      - interrupt_type: ''
+      - enable_irq: 'false'
+      - adc_interrupt:
+        - IRQn: 'ADC1_IRQn'
+        - enable_interrrupt: 'enabled'
+        - enable_priority: 'false'
+        - priority: '0'
+        - enable_custom_name: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const lpadc_config_t ADC1_config = {
+  .enableInDozeMode = false,
+  .conversionAverageMode = kLPADC_ConversionAverage16,
+  .enableAnalogPreliminary = true,
+  .powerUpDelay = 0x80UL,
+  .referenceVoltageSource = kLPADC_ReferenceVoltageAlt1,
+  .powerLevelMode = kLPADC_PowerLevelAlt1,
+  .triggerPriorityPolicy = kLPADC_ConvPreemptImmediatelyNotAutoResumed,
+  .enableConvPause = false,
+  .convPauseDelay = 0UL,
+  .FIFOWatermark = 0UL,
+};
+lpadc_conv_command_config_t ADC1_commandsConfig[7] = {
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 0U,
+    .chainedNextCommandNumber = 2,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .hardwareCompareMode = kLPADC_HardwareCompareDisabled,
+    .hardwareCompareValueHigh = 0UL,
+    .hardwareCompareValueLow = 0UL,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 8U,
+    .chainedNextCommandNumber = 3,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .hardwareCompareMode = kLPADC_HardwareCompareDisabled,
+    .hardwareCompareValueHigh = 0UL,
+    .hardwareCompareValueLow = 0UL,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 9U,
+    .chainedNextCommandNumber = 4,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .hardwareCompareMode = kLPADC_HardwareCompareDisabled,
+    .hardwareCompareValueHigh = 0UL,
+    .hardwareCompareValueLow = 0UL,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 1U,
+    .chainedNextCommandNumber = 5,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .hardwareCompareMode = kLPADC_HardwareCompareDisabled,
+    .hardwareCompareValueHigh = 0UL,
+    .hardwareCompareValueLow = 0UL,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 3U,
+    .chainedNextCommandNumber = 6,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 13U,
+    .chainedNextCommandNumber = 7,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 12U,
+    .chainedNextCommandNumber = 0,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  }
+};
+lpadc_conv_trigger_config_t ADC1_triggersConfig[1] = {
+  {
+    .targetCommandId = 1,
+    .delayPower = 0UL,
+    .priority = 1,
+    .enableHardwareTrigger = true
+  }
+};
+
+static void ADC1_init(void) {
+  /* Initialize LPADC converter */
+  LPADC_Init(ADC1_PERIPHERAL, &ADC1_config);
+  /* Perform auto calibration */
+  LPADC_DoAutoCalibration(ADC1_PERIPHERAL);
+  /* Enable DMA request on FIFO watermark event */
+  LPADC_EnableFIFOWatermarkDMA(ADC1_PERIPHERAL, true);
+  /* Configure conversion command 1. */
+  LPADC_SetConvCommandConfig(ADC1_PERIPHERAL, ADC1_AD7, &ADC1_commandsConfig[0]);
+  /* Configure conversion command 2. */
+  LPADC_SetConvCommandConfig(ADC1_PERIPHERAL, ADC1_AD9, &ADC1_commandsConfig[1]);
+  /* Configure conversion command 3. */
+  LPADC_SetConvCommandConfig(ADC1_PERIPHERAL, ADC1_AD10, &ADC1_commandsConfig[2]);
+  /* Configure conversion command 4. */
+  LPADC_SetConvCommandConfig(ADC1_PERIPHERAL, ADC1_AD11, &ADC1_commandsConfig[3]);
+  /* Configure conversion command 5. */
+  LPADC_SetConvCommandConfig(ADC1_PERIPHERAL, ADC1_AD12, &ADC1_commandsConfig[4]);
+  /* Configure conversion command 6. */
+  LPADC_SetConvCommandConfig(ADC1_PERIPHERAL, ADC1_AD13, &ADC1_commandsConfig[5]);
+  /* Configure conversion command 7. */
+  LPADC_SetConvCommandConfig(ADC1_PERIPHERAL, ADC1_AD14, &ADC1_commandsConfig[6]);
+  /* Configure trigger 0. */
+  LPADC_SetConvTriggerConfig(ADC1_PERIPHERAL, ADC1_ADC1_TRIG0, &ADC1_triggersConfig[0]);
+}
+
+/***********************************************************************************************************************
+ * ADC0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'ADC0'
+- type: 'lpadc'
+- mode: 'LPADC'
+- custom_name_enabled: 'false'
+- type_id: 'lpadc_2.8.1'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'ADC0'
+- config_sets:
+  - fsl_lpadc:
+    - lpadcConfig:
+      - clockSource: 'AsynchronousFunctionClock'
+      - clockSourceFreq: 'ClocksTool_DefaultInit'
+      - enableJustifiedLeft: 'false'
+      - enableInDozeMode: 'false'
+      - conversionAverageMode: 'kLPADC_ConversionAverage16'
+      - offsetCalibration: 'no'
+      - autoCalibrate: 'true'
+      - enableAnalogPreliminary: 'true'
+      - powerUpDelay: '0x80'
+      - referenceVoltageSource: 'kLPADC_ReferenceVoltageAlt1'
+      - powerLevelMode: 'kLPADC_PowerLevelAlt1'
+      - triggerPriorityPolicy: 'kLPADC_ConvPreemptImmediatelyNotAutoResumed'
+      - enableConvPause: 'false'
+      - convPauseDelay: '0'
+      - FIFOWatermark: '0'
+      - FIFOWatermarkDMA: 'true'
+    - lpadcConvCommandConfig:
+      - 0:
+        - user_commandId: 'AD1'
+        - commandId: '1'
+        - chainedNextCommandNumber: '2'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.20'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - hardwareCompareMode: 'kLPADC_HardwareCompareDisabled'
+        - hardwareCompareValueHigh: '0'
+        - hardwareCompareValueLow: '0'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 1:
+        - user_commandId: 'AD2'
+        - commandId: '2'
+        - chainedNextCommandNumber: '3'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.21'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - hardwareCompareMode: 'kLPADC_HardwareCompareDisabled'
+        - hardwareCompareValueHigh: '0'
+        - hardwareCompareValueLow: '0'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 2:
+        - user_commandId: 'AD3'
+        - commandId: '3'
+        - chainedNextCommandNumber: '4'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.22'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - hardwareCompareMode: 'kLPADC_HardwareCompareDisabled'
+        - hardwareCompareValueHigh: '0'
+        - hardwareCompareValueLow: '0'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 3:
+        - user_commandId: 'AD4'
+        - commandId: '4'
+        - chainedNextCommandNumber: '5'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.23'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - hardwareCompareMode: 'kLPADC_HardwareCompareDisabled'
+        - hardwareCompareValueHigh: '0'
+        - hardwareCompareValueLow: '0'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 4:
+        - user_commandId: 'ADC1_3'
+        - commandId: '5'
+        - chainedNextCommandNumber: '6'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.1'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 5:
+        - user_commandId: 'AD6'
+        - commandId: '6'
+        - chainedNextCommandNumber: '7'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.0'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+      - 6:
+        - user_commandId: 'AD8'
+        - commandId: '7'
+        - chainedNextCommandNumber: '0'
+        - sampleChannelMode: 'kLPADC_SampleChannelSingleEndSideA'
+        - channelNumber: 'A.3'
+        - enableAutoChannelIncrement: 'false'
+        - loopCount: '0'
+        - hardwareAverageMode: 'kLPADC_HardwareAverageCount1'
+        - sampleTimeMode: 'kLPADC_SampleTimeADCK131'
+        - conversionResoultuionMode: 'kLPADC_ConversionResolutionStandard'
+        - enableWaitTrigger: 'false'
+    - lpadcConvTriggerConfig:
+      - 0:
+        - user_triggerId: 'ADC0_TRIG0'
+        - triggerId: '0'
+        - targetCommandId: '1'
+        - delayPower: '0'
+        - priority: 'false'
+        - enableHardwareTrigger: 'true'
+    - IRQ_cfg:
+      - interrupt_type: ''
+      - enable_irq: 'false'
+      - adc_interrupt:
+        - IRQn: 'ADC0_IRQn'
+        - enable_interrrupt: 'enabled'
+        - enable_priority: 'false'
+        - priority: '0'
+        - enable_custom_name: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const lpadc_config_t ADC0_config = {
+  .enableInDozeMode = false,
+  .conversionAverageMode = kLPADC_ConversionAverage16,
+  .enableAnalogPreliminary = true,
+  .powerUpDelay = 0x80UL,
+  .referenceVoltageSource = kLPADC_ReferenceVoltageAlt1,
+  .powerLevelMode = kLPADC_PowerLevelAlt1,
+  .triggerPriorityPolicy = kLPADC_ConvPreemptImmediatelyNotAutoResumed,
+  .enableConvPause = false,
+  .convPauseDelay = 0UL,
+  .FIFOWatermark = 0UL,
+};
+lpadc_conv_command_config_t ADC0_commandsConfig[7] = {
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 20U,
+    .chainedNextCommandNumber = 2,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .hardwareCompareMode = kLPADC_HardwareCompareDisabled,
+    .hardwareCompareValueHigh = 0UL,
+    .hardwareCompareValueLow = 0UL,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 21U,
+    .chainedNextCommandNumber = 3,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .hardwareCompareMode = kLPADC_HardwareCompareDisabled,
+    .hardwareCompareValueHigh = 0UL,
+    .hardwareCompareValueLow = 0UL,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 22U,
+    .chainedNextCommandNumber = 4,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .hardwareCompareMode = kLPADC_HardwareCompareDisabled,
+    .hardwareCompareValueHigh = 0UL,
+    .hardwareCompareValueLow = 0UL,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 23U,
+    .chainedNextCommandNumber = 5,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .hardwareCompareMode = kLPADC_HardwareCompareDisabled,
+    .hardwareCompareValueHigh = 0UL,
+    .hardwareCompareValueLow = 0UL,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 1U,
+    .chainedNextCommandNumber = 6,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 0U,
+    .chainedNextCommandNumber = 7,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  },
+  {
+    .sampleChannelMode = kLPADC_SampleChannelSingleEndSideA,
+    .channelNumber = 3U,
+    .chainedNextCommandNumber = 0,
+    .enableAutoChannelIncrement = false,
+    .loopCount = 0UL,
+    .hardwareAverageMode = kLPADC_HardwareAverageCount1,
+    .sampleTimeMode = kLPADC_SampleTimeADCK131,
+    .conversionResolutionMode = kLPADC_ConversionResolutionStandard,
+    .enableWaitTrigger = false
+  }
+};
+lpadc_conv_trigger_config_t ADC0_triggersConfig[1] = {
+  {
+    .targetCommandId = 1,
+    .delayPower = 0UL,
+    .priority = 1,
+    .enableHardwareTrigger = true
+  }
+};
+
+static void ADC0_init(void) {
+  /* Initialize LPADC converter */
+  LPADC_Init(ADC0_PERIPHERAL, &ADC0_config);
+  /* Perform auto calibration */
+  LPADC_DoAutoCalibration(ADC0_PERIPHERAL);
+  /* Enable DMA request on FIFO watermark event */
+  LPADC_EnableFIFOWatermarkDMA(ADC0_PERIPHERAL, true);
+  /* Configure conversion command 1. */
+  LPADC_SetConvCommandConfig(ADC0_PERIPHERAL, ADC0_AD1, &ADC0_commandsConfig[0]);
+  /* Configure conversion command 2. */
+  LPADC_SetConvCommandConfig(ADC0_PERIPHERAL, ADC0_AD2, &ADC0_commandsConfig[1]);
+  /* Configure conversion command 3. */
+  LPADC_SetConvCommandConfig(ADC0_PERIPHERAL, ADC0_AD3, &ADC0_commandsConfig[2]);
+  /* Configure conversion command 4. */
+  LPADC_SetConvCommandConfig(ADC0_PERIPHERAL, ADC0_AD4, &ADC0_commandsConfig[3]);
+  /* Configure conversion command 5. */
+  LPADC_SetConvCommandConfig(ADC0_PERIPHERAL, ADC0_ADC1_3, &ADC0_commandsConfig[4]);
+  /* Configure conversion command 6. */
+  LPADC_SetConvCommandConfig(ADC0_PERIPHERAL, ADC0_AD6, &ADC0_commandsConfig[5]);
+  /* Configure conversion command 7. */
+  LPADC_SetConvCommandConfig(ADC0_PERIPHERAL, ADC0_AD8, &ADC0_commandsConfig[6]);
+  /* Configure trigger 0. */
+  LPADC_SetConvTriggerConfig(ADC0_PERIPHERAL, ADC0_ADC0_TRIG0, &ADC0_triggersConfig[0]);
+}
+
+/***********************************************************************************************************************
+ * CTIMER3 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'CTIMER3'
+- type: 'ctimer'
+- mode: 'Capture_Match'
+- custom_name_enabled: 'false'
+- type_id: 'ctimer_2.2.2'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'CTIMER3'
+- config_sets:
+  - fsl_ctimer:
+    - ctimerConfig:
+      - mode: 'kCTIMER_TimerMode'
+      - clockSource: 'FunctionClock'
+      - clockSourceFreq: 'ClocksTool_DefaultInit'
+      - timerPrescaler: '180'
+    - EnableTimerInInit: 'false'
+    - matchChannels:
+      - 0:
+        - matchChannelPrefixId: 'Match_0'
+        - matchChannel: 'kCTIMER_Match_0'
+        - matchValueStr: '1000'
+        - enableCounterReset: 'true'
+        - enableCounterStop: 'false'
+        - outControl: 'kCTIMER_Output_NoAction'
+        - outPinInitValue: 'low'
+        - enableInterrupt: 'false'
+    - captureChannels: []
+    - interruptCallbackConfig:
+      - interrupt:
+        - IRQn: 'CTIMER3_IRQn'
+        - enable_priority: 'false'
+        - priority: '0'
+      - callback: 'kCTIMER_NoCallback'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const ctimer_config_t CTIMER3_config = {
+  .mode = kCTIMER_TimerMode,
+  .input = kCTIMER_Capture_0,
+  .prescale = 179
+};
+const ctimer_match_config_t CTIMER3_Match_0_config = {
+  .matchValue = 999,
+  .enableCounterReset = true,
+  .enableCounterStop = false,
+  .outControl = kCTIMER_Output_NoAction,
+  .outPinInitState = false,
+  .enableInterrupt = false
+};
+
+static void CTIMER3_init(void) {
+  /* CTIMER3 peripheral initialization */
+  CTIMER_Init(CTIMER3_PERIPHERAL, &CTIMER3_config);
+  /* Match channel 0 of CTIMER3 peripheral initialization */
+  CTIMER_SetupMatch(CTIMER3_PERIPHERAL, CTIMER3_MATCH_0_CHANNEL, &CTIMER3_Match_0_config);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 static void BOARD_InitPeripherals_CommonPostInit(void)
@@ -1529,6 +2266,9 @@ void BOARD_InitPeripherals(void)
   LPUART1_init();
   FLEXPWM0_init();
   CTIMER0_init();
+  ADC1_init();
+  ADC0_init();
+  CTIMER3_init();
   /* Common post-initialization */
   BOARD_InitPeripherals_CommonPostInit();
 }

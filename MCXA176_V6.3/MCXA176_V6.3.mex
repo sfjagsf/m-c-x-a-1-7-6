@@ -66,6 +66,20 @@
                <pin_label pin_num="68" pin_signal="P3_9/TRIG_IN4/LPSPI1_SDI/LPUART1_TXD/CT_INP5/PWM0_B1/FLEXIO0_D17/SmartDMA_PIO9" label="UART1_TX" identifier="UART1_TX"/>
                <pin_label pin_num="73" pin_signal="P3_0/WUU0_IN22/TRIG_IN0/LPUART3_RXD/CT_INP16/PWM0_A0/FLEXIO0_D8/PWM1_X0/SmartDMA_PIO0" label="PWM0" identifier="PWM1;PWM0"/>
                <pin_label pin_num="78" pin_signal="P0_2/TDO/SWO/LPUART0_RXD/LPSPI0_SCK/CT0_MAT0/UTICK_CAP0/FLEXIO0_D2/I3C0_PUR" label="SPI0_SCK" identifier="SPI0_SCK"/>
+               <pin_label pin_num="97" pin_signal="P1_4/WUU0_IN8/FREQME_CLK_IN0/LPSPI0_PCS3/LPUART2_RXD/CT1_MAT2/FLEXIO0_D12/SmartDMA_PIO0/ADC0_A20/CMP0_IN2" label="AD1" identifier="AD1"/>
+               <pin_label pin_num="98" pin_signal="P1_5/FREQME_CLK_IN1/LPSPI0_PCS2/LPUART2_TXD/CT1_MAT3/FLEXIO0_D13/SmartDMA_PIO1/ADC0_A21/CMP1_IN2" label="AD2" identifier="AD2"/>
+               <pin_label pin_num="99" pin_signal="P1_6/TRIG_IN2/LPSPI0_PCS1/LPUART2_RTS_B/CT_INP6/CT4_MAT0/FLEXIO0_D14/SmartDMA_PIO2/ADC0_A22" label="AD3" identifier="AD3"/>
+               <pin_label pin_num="100" pin_signal="P1_7/WUU0_IN9/TRIG_OUT2/LPUART2_CTS_B/CT_INP7/CT4_MAT1/FLEXIO0_D15/SmartDMA_PIO3/ADC0_A23" label="AD4" identifier="AD4"/>
+               <pin_label pin_num="26" pin_signal="P2_4/LPUART2_CTS_B/CT_INP14/CT1_MAT0/FLEXIO0_D12/SmartDMA_PIO28/ADC0_A1" label="ADC1_3" identifier="ADC1_3"/>
+               <pin_label pin_num="22" pin_signal="P2_0/WUU0_IN18/TRIG_IN6/LPUART0_RXD/LPUART4_CTS_B/CT_INP16/CT2_MAT0/FLEXIO0_D8/SmartDMA_PIO24/ADC0_A0" label="AD6" identifier="AD6"/>
+               <pin_label pin_num="23" pin_signal="P2_1/TRIG_IN7/LPUART0_TXD/LPUART4_RTS_B/CT_INP17/CT2_MAT1/FLEXIO0_D9/SmartDMA_PIO25/ADC1_A0" label="AD7" identifier="AD7"/>
+               <pin_label pin_num="28" pin_signal="P2_6/TRIG_OUT4/LPSPI1_PCS1/LPUART4_RXD/CT_INP18/CT1_MAT2/FLEXIO0_D14/SmartDMA_PIO30/ADC1_A3" label="AD12" identifier="AD12"/>
+               <pin_label pin_num="27" pin_signal="P2_5/LPUART2_RTS_B/CT_INP15/CT1_MAT1/FLEXIO0_D13/SmartDMA_PIO29/ADC1_A1" label="AD11" identifier="AD11"/>
+               <pin_label pin_num="3" pin_signal="P1_10/LPUART1_RTS_B/LPI2C2_SDAS/CT2_MAT0/FLEXIO0_D18/SmartDMA_PIO6/CAN0_TXD/ADC1_A8" label="AD9" identifier="AD9"/>
+               <pin_label pin_num="25" pin_signal="P2_3/WUU0_IN19/TRIG_IN7/LPUART0_CTS_B/LPUART2_RXD/CT_INP13/CT2_MAT3/FLEXIO0_D11/SmartDMA_PIO27/ADC0_A3/CMP1_IN0/ADC1_A4" label="AD8" identifier="AD8"/>
+               <pin_label pin_num="4" pin_signal="P1_11/WUU0_IN11/TRIG_OUT2/LPUART1_CTS_B/LPI2C2_SCLS/CT2_MAT1/FLEXIO0_D19/SmartDMA_PIO7/I3C0_PUR/CAN0_RXD/ADC1_A9" label="AD10" identifier="AD9;AD10"/>
+               <pin_label pin_num="7" pin_signal="P1_14/LPI2C1_SCLS/LPUART2_RTS_B/CT3_MAT0/FLEXIO0_D22/SmartDMA_PIO10/ADC1_A12" label="AD14" identifier="AD14"/>
+               <pin_label pin_num="8" pin_signal="P1_15/WUU0_IN13/LPI2C1_SDAS/LPUART2_CTS_B/CT3_MAT1/FLEXIO0_D23/SmartDMA_PIO11/ADC1_A13" label="AD13" identifier="AD13"/>
             </pin_labels>
             <external_user_signals>
                <properties/>
@@ -126,6 +140,16 @@
                      </feature>
                   </dependency>
                   <dependency resourceType="Peripheral" resourceId="FLEXPWM0" description="Peripheral FLEXPWM0 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="ADC0" description="Peripheral ADC0 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="ADC1" description="Peripheral ADC1 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
                      <feature name="initialized" evaluation="equal">
                         <data>true</data>
                      </feature>
@@ -300,11 +324,24 @@
                         <pin_feature name="direction" value="OUTPUT"/>
                      </pin_features>
                   </pin>
-                  <pin peripheral="GPIO1" signal="GPIO, 1" pin_num="92" pin_signal="P1_1/TRIG_IN1/LPSPI0_SCK/LPI2C1_SCL/CT_INP5/CT0_MAT3/FLEXIO0_D9/ADC0_A17/CMP1_IN3">
+                  <pin peripheral="ADC0" signal="A, 20" pin_num="97" pin_signal="P1_4/WUU0_IN8/FREQME_CLK_IN0/LPSPI0_PCS3/LPUART2_RXD/CT1_MAT2/FLEXIO0_D12/SmartDMA_PIO0/ADC0_A20/CMP0_IN2"/>
+                  <pin peripheral="ADC0" signal="A, 21" pin_num="98" pin_signal="P1_5/FREQME_CLK_IN1/LPSPI0_PCS2/LPUART2_TXD/CT1_MAT3/FLEXIO0_D13/SmartDMA_PIO1/ADC0_A21/CMP1_IN2"/>
+                  <pin peripheral="ADC0" signal="A, 22" pin_num="99" pin_signal="P1_6/TRIG_IN2/LPSPI0_PCS1/LPUART2_RTS_B/CT_INP6/CT4_MAT0/FLEXIO0_D14/SmartDMA_PIO2/ADC0_A22"/>
+                  <pin peripheral="ADC0" signal="A, 23" pin_num="100" pin_signal="P1_7/WUU0_IN9/TRIG_OUT2/LPUART2_CTS_B/CT_INP7/CT4_MAT1/FLEXIO0_D15/SmartDMA_PIO3/ADC0_A23"/>
+                  <pin peripheral="ADC0" signal="A, 1" pin_num="26" pin_signal="P2_4/LPUART2_CTS_B/CT_INP14/CT1_MAT0/FLEXIO0_D12/SmartDMA_PIO28/ADC0_A1"/>
+                  <pin peripheral="ADC0" signal="A, 0" pin_num="22" pin_signal="P2_0/WUU0_IN18/TRIG_IN6/LPUART0_RXD/LPUART4_CTS_B/CT_INP16/CT2_MAT0/FLEXIO0_D8/SmartDMA_PIO24/ADC0_A0"/>
+                  <pin peripheral="ADC1" signal="A, 0" pin_num="23" pin_signal="P2_1/TRIG_IN7/LPUART0_TXD/LPUART4_RTS_B/CT_INP17/CT2_MAT1/FLEXIO0_D9/SmartDMA_PIO25/ADC1_A0"/>
+                  <pin peripheral="ADC1" signal="A, 3" pin_num="28" pin_signal="P2_6/TRIG_OUT4/LPSPI1_PCS1/LPUART4_RXD/CT_INP18/CT1_MAT2/FLEXIO0_D14/SmartDMA_PIO30/ADC1_A3"/>
+                  <pin peripheral="ADC1" signal="A, 1" pin_num="27" pin_signal="P2_5/LPUART2_RTS_B/CT_INP15/CT1_MAT1/FLEXIO0_D13/SmartDMA_PIO29/ADC1_A1"/>
+                  <pin peripheral="ADC1" signal="A, 8" pin_num="3" pin_signal="P1_10/LPUART1_RTS_B/LPI2C2_SDAS/CT2_MAT0/FLEXIO0_D18/SmartDMA_PIO6/CAN0_TXD/ADC1_A8"/>
+                  <pin peripheral="ADC1" signal="A, 9" pin_num="4" pin_signal="P1_11/WUU0_IN11/TRIG_OUT2/LPUART1_CTS_B/LPI2C2_SCLS/CT2_MAT1/FLEXIO0_D19/SmartDMA_PIO7/I3C0_PUR/CAN0_RXD/ADC1_A9">
                      <pin_features>
-                        <pin_feature name="identifier" value=""/>
+                        <pin_feature name="identifier" value="AD10"/>
                      </pin_features>
                   </pin>
+                  <pin peripheral="ADC1" signal="A, 12" pin_num="7" pin_signal="P1_14/LPI2C1_SCLS/LPUART2_RTS_B/CT3_MAT0/FLEXIO0_D22/SmartDMA_PIO10/ADC1_A12"/>
+                  <pin peripheral="ADC1" signal="A, 13" pin_num="8" pin_signal="P1_15/WUU0_IN13/LPI2C1_SDAS/LPUART2_CTS_B/CT3_MAT1/FLEXIO0_D23/SmartDMA_PIO11/ADC1_A13"/>
+                  <pin peripheral="ADC0" signal="A, 3" pin_num="25" pin_signal="P2_3/WUU0_IN19/TRIG_IN7/LPUART0_CTS_B/LPUART2_RXD/CT_INP13/CT2_MAT3/FLEXIO0_D11/SmartDMA_PIO27/ADC0_A3/CMP1_IN0/ADC1_A4"/>
                </pins>
             </function>
          </functions_list>
@@ -793,14 +830,14 @@
                   <data type="Version" maxValue="2.10.99">2.6.0</data>
                </feature>
             </dependency>
-            <dependency resourceType="Tool" resourceId="Pins" description="外围设备工具需要 Pins 工具，但它已被禁用。" problem_level="2" source="Peripherals">
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpadc" description="工具链/IDE工程中未找到LPADC Driver。工程不会被编译！" problem_level="2" source="Peripherals">
                <feature name="enabled" evaluation="equal">
-                  <data>true</data>
+                  <data type="Boolean">true</data>
                </feature>
             </dependency>
-            <dependency resourceType="Tool" resourceId="Clocks" description="外围设备工具需要 Clocks 工具，但它已被禁用。" problem_level="2" source="Peripherals">
-               <feature name="enabled" evaluation="equal">
-                  <data>true</data>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpadc" description="工具链/IDE工程不支持LPADC Driver版本。所需值: ${required_value}, 实际值: ${actual_value}. 工程可能没有被正确编译。" problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="greaterOrEqual">
+                  <data type="Version" maxValue="2.10.99">2.8.1</data>
                </feature>
             </dependency>
          </dependencies>
@@ -956,6 +993,91 @@
                         <data type="Frequency" unit="Hz">0</data>
                      </feature>
                   </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="ADC_clock" description="ADC_clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC1.adc_se.0A" description="Signal channel 0A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC1.adc_se.8A" description="Signal channel 8A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC1.adc_se.9A" description="Signal channel 9A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC1.adc_se.1A" description="Signal channel 1A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC1.adc_se.3A" description="Signal channel 3A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC1.adc_se.13A" description="Signal channel 13A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC1.adc_se.12A" description="Signal channel 12A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="ADC_clock" description="ADC_clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC0.adc_se.20A" description="Signal channel 20A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC0.adc_se.21A" description="Signal channel 21A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC0.adc_se.22A" description="Signal channel 22A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC0.adc_se.23A" description="Signal channel 23A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC0.adc_se.1A" description="Signal channel 1A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC0.adc_se.0A" description="Signal channel 0A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC0.adc_se.3A" description="Signal channel 3A is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="CTIMER3_clock" description="CTIMER3_clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
                </dependencies>
                <instances>
                   <instance name="NVIC" uuid="f9d970ff-8e91-4728-af1f-06d28b1b9ac4" type="nvic" type_id="nvic" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
@@ -968,6 +1090,8 @@
                            <struct name="4"/>
                            <struct name="5"/>
                            <struct name="6"/>
+                           <struct name="7"/>
+                           <struct name="8"/>
                         </array>
                         <array name="interrupts">
                            <struct name="0">
@@ -1044,11 +1168,9 @@
                         </set>
                         <array name="gpioSignalsParameters">
                            <struct name="0"/>
-                           <struct name="1"/>
                         </array>
                         <array name="gpioPinsOverView">
                            <struct name="0"/>
-                           <struct name="1"/>
                         </array>
                         <array name="gpioPinsConfig"/>
                         <struct name="globalCfg"/>
@@ -1195,6 +1317,8 @@
                            <struct name="2"/>
                            <struct name="3"/>
                            <struct name="4"/>
+                           <struct name="5"/>
+                           <struct name="6"/>
                         </array>
                         <array name="edma_channels">
                            <struct name="0">
@@ -1346,6 +1470,88 @@
                               </set>
                               <struct name="interrupt_channel">
                                  <setting name="IRQn" value="DMA_CH4_IRQn"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
+                              </struct>
+                           </struct>
+                           <struct name="3">
+                              <setting name="apiMode" value="trans"/>
+                              <struct name="edma_channel">
+                                 <setting name="channel_prefix_id" value="CH1"/>
+                                 <setting name="uid" value="1789458865203"/>
+                                 <setting name="eDMAn" value="1"/>
+                                 <setting name="eDMA_source" value="kDma0RequestMuxAdc0FifoRequest"/>
+                                 <setting name="init_channel_priority" value="false"/>
+                                 <struct name="edma_channel_Preemption">
+                                    <setting name="enableChannelPreemption" value="false"/>
+                                    <setting name="enablePreemptAbility" value="false"/>
+                                    <setting name="channelPriority" value="0"/>
+                                 </struct>
+                                 <setting name="masterIdReplicationEnable" value="noInit"/>
+                                 <setting name="protectionLevel" value="noInit"/>
+                                 <setting name="enable_custom_name" value="false"/>
+                              </struct>
+                              <setting name="resetChannel" value="true"/>
+                              <setting name="enableChannelRequest" value="true"/>
+                              <setting name="enableAsyncRequest" value="true"/>
+                              <setting name="enableAutoStop" value="true"/>
+                              <setting name="tcd_pool_enable" value="false"/>
+                              <struct name="tcd_settings">
+                                 <setting name="tcd_size" value="1"/>
+                                 <setting name="tcd_memory_ptr_id" value="default"/>
+                              </struct>
+                              <array name="transfer_config"/>
+                              <setting name="loopTransfer" value="false"/>
+                              <setting name="no_init_uid" value="1789458865217"/>
+                              <setting name="init_callback" value="false"/>
+                              <setting name="callback_function" value="DMA_Callback"/>
+                              <setting name="callback_user_data" value=""/>
+                              <set name="channel_enabled_interrupts">
+                                 <selected/>
+                              </set>
+                              <struct name="interrupt_channel">
+                                 <setting name="IRQn" value="DMA_CH1_IRQn"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
+                              </struct>
+                           </struct>
+                           <struct name="4">
+                              <setting name="apiMode" value="trans"/>
+                              <struct name="edma_channel">
+                                 <setting name="channel_prefix_id" value="CH2"/>
+                                 <setting name="uid" value="1789459137228"/>
+                                 <setting name="eDMAn" value="2"/>
+                                 <setting name="eDMA_source" value="kDma0RequestMuxAdc1FifoRequest"/>
+                                 <setting name="init_channel_priority" value="false"/>
+                                 <struct name="edma_channel_Preemption">
+                                    <setting name="enableChannelPreemption" value="false"/>
+                                    <setting name="enablePreemptAbility" value="false"/>
+                                    <setting name="channelPriority" value="0"/>
+                                 </struct>
+                                 <setting name="masterIdReplicationEnable" value="noInit"/>
+                                 <setting name="protectionLevel" value="noInit"/>
+                                 <setting name="enable_custom_name" value="false"/>
+                              </struct>
+                              <setting name="resetChannel" value="true"/>
+                              <setting name="enableChannelRequest" value="true"/>
+                              <setting name="enableAsyncRequest" value="true"/>
+                              <setting name="enableAutoStop" value="true"/>
+                              <setting name="tcd_pool_enable" value="false"/>
+                              <struct name="tcd_settings">
+                                 <setting name="tcd_size" value="1"/>
+                                 <setting name="tcd_memory_ptr_id" value="default"/>
+                              </struct>
+                              <array name="transfer_config"/>
+                              <setting name="loopTransfer" value="false"/>
+                              <setting name="no_init_uid" value="1789459137243"/>
+                              <setting name="init_callback" value="false"/>
+                              <setting name="callback_function" value="DMA_Callback"/>
+                              <setting name="callback_user_data" value=""/>
+                              <set name="channel_enabled_interrupts">
+                                 <selected/>
+                              </set>
+                              <struct name="interrupt_channel">
+                                 <setting name="IRQn" value="DMA_CH2_IRQn"/>
                                  <setting name="enable_priority" value="true"/>
                                  <setting name="priority" value="5"/>
                               </struct>
@@ -1780,6 +1986,338 @@
                         <struct name="interruptCallbackConfig">
                            <struct name="interrupt">
                               <setting name="IRQn" value="CTIMER0_IRQn"/>
+                              <setting name="enable_priority" value="false"/>
+                              <setting name="priority" value="0"/>
+                           </struct>
+                           <setting name="callback" value="kCTIMER_NoCallback"/>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="ADC1" uuid="ae77d866-840d-495c-847c-8c810638c967" type="lpadc" type_id="lpadc_2.8.1" mode="LPADC" peripheral="ADC1" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="fsl_lpadc">
+                        <struct name="lpadcConfig">
+                           <setting name="clockSource" value="AsynchronousFunctionClock"/>
+                           <setting name="clockSourceFreq" value="ClocksTool_DefaultInit"/>
+                           <setting name="enableJustifiedLeft" value="false"/>
+                           <setting name="enableInDozeMode" value="false"/>
+                           <setting name="conversionAverageMode" value="kLPADC_ConversionAverage16"/>
+                           <setting name="offsetCalibration" value="no"/>
+                           <setting name="autoCalibrate" value="true"/>
+                           <setting name="enableAnalogPreliminary" value="true"/>
+                           <setting name="powerUpDelay" value="0x80"/>
+                           <setting name="referenceVoltageSource" value="kLPADC_ReferenceVoltageAlt1"/>
+                           <setting name="powerLevelMode" value="kLPADC_PowerLevelAlt1"/>
+                           <setting name="triggerPriorityPolicy" value="kLPADC_ConvPreemptImmediatelyNotAutoResumed"/>
+                           <setting name="enableConvPause" value="false"/>
+                           <setting name="convPauseDelay" value="0"/>
+                           <setting name="FIFOWatermark" value="0"/>
+                           <setting name="FIFOWatermarkDMA" value="true"/>
+                        </struct>
+                        <array name="lpadcConvCommandConfig">
+                           <struct name="0">
+                              <setting name="user_commandId" value="AD7"/>
+                              <setting name="commandId" value="1"/>
+                              <setting name="chainedNextCommandNumber" value="2"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.0"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="hardwareCompareMode" value="kLPADC_HardwareCompareDisabled"/>
+                              <setting name="hardwareCompareValueHigh" value="0"/>
+                              <setting name="hardwareCompareValueLow" value="0"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="1">
+                              <setting name="user_commandId" value="AD9"/>
+                              <setting name="commandId" value="2"/>
+                              <setting name="chainedNextCommandNumber" value="3"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.8"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="hardwareCompareMode" value="kLPADC_HardwareCompareDisabled"/>
+                              <setting name="hardwareCompareValueHigh" value="0"/>
+                              <setting name="hardwareCompareValueLow" value="0"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="2">
+                              <setting name="user_commandId" value="AD10"/>
+                              <setting name="commandId" value="3"/>
+                              <setting name="chainedNextCommandNumber" value="4"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.9"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="hardwareCompareMode" value="kLPADC_HardwareCompareDisabled"/>
+                              <setting name="hardwareCompareValueHigh" value="0"/>
+                              <setting name="hardwareCompareValueLow" value="0"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="3">
+                              <setting name="user_commandId" value="AD11"/>
+                              <setting name="commandId" value="4"/>
+                              <setting name="chainedNextCommandNumber" value="5"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.1"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="hardwareCompareMode" value="kLPADC_HardwareCompareDisabled"/>
+                              <setting name="hardwareCompareValueHigh" value="0"/>
+                              <setting name="hardwareCompareValueLow" value="0"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="4">
+                              <setting name="user_commandId" value="AD12"/>
+                              <setting name="commandId" value="5"/>
+                              <setting name="chainedNextCommandNumber" value="6"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.3"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="5">
+                              <setting name="user_commandId" value="AD13"/>
+                              <setting name="commandId" value="6"/>
+                              <setting name="chainedNextCommandNumber" value="7"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.13"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="6">
+                              <setting name="user_commandId" value="AD14"/>
+                              <setting name="commandId" value="7"/>
+                              <setting name="chainedNextCommandNumber" value="0"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.12"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                        </array>
+                        <array name="lpadcConvTriggerConfig">
+                           <struct name="0">
+                              <setting name="user_triggerId" value="ADC1_TRIG0"/>
+                              <setting name="triggerId" value="0"/>
+                              <setting name="targetCommandId" value="1"/>
+                              <setting name="delayPower" value="0"/>
+                              <setting name="priority" value="false"/>
+                              <setting name="enableHardwareTrigger" value="true"/>
+                           </struct>
+                        </array>
+                        <struct name="IRQ_cfg">
+                           <set name="interrupt_type">
+                              <selected/>
+                           </set>
+                           <setting name="enable_irq" value="false"/>
+                           <struct name="adc_interrupt">
+                              <setting name="IRQn" value="ADC1_IRQn"/>
+                              <setting name="enable_interrrupt" value="enabled"/>
+                              <setting name="enable_priority" value="false"/>
+                              <setting name="priority" value="0"/>
+                              <setting name="enable_custom_name" value="false"/>
+                           </struct>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="ADC0" uuid="77a2b89b-45ce-475e-bc8c-267a676b31f2" type="lpadc" type_id="lpadc_2.8.1" mode="LPADC" peripheral="ADC0" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="fsl_lpadc">
+                        <struct name="lpadcConfig">
+                           <setting name="clockSource" value="AsynchronousFunctionClock"/>
+                           <setting name="clockSourceFreq" value="ClocksTool_DefaultInit"/>
+                           <setting name="enableJustifiedLeft" value="false"/>
+                           <setting name="enableInDozeMode" value="false"/>
+                           <setting name="conversionAverageMode" value="kLPADC_ConversionAverage16"/>
+                           <setting name="offsetCalibration" value="no"/>
+                           <setting name="autoCalibrate" value="true"/>
+                           <setting name="enableAnalogPreliminary" value="true"/>
+                           <setting name="powerUpDelay" value="0x80"/>
+                           <setting name="referenceVoltageSource" value="kLPADC_ReferenceVoltageAlt1"/>
+                           <setting name="powerLevelMode" value="kLPADC_PowerLevelAlt1"/>
+                           <setting name="triggerPriorityPolicy" value="kLPADC_ConvPreemptImmediatelyNotAutoResumed"/>
+                           <setting name="enableConvPause" value="false"/>
+                           <setting name="convPauseDelay" value="0"/>
+                           <setting name="FIFOWatermark" value="0"/>
+                           <setting name="FIFOWatermarkDMA" value="true"/>
+                        </struct>
+                        <array name="lpadcConvCommandConfig">
+                           <struct name="0">
+                              <setting name="user_commandId" value="AD1"/>
+                              <setting name="commandId" value="1"/>
+                              <setting name="chainedNextCommandNumber" value="2"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.20"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="hardwareCompareMode" value="kLPADC_HardwareCompareDisabled"/>
+                              <setting name="hardwareCompareValueHigh" value="0"/>
+                              <setting name="hardwareCompareValueLow" value="0"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="1">
+                              <setting name="user_commandId" value="AD2"/>
+                              <setting name="commandId" value="2"/>
+                              <setting name="chainedNextCommandNumber" value="3"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.21"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="hardwareCompareMode" value="kLPADC_HardwareCompareDisabled"/>
+                              <setting name="hardwareCompareValueHigh" value="0"/>
+                              <setting name="hardwareCompareValueLow" value="0"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="2">
+                              <setting name="user_commandId" value="AD3"/>
+                              <setting name="commandId" value="3"/>
+                              <setting name="chainedNextCommandNumber" value="4"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.22"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="hardwareCompareMode" value="kLPADC_HardwareCompareDisabled"/>
+                              <setting name="hardwareCompareValueHigh" value="0"/>
+                              <setting name="hardwareCompareValueLow" value="0"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="3">
+                              <setting name="user_commandId" value="AD4"/>
+                              <setting name="commandId" value="4"/>
+                              <setting name="chainedNextCommandNumber" value="5"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.23"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="hardwareCompareMode" value="kLPADC_HardwareCompareDisabled"/>
+                              <setting name="hardwareCompareValueHigh" value="0"/>
+                              <setting name="hardwareCompareValueLow" value="0"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="4">
+                              <setting name="user_commandId" value="ADC1_3"/>
+                              <setting name="commandId" value="5"/>
+                              <setting name="chainedNextCommandNumber" value="6"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.1"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="5">
+                              <setting name="user_commandId" value="AD6"/>
+                              <setting name="commandId" value="6"/>
+                              <setting name="chainedNextCommandNumber" value="7"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.0"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                           <struct name="6">
+                              <setting name="user_commandId" value="AD8"/>
+                              <setting name="commandId" value="7"/>
+                              <setting name="chainedNextCommandNumber" value="0"/>
+                              <setting name="sampleChannelMode" value="kLPADC_SampleChannelSingleEndSideA"/>
+                              <setting name="channelNumber" value="A.3"/>
+                              <setting name="enableAutoChannelIncrement" value="false"/>
+                              <setting name="loopCount" value="0"/>
+                              <setting name="hardwareAverageMode" value="kLPADC_HardwareAverageCount1"/>
+                              <setting name="sampleTimeMode" value="kLPADC_SampleTimeADCK131"/>
+                              <setting name="conversionResoultuionMode" value="kLPADC_ConversionResolutionStandard"/>
+                              <setting name="enableWaitTrigger" value="false"/>
+                           </struct>
+                        </array>
+                        <array name="lpadcConvTriggerConfig">
+                           <struct name="0">
+                              <setting name="user_triggerId" value="ADC0_TRIG0"/>
+                              <setting name="triggerId" value="0"/>
+                              <setting name="targetCommandId" value="1"/>
+                              <setting name="delayPower" value="0"/>
+                              <setting name="priority" value="false"/>
+                              <setting name="enableHardwareTrigger" value="true"/>
+                           </struct>
+                        </array>
+                        <struct name="IRQ_cfg">
+                           <set name="interrupt_type">
+                              <selected/>
+                           </set>
+                           <setting name="enable_irq" value="false"/>
+                           <struct name="adc_interrupt">
+                              <setting name="IRQn" value="ADC0_IRQn"/>
+                              <setting name="enable_interrrupt" value="enabled"/>
+                              <setting name="enable_priority" value="false"/>
+                              <setting name="priority" value="0"/>
+                              <setting name="enable_custom_name" value="false"/>
+                           </struct>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="CTIMER3" uuid="0b56ab0d-4dce-4b6e-9479-b8cb8e831019" type="ctimer" type_id="ctimer_2.2.2" mode="Capture_Match" peripheral="CTIMER3" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="fsl_ctimer">
+                        <struct name="ctimerConfig">
+                           <setting name="mode" value="kCTIMER_TimerMode"/>
+                           <setting name="clockSource" value="FunctionClock"/>
+                           <setting name="clockSourceFreq" value="ClocksTool_DefaultInit"/>
+                           <setting name="timerPrescaler" value="180"/>
+                        </struct>
+                        <setting name="EnableTimerInInit" value="false"/>
+                        <array name="matchChannels">
+                           <struct name="0">
+                              <setting name="matchChannelPrefixId" value="Match_0"/>
+                              <setting name="matchChannel" value="kCTIMER_Match_0"/>
+                              <setting name="matchValueStr" value="1000"/>
+                              <setting name="enableCounterReset" value="true"/>
+                              <setting name="enableCounterStop" value="false"/>
+                              <setting name="outControl" value="kCTIMER_Output_NoAction"/>
+                              <setting name="outPinInitValue" value="low"/>
+                              <setting name="enableInterrupt" value="false"/>
+                           </struct>
+                        </array>
+                        <array name="captureChannels"/>
+                        <struct name="interruptCallbackConfig">
+                           <struct name="interrupt">
+                              <setting name="IRQn" value="CTIMER3_IRQn"/>
                               <setting name="enable_priority" value="false"/>
                               <setting name="priority" value="0"/>
                            </struct>

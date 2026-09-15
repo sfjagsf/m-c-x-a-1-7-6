@@ -1,0 +1,13 @@
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\drivers/fsl_gpio.h:346:20:GPIO_PinWrite	24	static
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\drivers/fsl_edma.h:704:20:EDMA_SetChannelMux	24	static
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\drivers/fsl_lpuart.h:704:25:LPUART_GetDataRegisterAddress	16	static
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\drivers/fsl_lpuart.h:717:20:LPUART_EnableTxDMA	16	static
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\drivers/fsl_lpuart.h:737:20:LPUART_EnableRxDMA	16	static
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\drivers/fsl_dac.h:417:20:DAC_SetData	16	static
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\drivers/fsl_dac.h:452:20:DAC_DoSoftwareTriggerFIFO	16	static
+../source/MCXA176_UartDmaDemo.c:47:13:UART1_SubmitDmaTransfer	16	static
+../source/MCXA176_UartDmaDemo.c:55:13:UART1_DmaCallback	24	static
+../source/MCXA176_UartDmaDemo.c:85:13:UART1_StartReceive	96	static
+../source/MCXA176_UartDmaDemo.c:124:13:UART1_StartTransmit	104	static
+../source/MCXA176_UartDmaDemo.c:163:6:MyUart_IRQHandler	24	static
+../source/MCXA176_UartDmaDemo.c:244:5:main	8	static

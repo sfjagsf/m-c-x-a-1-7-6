@@ -7,6 +7,7 @@
 #include "GpioInputTask.h"
 #include "PwmDacTestTask.h"
 #include "UartEchoTask.h"
+#include "AdcTestTask.h"
 
 #include "cmsis_os2.h"
 #include "fsl_common.h"
@@ -53,4 +54,15 @@ bool PwmDacTestTask_Create(void)
     };
 
     return osThreadNew(PwmDacTestTask, NULL, &pwmDacTestTaskAttributes) != NULL;
+}
+
+bool AdcTestTask_Create(void)
+{
+    static const osThreadAttr_t adcTestTaskAttributes = {
+        .name       = "AdcTest",
+        .priority   = osPriorityBelowNormal,
+        .stack_size = 1536U,
+    };
+
+    return osThreadNew(AdcTestTask, NULL, &adcTestTaskAttributes) != NULL;
 }

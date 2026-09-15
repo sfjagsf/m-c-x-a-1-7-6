@@ -1,0 +1,13 @@
+../board/clock_config.c:46:6:BOARD_InitBootClocks	8	static
+../board/clock_config.c:83:6:BOARD_BootClockFRO12M_InitClockModule	16	static
+../board/clock_config.c:193:6:BOARD_BootClockFRO12M	24	static
+../board/clock_config.c:298:6:BOARD_BootClockFROHF45M_InitClockModule	16	static
+../board/clock_config.c:408:6:BOARD_BootClockFROHF45M	24	static
+../board/clock_config.c:513:6:BOARD_BootClockFROHF60M_InitClockModule	16	static
+../board/clock_config.c:623:6:BOARD_BootClockFROHF60M	24	static
+../board/clock_config.c:728:6:BOARD_BootClockFROHF90M_InitClockModule	16	static
+../board/clock_config.c:838:6:BOARD_BootClockFROHF90M	24	static
+../board/clock_config.c:956:6:BOARD_BootClockFROHF180M_InitClockModule	16	static
+../board/clock_config.c:1069:6:BOARD_BootClockFROHF180M	24	static
+../board/clock_config.c:1180:6:BOARD_BootClockPLL180M_InitClockModule	48	static
+../board/clock_config.c:1302:6:BOARD_BootClockPLL180M	24	static

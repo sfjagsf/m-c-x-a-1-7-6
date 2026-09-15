@@ -24,6 +24,7 @@
 #include "fsl_lpuart.h"
 #include "fsl_lpuart_edma.h"
 #include "fsl_pwm.h"
+#include "fsl_lpadc.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -67,6 +68,26 @@ extern "C" {
 #define DMA0_DMA_CH_INT_DONE_4_IRQN DMA_CH4_IRQn
 /* DMA0 interrupt vector priority. */
 #define DMA0_DMA_CH_INT_DONE_4_IRQ_PRIORITY 5
+
+  /* Channel CH1 definitions */
+/* DMA0 eDMA source request. */
+#define DMA0_CH1_DMA_REQUEST kDma0RequestMuxAdc0FifoRequest
+/* Selected eDMA channel number. */
+#define DMA0_CH1_DMA_CHANNEL 1
+/* DMA0 interrupt vector ID (number). */
+#define DMA0_DMA_CH_INT_DONE_1_IRQN DMA_CH1_IRQn
+/* DMA0 interrupt vector priority. */
+#define DMA0_DMA_CH_INT_DONE_1_IRQ_PRIORITY 5
+
+  /* Channel CH2 definitions */
+/* DMA0 eDMA source request. */
+#define DMA0_CH2_DMA_REQUEST kDma0RequestMuxAdc1FifoRequest
+/* Selected eDMA channel number. */
+#define DMA0_CH2_DMA_CHANNEL 2
+/* DMA0 interrupt vector ID (number). */
+#define DMA0_DMA_CH_INT_DONE_2_IRQN DMA_CH2_IRQn
+/* DMA0 interrupt vector priority. */
+#define DMA0_DMA_CH_INT_DONE_2_IRQ_PRIORITY 5
 /* NVIC interrupt vector ID (number). */
 #define LPUART0_NVIC_IRQN LPUART0_IRQn
 /* NVIC interrupt vector priority. */
@@ -266,6 +287,52 @@ extern "C" {
 #define CTIMER0_PWM_PERIOD_CH kCTIMER_Match_0
 /* Definition of channel 0 ID */
 #define CTIMER0_MATCH_0_CHANNEL kCTIMER_Match_0
+/* Alias for ADC1 peripheral */
+#define ADC1_PERIPHERAL ADC1
+/* Command 1 - AD7 */
+#define ADC1_AD7 1U
+/* Command 2 - AD9 */
+#define ADC1_AD9 2U
+/* Command 3 - AD10 */
+#define ADC1_AD10 3U
+/* Command 4 - AD11 */
+#define ADC1_AD11 4U
+/* Command 5 - AD12 */
+#define ADC1_AD12 5U
+/* Command 6 - AD13 */
+#define ADC1_AD13 6U
+/* Command 7 - AD14 */
+#define ADC1_AD14 7U
+/* Trigger 0 - ADC1_TRIG0 */
+#define ADC1_ADC1_TRIG0 0U
+/* Alias for ADC0 peripheral */
+#define ADC0_PERIPHERAL ADC0
+/* Command 1 - AD1 */
+#define ADC0_AD1 1U
+/* Command 2 - AD2 */
+#define ADC0_AD2 2U
+/* Command 3 - AD3 */
+#define ADC0_AD3 3U
+/* Command 4 - AD4 */
+#define ADC0_AD4 4U
+/* Command 5 - ADC1_3 */
+#define ADC0_ADC1_3 5U
+/* Command 6 - AD6 */
+#define ADC0_AD6 6U
+/* Command 7 - AD8 */
+#define ADC0_AD8 7U
+/* Trigger 0 - ADC0_TRIG0 */
+#define ADC0_ADC0_TRIG0 0U
+/* Definition of peripheral ID */
+#define CTIMER3_PERIPHERAL CTIMER3
+/* Timer tick frequency in Hz (input frequency of the timer) */
+#define CTIMER3_TICK_FREQ 1000000UL
+/* Timer tick period in ns (input period of the timer) */
+#define CTIMER3_TICK_PERIOD 1000UL
+/* Definition of PWM period channel. */
+#define CTIMER3_PWM_PERIOD_CH kCTIMER_Match_0
+/* Definition of channel 0 ID */
+#define CTIMER3_MATCH_0_CHANNEL kCTIMER_Match_0
 
 /***********************************************************************************************************************
  * Global variables
@@ -278,6 +345,8 @@ extern edma_handle_t DMA0_CH7_Handle;
 extern edma_transfer_config_t DMA0_CH7_Transfers_config[1];
 extern edma_handle_t DMA0_CH0_Handle;
 extern edma_handle_t DMA0_CH4_Handle;
+extern edma_handle_t DMA0_CH1_Handle;
+extern edma_handle_t DMA0_CH2_Handle;
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_RS485_EN_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_EN_15V_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_INITPINS_LED_handle);
@@ -322,6 +391,14 @@ extern const pwm_fault_param_t FLEXPWM0_Fault2_fault_config;
 extern const pwm_fault_param_t FLEXPWM0_Fault3_fault_config;
 extern const ctimer_config_t CTIMER0_config;
 extern const ctimer_match_config_t CTIMER0_Match_0_config;
+extern const lpadc_config_t ADC1_config;
+extern lpadc_conv_command_config_t ADC1_commandsConfig[7];
+extern lpadc_conv_trigger_config_t ADC1_triggersConfig[1];
+extern const lpadc_config_t ADC0_config;
+extern lpadc_conv_command_config_t ADC0_commandsConfig[7];
+extern lpadc_conv_trigger_config_t ADC0_triggersConfig[1];
+extern const ctimer_config_t CTIMER3_config;
+extern const ctimer_match_config_t CTIMER3_Match_0_config;
 
 /***********************************************************************************************************************
  * Global functions

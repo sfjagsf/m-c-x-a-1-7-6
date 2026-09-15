@@ -1,0 +1,15 @@
+D:\MCUXpressoIDE_25.6.136\workspace\MCXA176_UartDmaDemo\CMSIS/core_cm33.h:2358:22:__NVIC_EnableIRQ	16	static
+../drivers/fsl_common_arm.h:753:24:EnableIRQ	24	static
+../drivers/fsl_lpuart.h:704:25:LPUART_GetDataRegisterAddress	16	static
+../drivers/fsl_lpuart.h:717:20:LPUART_EnableTxDMA	16	static
+../drivers/fsl_lpuart.h:737:20:LPUART_EnableRxDMA	16	static
+../drivers/fsl_lpuart_edma.c:85:13:LPUART_SendEDMACallback	32	static
+../drivers/fsl_lpuart_edma.c:111:13:LPUART_ReceiveEDMACallback	40	static
+../drivers/fsl_lpuart_edma.c:149:6:LPUART_TransferCreateHandleEDMA	32	static
+../drivers/fsl_lpuart_edma.c:228:10:LPUART_SendEDMA	120	static
+../drivers/fsl_lpuart_edma.c:287:10:LPUART_ReceiveEDMA	120	static
+../drivers/fsl_lpuart_edma.c:340:6:LPUART_TransferAbortSendEDMA	16	static
+../drivers/fsl_lpuart_edma.c:362:6:LPUART_TransferAbortReceiveEDMA	16	static
+../drivers/fsl_lpuart_edma.c:388:10:LPUART_TransferGetReceiveCountEDMA	32	static
+../drivers/fsl_lpuart_edma.c:419:10:LPUART_TransferGetSendCountEDMA	32	static
+../drivers/fsl_lpuart_edma.c:448:6:LPUART_TransferEdmaHandleIRQ	32	static
