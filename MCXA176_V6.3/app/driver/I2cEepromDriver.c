@@ -8,7 +8,9 @@
 
 extern uint32_t SystemCoreClock;
 
-#define I2C_EEPROM_SLAVE_ADDRESS (0x50U)
+#define I2C_EEPROM_SLAVE_ADDRESS       (0x50U)
+#define I2C_EEPROM_SUBADDRESS_SIZE     (2U)
+#define I2C_EEPROM_ACK_POLL_DELAY_US   (1000U)
 
 static volatile bool s_busy;
 static i2c_eeprom_diagnostics_t s_diagnostics;
@@ -21,7 +23,8 @@ static void I2cEeprom_SetWriteEnabled(bool enabled)
 
 static bool I2cEeprom_IsValidRange(uint16_t address, size_t size)
 {
-    return size <= ((size_t)I2C_EEPROM_CAPACITY_BYTES - (size_t)address);
+    return ((size_t)address < (size_t)I2C_EEPROM_CAPACITY_BYTES) &&
+           (size <= ((size_t)I2C_EEPROM_CAPACITY_BYTES - (size_t)address));
 }
 
 static bool I2cEeprom_TryAcquire(void)
@@ -67,7 +70,7 @@ static status_t I2cEeprom_Transfer(uint16_t address,
         .slaveAddress = I2C_EEPROM_SLAVE_ADDRESS,
         .direction = direction,
         .subaddress = address,
-        .subaddressSize = 2U,
+        .subaddressSize = I2C_EEPROM_SUBADDRESS_SIZE,
         .data = data,
         .dataSize = size,
     };
@@ -111,7 +114,7 @@ static status_t I2cEeprom_WaitReadyLocked(uint32_t timeoutMs)
         }
 
         timeoutMs--;
-        SDK_DelayAtLeastUs(1000U, SystemCoreClock);
+        SDK_DelayAtLeastUs(I2C_EEPROM_ACK_POLL_DELAY_US, SystemCoreClock);
     }
 }
 

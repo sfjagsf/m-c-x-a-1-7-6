@@ -2,8 +2,29 @@
 
 #include "fsl_lpi2c.h"
 
-#define PCF8563_REG_SECONDS             (0x02U)
-#define PCF8563_DATETIME_REGISTER_COUNT (7U)
+#define PCF8563_REG_CONTROL_STATUS_1 (0x00U)
+#define PCF8563_REG_CONTROL_STATUS_2 (0x01U)
+#define PCF8563_REG_SECONDS          (0x02U)
+#define PCF8563_REG_MINUTES          (0x03U)
+#define PCF8563_REG_HOURS            (0x04U)
+#define PCF8563_REG_DAYS             (0x05U)
+#define PCF8563_REG_WEEKDAYS         (0x06U)
+#define PCF8563_REG_MONTHS           (0x07U)
+#define PCF8563_REG_YEARS            (0x08U)
+#define PCF8563_REG_ALARM_MINUTES    (0x09U)
+#define PCF8563_REG_TIMER_CONTROL    (0x0EU)
+#define PCF8563_REG_TIMER            (0x0FU)
+
+#define PCF8563_SECONDS_VL_MASK      (0x80U)
+#define PCF8563_SECONDS_BCD_MASK     (0x7FU)
+#define PCF8563_MINUTES_BCD_MASK     (0x7FU)
+#define PCF8563_HOURS_BCD_MASK       (0x3FU)
+#define PCF8563_DAYS_BCD_MASK        (0x3FU)
+#define PCF8563_WEEKDAYS_MASK        (0x07U)
+#define PCF8563_MONTHS_BCD_MASK      (0x1FU)
+
+#define PCF8563_DATETIME_REGISTER_COUNT \
+    ((PCF8563_REG_YEARS - PCF8563_REG_SECONDS) + 1U)
 #define PCF8563_READ_CONSISTENCY_RETRIES (3U)
 
 static volatile bool s_busy;
@@ -70,7 +91,7 @@ static bool Pcf8563_IsDateTimeValid(const pcf8563_datetime_t *dateTime)
     return dateTime->day <= Pcf8563_DaysInMonth(dateTime->year, dateTime->month);
 }
 
-static status_t Pcf8563_Transfer(uint8_t startRegister,
+static status_t Pcf8563_Transfer(uint8_t registerAddress,
                                  lpi2c_direction_t direction,
                                  uint8_t *data,
                                  size_t size)
@@ -79,7 +100,7 @@ static status_t Pcf8563_Transfer(uint8_t startRegister,
         .flags = kLPI2C_TransferDefaultFlag,
         .slaveAddress = PCF8563_I2C_ADDRESS,
         .direction = direction,
-        .subaddress = startRegister,
+        .subaddress = registerAddress,
         .subaddressSize = 1U,
         .data = data,
         .dataSize = size,
@@ -88,21 +109,21 @@ static status_t Pcf8563_Transfer(uint8_t startRegister,
     return LPI2C_MasterTransferBlocking(LPI2C1, &transfer);
 }
 
-static status_t Pcf8563_ReadRegistersLocked(uint8_t startRegister, uint8_t *data, size_t size)
+static status_t Pcf8563_ReadRegistersLocked(uint8_t registerAddress, uint8_t *data, size_t size)
 {
-    return Pcf8563_Transfer(startRegister, kLPI2C_Read, data, size);
+    return Pcf8563_Transfer(registerAddress, kLPI2C_Read, data, size);
 }
 
 static status_t Pcf8563_DecodeDateTime(const uint8_t data[PCF8563_DATETIME_REGISTER_COUNT],
                                        pcf8563_datetime_t *dateTime)
 {
     pcf8563_datetime_t decoded;
-    uint8_t seconds = data[0] & 0x7FU;
-    uint8_t minutes = data[1] & 0x7FU;
-    uint8_t hours = data[2] & 0x3FU;
-    uint8_t days = data[3] & 0x3FU;
-    uint8_t weekdays = data[4] & 0x07U;
-    uint8_t months = data[5] & 0x1FU;
+    uint8_t seconds = data[0] & PCF8563_SECONDS_BCD_MASK;
+    uint8_t minutes = data[1] & PCF8563_MINUTES_BCD_MASK;
+    uint8_t hours = data[2] & PCF8563_HOURS_BCD_MASK;
+    uint8_t days = data[3] & PCF8563_DAYS_BCD_MASK;
+    uint8_t weekdays = data[4] & PCF8563_WEEKDAYS_MASK;
+    uint8_t months = data[5] & PCF8563_MONTHS_BCD_MASK;
     uint8_t years = data[6];
 
     if (!Pcf8563_IsBcd(seconds, 59U) || !Pcf8563_IsBcd(minutes, 59U) || !Pcf8563_IsBcd(hours, 23U) ||
@@ -119,7 +140,7 @@ static status_t Pcf8563_DecodeDateTime(const uint8_t data[PCF8563_DATETIME_REGIS
     decoded.weekday = weekdays;
     decoded.month = Pcf8563_BcdToDecimal(months);
     decoded.year = (uint16_t)(2000U + Pcf8563_BcdToDecimal(years));
-    decoded.clockValid = (data[0] & 0x80U) == 0U;
+    decoded.clockValid = (data[0] & PCF8563_SECONDS_VL_MASK) == 0U;
     if (!Pcf8563_IsDateTimeValid(&decoded))
     {
         return kStatus_Fail;

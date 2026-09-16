@@ -42,6 +42,18 @@
 #define UART1_RTC_INITIAL_MINUTE               (13U)
 #define UART1_RTC_INITIAL_SECOND               (41U)
 
+/* Bring-up fallback only; disable UART1_RTC_SET_INVALID_TIME_ENABLE for production. */
+static const pcf8563_datetime_t s_uart1RtcFallbackTime = {
+    .year = UART1_RTC_INITIAL_YEAR,
+    .month = UART1_RTC_INITIAL_MONTH,
+    .day = UART1_RTC_INITIAL_DAY,
+    .weekday = UART1_RTC_INITIAL_WEEKDAY,
+    .hour = UART1_RTC_INITIAL_HOUR,
+    .minute = UART1_RTC_INITIAL_MINUTE,
+    .second = UART1_RTC_INITIAL_SECOND,
+    .clockValid = true,
+};
+
 /*
  * WARNING: the Flash test erases the complete 4 KiB sector containing this
  * address. It then writes its 16 pages at 200 ms intervals and reads/verifies
@@ -334,16 +346,6 @@ static void Uart1TestI2cDevices(void)
     static bool rtcSetAttempted;
     uint8_t eepromData[UART1_EEPROM_TEST_READ_SIZE] = {0U};
     uint8_t rtcRegisters[9U] = {0U};
-    const pcf8563_datetime_t initialRtc = {
-        .year = UART1_RTC_INITIAL_YEAR,
-        .month = UART1_RTC_INITIAL_MONTH,
-        .day = UART1_RTC_INITIAL_DAY,
-        .weekday = UART1_RTC_INITIAL_WEEKDAY,
-        .hour = UART1_RTC_INITIAL_HOUR,
-        .minute = UART1_RTC_INITIAL_MINUTE,
-        .second = UART1_RTC_INITIAL_SECOND,
-        .clockValid = true,
-    };
     pcf8563_datetime_t rtc = {0};
     status_t rtcStatus;
     status_t rtcRawStatus = kStatus_Success;
@@ -367,7 +369,7 @@ static void Uart1TestI2cDevices(void)
     if ((rtcStatus == kStatus_Fail) && !rtcSetAttempted)
     {
         rtcSetAttempted = true;
-        rtcSetStatus = Pcf8563_SetDateTime(&initialRtc);
+        rtcSetStatus = Pcf8563_SetDateTime(&s_uart1RtcFallbackTime);
         rtcSetResult = (rtcSetStatus == kStatus_Success) ? "PASS" : "FAIL";
         if (rtcSetStatus == kStatus_Success)
         {

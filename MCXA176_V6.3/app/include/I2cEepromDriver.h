@@ -26,8 +26,10 @@ typedef struct
 } i2c_eeprom_diagnostics_t;
 
 void I2cEeprom_Init(void);
-/* Each bus transfer is limited to I2C_EEPROM_READ_CHUNK_SIZE bytes. */
+/* Blocking APIs: do not call from an ISR. A concurrent caller receives kStatus_Busy. */
+/* Reads 0x0000 through 0x7FFF; each I2C transaction is at most READ_CHUNK_SIZE bytes. */
 status_t I2cEeprom_Read(uint16_t address, uint8_t *data, size_t size);
+/* Writes 0x0000 through 0x7FFF and automatically splits data at 64-byte page boundaries. */
 status_t I2cEeprom_Write(uint16_t address, const uint8_t *data, size_t size);
 status_t I2cEeprom_WaitReady(uint32_t timeoutMs);
 bool I2cEeprom_IsBusy(void);
