@@ -6,7 +6,9 @@
 #include "AdcDma.h"
 #include "GpioDmaFilter.h"
 #include "GpioInputTask.h"
+#include "I2cEepromDriver.h"
 #include "MySpi.h"
+#include "Pcf8563RtcDriver.h"
 #include "UartDriver.h"
 #include "W25qxx.h"
 #include "cmsis_os2.h"
@@ -27,6 +29,18 @@
 #define UART1_FLASH_TEST_WRITE_PERIOD_MS     (200U)
 #define UART1_FLASH_TEST_READ_PERIOD_MS      (400U)
 #define UART1_FLASH_TEST_PAYLOAD_SIZE        (32U)
+#define UART1_I2C_DEVICE_TEST_ENABLE          (1U)
+#define UART1_I2C_DEVICE_TEST_PERIOD_MS       (2000U)
+#define UART1_EEPROM_TEST_ADDRESS             (0x0000U)
+#define UART1_EEPROM_TEST_READ_SIZE           (16U)
+#define UART1_RTC_SET_INVALID_TIME_ENABLE     (1U)
+#define UART1_RTC_INITIAL_YEAR                 (2026U)
+#define UART1_RTC_INITIAL_MONTH                (9U)
+#define UART1_RTC_INITIAL_DAY                  (16U)
+#define UART1_RTC_INITIAL_WEEKDAY              (3U) /* Wednesday; Sunday is 0. */
+#define UART1_RTC_INITIAL_HOUR                 (14U)
+#define UART1_RTC_INITIAL_MINUTE               (13U)
+#define UART1_RTC_INITIAL_SECOND               (41U)
 
 /*
  * WARNING: the Flash test erases the complete 4 KiB sector containing this
@@ -312,6 +326,89 @@ static void Uart1TestFlash(void)
     }
 }
 
+/* Read-only test for the independent RTC (I2C1) and EEPROM (I2C3) devices. */
+static void Uart1TestI2cDevices(void)
+{
+    static uint32_t ticks;
+    static bool reportPending;
+    static bool rtcSetAttempted;
+    uint8_t eepromData[UART1_EEPROM_TEST_READ_SIZE] = {0U};
+    uint8_t rtcRegisters[9U] = {0U};
+    const pcf8563_datetime_t initialRtc = {
+        .year = UART1_RTC_INITIAL_YEAR,
+        .month = UART1_RTC_INITIAL_MONTH,
+        .day = UART1_RTC_INITIAL_DAY,
+        .weekday = UART1_RTC_INITIAL_WEEKDAY,
+        .hour = UART1_RTC_INITIAL_HOUR,
+        .minute = UART1_RTC_INITIAL_MINUTE,
+        .second = UART1_RTC_INITIAL_SECOND,
+        .clockValid = true,
+    };
+    pcf8563_datetime_t rtc = {0};
+    status_t rtcStatus;
+    status_t rtcRawStatus = kStatus_Success;
+    status_t rtcSetStatus = kStatus_Success;
+    const char *rtcSetResult = "SKIP";
+    status_t eepromStatus;
+    char message[192];
+    int length;
+
+    if (!reportPending && Uart1TestIntervalElapsed(&ticks, UART1_I2C_DEVICE_TEST_PERIOD_MS))
+    {
+        reportPending = true;
+    }
+    if (!reportPending || Uart1_IsBusy())
+    {
+        return;
+    }
+
+    rtcStatus = Pcf8563_ReadDateTime(&rtc);
+#if (UART1_RTC_SET_INVALID_TIME_ENABLE != 0U)
+    if ((rtcStatus == kStatus_Fail) && !rtcSetAttempted)
+    {
+        rtcSetAttempted = true;
+        rtcSetStatus = Pcf8563_SetDateTime(&initialRtc);
+        rtcSetResult = (rtcSetStatus == kStatus_Success) ? "PASS" : "FAIL";
+        if (rtcSetStatus == kStatus_Success)
+        {
+            rtcStatus = Pcf8563_ReadDateTime(&rtc);
+        }
+    }
+#endif
+    if (rtcStatus != kStatus_Success)
+    {
+        rtcRawStatus = Pcf8563_ReadRegisters(0x00U, rtcRegisters, sizeof(rtcRegisters));
+    }
+    eepromStatus = I2cEeprom_Read(UART1_EEPROM_TEST_ADDRESS, eepromData, sizeof(eepromData));
+
+    if (rtcStatus == kStatus_Success)
+    {
+        length = snprintf(message, sizeof(message),
+                          "RTC i2c1=PASS st=0 set=%s setst=%ld time=%04u-%02u-%02u %02u:%02u:%02u valid=%u "
+                          "EEPROM i2c3=%s st=%ld addr=%04X data=%02X%02X%02X%02X\r\n",
+                          rtcSetResult, (long)rtcSetStatus,
+                          rtc.year, rtc.month, rtc.day, rtc.hour, rtc.minute, rtc.second,
+                          rtc.clockValid ? 1U : 0U,
+                          (eepromStatus == kStatus_Success) ? "PASS" : "FAIL", (long)eepromStatus,
+                          UART1_EEPROM_TEST_ADDRESS, eepromData[0], eepromData[1], eepromData[2], eepromData[3]);
+    }
+    else
+    {
+        length = snprintf(message, sizeof(message),
+                          "RTC i2c1=FAIL st=%ld set=%s setst=%ld rawst=%ld reg00-08=%02X%02X%02X%02X%02X%02X%02X%02X%02X "
+                          "EEPROM i2c3=%s st=%ld addr=%04X data=%02X%02X%02X%02X\r\n",
+                          (long)rtcStatus, rtcSetResult, (long)rtcSetStatus, (long)rtcRawStatus,
+                          rtcRegisters[0], rtcRegisters[1], rtcRegisters[2], rtcRegisters[3], rtcRegisters[4],
+                          rtcRegisters[5], rtcRegisters[6], rtcRegisters[7], rtcRegisters[8],
+                          (eepromStatus == kStatus_Success) ? "PASS" : "FAIL", (long)eepromStatus,
+                          UART1_EEPROM_TEST_ADDRESS, eepromData[0], eepromData[1], eepromData[2], eepromData[3]);
+    }
+    if ((length > 0) && ((size_t)length < sizeof(message)))
+    {
+        reportPending = !Uart1TestSend(message, (size_t)length);
+    }
+}
+
 /*
  * Enable echo after validating the RS485 direction GPIO. P0_19 is asserted
  * only for the duration of each reply, then the driver returns to RX mode.
@@ -381,6 +478,9 @@ void Uart1EchoTask(void *argument)
         Uart1TestReportGpio();
         Uart1TestReportAdc();
         Uart1TestFlash();
+#if (UART1_I2C_DEVICE_TEST_ENABLE != 0U)
+        Uart1TestI2cDevices();
+#endif
 #endif
 
         (void)osDelay(UART_ECHO_TASK_PERIOD_MS);
