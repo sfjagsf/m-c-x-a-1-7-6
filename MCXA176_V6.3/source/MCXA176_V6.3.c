@@ -22,7 +22,6 @@
 #include "../Modbus/Inc/ModbusApp.h"
 #include "UartDriver.h"
 #include "UartEchoTask.h"
-#include "PwmDacTestTask.h"
 #include "AdcDma.h"
 #include "I2cEepromDriver.h"
 #include "Pcf8563RtcDriver.h"
@@ -97,14 +96,6 @@ int main(void) {
     }
 
     if (!Uart1EchoTask_Create())
-    {
-        for (;;)
-        {
-            __asm volatile ("nop");
-        }
-    }
-
-    if (!PwmDacTestTask_Create())
     {
         for (;;)
         {
