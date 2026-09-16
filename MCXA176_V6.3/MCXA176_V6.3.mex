@@ -1132,6 +1132,11 @@
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPI2C3.lpi2c_hreq" description="Signal host request is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
                </dependencies>
                <instances>
                   <instance name="NVIC" uuid="f9d970ff-8e91-4728-af1f-06d28b1b9ac4" type="nvic" type_id="nvic" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
@@ -2385,7 +2390,7 @@
                         <setting name="clockSourceFreq" value="ClocksTool_DefaultInit"/>
                      </config_set>
                      <config_set name="interrupt_vector"/>
-                     <config_set name="master" quick_selection="qs_master_transfer">
+                     <config_set name="master">
                         <setting name="mode" value="transfer"/>
                         <struct name="config">
                            <setting name="enableMaster" value="true"/>
@@ -2393,7 +2398,7 @@
                            <setting name="debugEnable" value="false"/>
                            <setting name="ignoreAck" value="false"/>
                            <setting name="pinConfig" value="kLPI2C_2PinOpenDrain"/>
-                           <setting name="baudRate_Hz" value="100000"/>
+                           <setting name="baudRate_Hz" value="400000"/>
                            <setting name="busIdleTimeout_ns" value="0"/>
                            <setting name="pinLowTimeout_ns" value="0"/>
                            <setting name="sdaGlitchFilterWidth_ns" value="0"/>
@@ -2408,22 +2413,17 @@
                            </set>
                         </struct>
                         <struct name="transfer">
-                           <setting name="blocking" value="false"/>
-                           <setting name="enable_custom_handle" value="false"/>
-                           <struct name="callback">
-                              <setting name="name" value=""/>
-                              <setting name="userData" value=""/>
-                           </struct>
+                           <setting name="blocking" value="true"/>
                            <set name="flags">
                               <selected/>
                            </set>
-                           <setting name="slaveAddress" value="0"/>
+                           <setting name="slaveAddress" value="0x50"/>
                            <setting name="direction" value="kLPI2C_Write"/>
                            <setting name="subaddress" value="0"/>
-                           <setting name="subaddressSize" value="1"/>
+                           <setting name="subaddressSize" value="2"/>
                            <setting name="blocking_buffer" value="false"/>
                            <setting name="enable_custom_buffer" value="false"/>
-                           <setting name="dataSize" value="1"/>
+                           <setting name="dataSize" value="1024"/>
                         </struct>
                      </config_set>
                   </instance>
@@ -2433,7 +2433,7 @@
                         <setting name="clockSourceFreq" value="ClocksTool_DefaultInit"/>
                      </config_set>
                      <config_set name="interrupt_vector"/>
-                     <config_set name="master" quick_selection="qs_master_transfer">
+                     <config_set name="master">
                         <setting name="mode" value="transfer"/>
                         <struct name="config">
                            <setting name="enableMaster" value="true"/>
@@ -2441,13 +2441,13 @@
                            <setting name="debugEnable" value="false"/>
                            <setting name="ignoreAck" value="false"/>
                            <setting name="pinConfig" value="kLPI2C_2PinOpenDrain"/>
-                           <setting name="baudRate_Hz" value="100000"/>
+                           <setting name="baudRate_Hz" value="400000"/>
                            <setting name="busIdleTimeout_ns" value="0"/>
                            <setting name="pinLowTimeout_ns" value="0"/>
                            <setting name="sdaGlitchFilterWidth_ns" value="0"/>
                            <setting name="sclGlitchFilterWidth_ns" value="0"/>
                            <struct name="hostRequest">
-                              <setting name="enable" value="false"/>
+                              <setting name="enable" value="true"/>
                               <setting name="source" value="kLPI2C_HostRequestExternalPin"/>
                               <setting name="polarity" value="kLPI2C_HostRequestPinActiveHigh"/>
                            </struct>
@@ -2456,22 +2456,17 @@
                            </set>
                         </struct>
                         <struct name="transfer">
-                           <setting name="blocking" value="false"/>
-                           <setting name="enable_custom_handle" value="false"/>
-                           <struct name="callback">
-                              <setting name="name" value=""/>
-                              <setting name="userData" value=""/>
-                           </struct>
+                           <setting name="blocking" value="true"/>
                            <set name="flags">
                               <selected/>
                            </set>
-                           <setting name="slaveAddress" value="0"/>
+                           <setting name="slaveAddress" value="0x50"/>
                            <setting name="direction" value="kLPI2C_Write"/>
                            <setting name="subaddress" value="0"/>
-                           <setting name="subaddressSize" value="1"/>
+                           <setting name="subaddressSize" value="2"/>
                            <setting name="blocking_buffer" value="false"/>
                            <setting name="enable_custom_buffer" value="false"/>
-                           <setting name="dataSize" value="1"/>
+                           <setting name="dataSize" value="1024"/>
                         </struct>
                      </config_set>
                   </instance>

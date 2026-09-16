@@ -340,18 +340,18 @@ extern "C" {
 /* Definition of clock source */
 #define LPI2C1_CLOCK_FREQ 60000000UL
 /* Transfer buffer size */
-#define LPI2C1_MASTER_BUFFER_SIZE 1
+#define LPI2C1_MASTER_BUFFER_SIZE 1024
 /* Definition of follower address */
-#define LPI2C1_MASTER_SLAVE_ADDRESS 0
+#define LPI2C1_MASTER_SLAVE_ADDRESS 80
 /* BOARD_InitPeripherals defines for LPI2C3 */
 /* Definition of peripheral ID */
 #define LPI2C3_PERIPHERAL LPI2C3
 /* Definition of clock source */
 #define LPI2C3_CLOCK_FREQ 60000000UL
 /* Transfer buffer size */
-#define LPI2C3_MASTER_BUFFER_SIZE 1
+#define LPI2C3_MASTER_BUFFER_SIZE 1024
 /* Definition of follower address */
-#define LPI2C3_MASTER_SLAVE_ADDRESS 0
+#define LPI2C3_MASTER_SLAVE_ADDRESS 80
 
 /***********************************************************************************************************************
  * Global variables
@@ -421,11 +421,9 @@ extern const ctimer_match_config_t CTIMER3_Match_0_config;
 extern const lpi2c_master_config_t LPI2C1_masterConfig;
 extern lpi2c_master_transfer_t LPI2C1_masterTransfer;
 extern uint8_t LPI2C1_masterBuffer[LPI2C1_MASTER_BUFFER_SIZE];
-extern lpi2c_master_handle_t LPI2C1_masterHandle;
 extern const lpi2c_master_config_t LPI2C3_masterConfig;
 extern lpi2c_master_transfer_t LPI2C3_masterTransfer;
 extern uint8_t LPI2C3_masterBuffer[LPI2C3_MASTER_BUFFER_SIZE];
-extern lpi2c_master_handle_t LPI2C3_masterHandle;
 
 /***********************************************************************************************************************
  * Global functions

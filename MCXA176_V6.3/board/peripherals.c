@@ -2244,7 +2244,7 @@ instance:
       - debugEnable: 'false'
       - ignoreAck: 'false'
       - pinConfig: 'kLPI2C_2PinOpenDrain'
-      - baudRate_Hz: '100000'
+      - baudRate_Hz: '400000'
       - busIdleTimeout_ns: '0'
       - pinLowTimeout_ns: '0'
       - sdaGlitchFilterWidth_ns: '0'
@@ -2255,20 +2255,15 @@ instance:
         - polarity: 'kLPI2C_HostRequestPinActiveHigh'
       - edmaRequestSources: ''
     - transfer:
-      - blocking: 'false'
-      - enable_custom_handle: 'false'
-      - callback:
-        - name: ''
-        - userData: ''
+      - blocking: 'true'
       - flags: ''
-      - slaveAddress: '0'
+      - slaveAddress: '0x50'
       - direction: 'kLPI2C_Write'
       - subaddress: '0'
-      - subaddressSize: '1'
+      - subaddressSize: '2'
       - blocking_buffer: 'false'
       - enable_custom_buffer: 'false'
-      - dataSize: '1'
-    - quick_selection: 'qs_master_transfer'
+      - dataSize: '1024'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const lpi2c_master_config_t LPI2C1_masterConfig = {
@@ -2277,7 +2272,7 @@ const lpi2c_master_config_t LPI2C1_masterConfig = {
   .debugEnable = false,
   .ignoreAck = false,
   .pinConfig = kLPI2C_2PinOpenDrain,
-  .baudRate_Hz = 100000UL,
+  .baudRate_Hz = 400000UL,
   .busIdleTimeout_ns = 0UL,
   .pinLowTimeout_ns = 0UL,
   .sdaGlitchFilterWidth_ns = 0U,
@@ -2290,19 +2285,17 @@ const lpi2c_master_config_t LPI2C1_masterConfig = {
 };
 lpi2c_master_transfer_t LPI2C1_masterTransfer = {
   .flags = kLPI2C_TransferDefaultFlag,
-  .slaveAddress = 0,
+  .slaveAddress = 0x50,
   .direction = kLPI2C_Write,
   .subaddress = 0,
-  .subaddressSize = 1,
+  .subaddressSize = 2,
   .data = LPI2C1_masterBuffer,
-  .dataSize = 1
+  .dataSize = 1024
 };
-lpi2c_master_handle_t LPI2C1_masterHandle;
 uint8_t LPI2C1_masterBuffer[LPI2C1_MASTER_BUFFER_SIZE];
 
 static void LPI2C1_init(void) {
   LPI2C_MasterInit(LPI2C1_PERIPHERAL, &LPI2C1_masterConfig, LPI2C1_CLOCK_FREQ);
-  LPI2C_MasterTransferCreateHandle(LPI2C1_PERIPHERAL, &LPI2C1_masterHandle, NULL, NULL);
 }
 
 /***********************************************************************************************************************
@@ -2331,31 +2324,26 @@ instance:
       - debugEnable: 'false'
       - ignoreAck: 'false'
       - pinConfig: 'kLPI2C_2PinOpenDrain'
-      - baudRate_Hz: '100000'
+      - baudRate_Hz: '400000'
       - busIdleTimeout_ns: '0'
       - pinLowTimeout_ns: '0'
       - sdaGlitchFilterWidth_ns: '0'
       - sclGlitchFilterWidth_ns: '0'
       - hostRequest:
-        - enable: 'false'
+        - enable: 'true'
         - source: 'kLPI2C_HostRequestExternalPin'
         - polarity: 'kLPI2C_HostRequestPinActiveHigh'
       - edmaRequestSources: ''
     - transfer:
-      - blocking: 'false'
-      - enable_custom_handle: 'false'
-      - callback:
-        - name: ''
-        - userData: ''
+      - blocking: 'true'
       - flags: ''
-      - slaveAddress: '0'
+      - slaveAddress: '0x50'
       - direction: 'kLPI2C_Write'
       - subaddress: '0'
-      - subaddressSize: '1'
+      - subaddressSize: '2'
       - blocking_buffer: 'false'
       - enable_custom_buffer: 'false'
-      - dataSize: '1'
-    - quick_selection: 'qs_master_transfer'
+      - dataSize: '1024'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const lpi2c_master_config_t LPI2C3_masterConfig = {
@@ -2364,32 +2352,30 @@ const lpi2c_master_config_t LPI2C3_masterConfig = {
   .debugEnable = false,
   .ignoreAck = false,
   .pinConfig = kLPI2C_2PinOpenDrain,
-  .baudRate_Hz = 100000UL,
+  .baudRate_Hz = 400000UL,
   .busIdleTimeout_ns = 0UL,
   .pinLowTimeout_ns = 0UL,
   .sdaGlitchFilterWidth_ns = 0U,
   .sclGlitchFilterWidth_ns = 0U,
   .hostRequest = {
-    .enable = false,
+    .enable = true,
     .source = kLPI2C_HostRequestExternalPin,
     .polarity = kLPI2C_HostRequestPinActiveHigh
   }
 };
 lpi2c_master_transfer_t LPI2C3_masterTransfer = {
   .flags = kLPI2C_TransferDefaultFlag,
-  .slaveAddress = 0,
+  .slaveAddress = 0x50,
   .direction = kLPI2C_Write,
   .subaddress = 0,
-  .subaddressSize = 1,
+  .subaddressSize = 2,
   .data = LPI2C3_masterBuffer,
-  .dataSize = 1
+  .dataSize = 1024
 };
-lpi2c_master_handle_t LPI2C3_masterHandle;
 uint8_t LPI2C3_masterBuffer[LPI2C3_MASTER_BUFFER_SIZE];
 
 static void LPI2C3_init(void) {
   LPI2C_MasterInit(LPI2C3_PERIPHERAL, &LPI2C3_masterConfig, LPI2C3_CLOCK_FREQ);
-  LPI2C_MasterTransferCreateHandle(LPI2C3_PERIPHERAL, &LPI2C3_masterHandle, NULL, NULL);
 }
 
 /***********************************************************************************************************************
