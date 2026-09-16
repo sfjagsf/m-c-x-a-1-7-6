@@ -81,7 +81,10 @@ status_t Pcf8563_ReadDateTime(pcf8563_datetime_t *dateTime)
 
     clockValid = (data[0] & 0x80U) == 0U;
     data[0] &= 0x7FU;
+    data[1] &= 0x7FU;
     data[2] &= 0x3FU;
+    data[3] &= 0x3FU;
+    data[4] &= 0x07U;
     data[5] &= 0x1FU;
     if (!Pcf8563_IsBcd(data[0], 59U) || !Pcf8563_IsBcd(data[1], 59U) ||
         !Pcf8563_IsBcd(data[2], 23U) || !Pcf8563_IsBcd(data[3], 31U) ||
