@@ -977,7 +977,8 @@ outputs:
 - {id: FRO_HF_DIV_clock.outFreq, value: 180 MHz}
 - {id: FRO_HF_clock.outFreq, value: 180 MHz}
 - {id: LPI2C0_clock.outFreq, value: 20 MHz}
-- {id: LPI2C3_clock.outFreq, value: 20 MHz}
+- {id: LPI2C1_clock.outFreq, value: 60 MHz}
+- {id: LPI2C3_clock.outFreq, value: 60 MHz}
 - {id: LPSPI0_clock.outFreq, value: 90 MHz}
 - {id: LPSPI1_clock.outFreq, value: 90 MHz}
 - {id: LPUART0_clock.outFreq, value: 180 MHz}
@@ -986,7 +987,7 @@ outputs:
 - {id: LPUART3_clock.outFreq, value: 180 MHz}
 - {id: LPUART4_clock.outFreq, value: 180 MHz}
 - {id: MAIN_clock.outFreq, value: 180 MHz}
-- {id: PLL1_DIV_clock.outFreq, value: 180 MHz}
+- {id: PLL1_DIV_clock.outFreq, value: 90 MHz}
 - {id: PLL1_clock.outFreq, value: 180 MHz, locked: true, accuracy: '0.001'}
 - {id: Slow_clock.outFreq, value: 30 MHz}
 - {id: System_clock.outFreq, value: 180 MHz}
@@ -1008,6 +1009,7 @@ settings:
 - {id: FROHFDIV_SYSCON_FROHFDIV_HALT, value: RUN}
 - {id: FROLFDIV_SYSCON_FROLFDIV_HALT, value: RUN}
 - {id: LPI2C0_CLKDIV_MRCC0_MRCC_LPI2C0_CLKDIV_HALT, value: 'ON'}
+- {id: LPI2C1_CLKDIV_MRCC0_MRCC_LPI2C1_CLKDIV_HALT, value: 'ON'}
 - {id: LPI2C3_CLKDIV_MRCC0_MRCC_LPI2C3_CLKDIV_HALT, value: 'ON'}
 - {id: LPSPI0_CLKDIV_MRCC0_MRCC_LPSPI0_CLKDIV_HALT, value: 'ON'}
 - {id: LPSPI1_CLKDIV_MRCC0_MRCC_LPSPI1_CLKDIV_HALT, value: 'ON'}
@@ -1027,7 +1029,9 @@ settings:
 - {id: MRCC.DAC0_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
 - {id: MRCC.LPI2C0_CLKDIV.scale, value: '9'}
 - {id: MRCC.LPI2C0_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
-- {id: MRCC.LPI2C3_CLKDIV.scale, value: '9'}
+- {id: MRCC.LPI2C1_CLKDIV.scale, value: '3', locked: true}
+- {id: MRCC.LPI2C1_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
+- {id: MRCC.LPI2C3_CLKDIV.scale, value: '3', locked: true}
 - {id: MRCC.LPI2C3_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
 - {id: MRCC.LPSPI0_CLKDIV.scale, value: '2', locked: true}
 - {id: MRCC.LPSPI0_CLKSEL.sel, value: SYSCON.FRO_HF_DIV_clock}
@@ -1047,6 +1051,7 @@ settings:
 - {id: SOSC_SCG0_SOSCCFG_EREFS, value: INTERNAL}
 - {id: SOSC_SCG0_SOSCCSR_SOSCEN, value: ENABLED}
 - {id: SYSCON.FROHFDIV.scale, value: '1', locked: true}
+- {id: SYSCON.PLL1CLKDIV.scale, value: '2', locked: true}
 sources:
 - {id: SCG.SOSC.outFreq, value: 8 MHz, enabled: true}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
@@ -1091,7 +1096,7 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
         case kClockModule_PLL:
             CLOCK_SetPLL1Freq(&pll1Setup);                       /*!< Configure PLL1 to the desired values */
             CLOCK_SetPll1MonitorMode(kSCG_Pll1MonitorDisable);            /* Pll1 Monitor is disabled */
-            CLOCK_SetClockDiv(kCLOCK_DivPLL1CLK, 1U);      /* !< Set SYSCON.PLL1CLKDIV divider to value 1 */
+            CLOCK_SetClockDiv(kCLOCK_DivPLL1CLK, 2U);      /* !< Set SYSCON.PLL1CLKDIV divider to value 2 */
             break;
         case kClockModule_SystemClk:
             CLOCK_SetClockDiv(kCLOCK_DivAHBCLK, 1U);       /* !< Set SYSCON.AHBCLKDIV divider to value 1 */
@@ -1148,14 +1153,15 @@ void BOARD_BootClockFROHF180M_InitClockModule(clock_module_t module)
             CLOCK_SetClockDiv(kCLOCK_DivLPI2C0, 9U);       /* !< Set MRCC.LPI2C0_CLKDIV divider to value 9 */
             break;
         case kClockModule_LPI2C1Clk:
-            CLOCK_AttachClk(kNONE_to_LPI2C1);              /* !< Switch LPI2C1 to  */
+            CLOCK_AttachClk(kFRO_HF_DIV_to_LPI2C1);        /* !< Switch LPI2C1 to FRO_HF_DIV */
+            CLOCK_SetClockDiv(kCLOCK_DivLPI2C1, 3U);       /* !< Set MRCC.LPI2C1_CLKDIV divider to value 3 */
             break;
         case kClockModule_LPI2C2Clk:
             CLOCK_AttachClk(kNONE_to_LPI2C2);              /* !< Switch LPI2C2 to  */
             break;
         case kClockModule_LPI2C3Clk:
             CLOCK_AttachClk(kFRO_HF_DIV_to_LPI2C3);        /* !< Switch LPI2C3 to FRO_HF_DIV */
-            CLOCK_SetClockDiv(kCLOCK_DivLPI2C3, 9U);       /* !< Set MRCC.LPI2C3_CLKDIV divider to value 9 */
+            CLOCK_SetClockDiv(kCLOCK_DivLPI2C3, 3U);       /* !< Set MRCC.LPI2C3_CLKDIV divider to value 3 */
             break;
         case kClockModule_LPSPI0Clk:
             CLOCK_AttachClk(kFRO_HF_DIV_to_LPSPI0);        /* !< Switch LPSPI0 to FRO_HF_DIV */

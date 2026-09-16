@@ -84,10 +84,19 @@ static bool W25qxxReadCommand(uint8_t opcode,
 {
     uint8_t command[8];
     size_t commandSize = 1U;
+    size_t commandPrefixSize;
 
+    commandPrefixSize = hasAddress ? ((size_t)W25qxxAddressByteCount() + 1U) : 1U;
+
+    /*
+     * 0x4B (Read Unique ID) has no address and uses four dummy bytes.  The
+     * former fixed "- 5" test was sized for a four-byte address command and
+     * rejected that valid 1 + 4 byte sequence, making W25qxxInit fail after
+     * an otherwise valid JEDEC-ID read.
+     */
     if ((data == NULL) || (size == 0U) ||
-        (dummyBytes > (uint8_t)(sizeof(command) - 5U)) ||
-        (size > (MY_SPI0_MAX_TRANSACTION_BYTES - (hasAddress ? W25qxxAddressByteCount() + 1U : 1U) - dummyBytes)))
+        ((size_t)dummyBytes > (sizeof(command) - commandPrefixSize)) ||
+        (size > (MY_SPI0_MAX_TRANSACTION_BYTES - commandPrefixSize - dummyBytes)))
     {
         return false;
     }

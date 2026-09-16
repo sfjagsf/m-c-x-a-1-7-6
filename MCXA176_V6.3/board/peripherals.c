@@ -2219,6 +2219,180 @@ static void CTIMER3_init(void) {
 }
 
 /***********************************************************************************************************************
+ * LPI2C1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'LPI2C1'
+- type: 'lpi2c'
+- mode: 'master'
+- custom_name_enabled: 'false'
+- type_id: 'lpi2c_2.2.0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'LPI2C1'
+- config_sets:
+  - main:
+    - clockSource: 'Lpi2cClock'
+    - clockSourceFreq: 'ClocksTool_DefaultInit'
+  - interrupt_vector: []
+  - master:
+    - mode: 'transfer'
+    - config:
+      - enableMaster: 'true'
+      - enableDoze: 'true'
+      - debugEnable: 'false'
+      - ignoreAck: 'false'
+      - pinConfig: 'kLPI2C_2PinOpenDrain'
+      - baudRate_Hz: '100000'
+      - busIdleTimeout_ns: '0'
+      - pinLowTimeout_ns: '0'
+      - sdaGlitchFilterWidth_ns: '0'
+      - sclGlitchFilterWidth_ns: '0'
+      - hostRequest:
+        - enable: 'false'
+        - source: 'kLPI2C_HostRequestExternalPin'
+        - polarity: 'kLPI2C_HostRequestPinActiveHigh'
+      - edmaRequestSources: ''
+    - transfer:
+      - blocking: 'false'
+      - enable_custom_handle: 'false'
+      - callback:
+        - name: ''
+        - userData: ''
+      - flags: ''
+      - slaveAddress: '0'
+      - direction: 'kLPI2C_Write'
+      - subaddress: '0'
+      - subaddressSize: '1'
+      - blocking_buffer: 'false'
+      - enable_custom_buffer: 'false'
+      - dataSize: '1'
+    - quick_selection: 'qs_master_transfer'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const lpi2c_master_config_t LPI2C1_masterConfig = {
+  .enableMaster = true,
+  .enableDoze = true,
+  .debugEnable = false,
+  .ignoreAck = false,
+  .pinConfig = kLPI2C_2PinOpenDrain,
+  .baudRate_Hz = 100000UL,
+  .busIdleTimeout_ns = 0UL,
+  .pinLowTimeout_ns = 0UL,
+  .sdaGlitchFilterWidth_ns = 0U,
+  .sclGlitchFilterWidth_ns = 0U,
+  .hostRequest = {
+    .enable = false,
+    .source = kLPI2C_HostRequestExternalPin,
+    .polarity = kLPI2C_HostRequestPinActiveHigh
+  }
+};
+lpi2c_master_transfer_t LPI2C1_masterTransfer = {
+  .flags = kLPI2C_TransferDefaultFlag,
+  .slaveAddress = 0,
+  .direction = kLPI2C_Write,
+  .subaddress = 0,
+  .subaddressSize = 1,
+  .data = LPI2C1_masterBuffer,
+  .dataSize = 1
+};
+lpi2c_master_handle_t LPI2C1_masterHandle;
+uint8_t LPI2C1_masterBuffer[LPI2C1_MASTER_BUFFER_SIZE];
+
+static void LPI2C1_init(void) {
+  LPI2C_MasterInit(LPI2C1_PERIPHERAL, &LPI2C1_masterConfig, LPI2C1_CLOCK_FREQ);
+  LPI2C_MasterTransferCreateHandle(LPI2C1_PERIPHERAL, &LPI2C1_masterHandle, NULL, NULL);
+}
+
+/***********************************************************************************************************************
+ * LPI2C3 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'LPI2C3'
+- type: 'lpi2c'
+- mode: 'master'
+- custom_name_enabled: 'false'
+- type_id: 'lpi2c_2.2.0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'LPI2C3'
+- config_sets:
+  - main:
+    - clockSource: 'Lpi2cClock'
+    - clockSourceFreq: 'ClocksTool_DefaultInit'
+  - interrupt_vector: []
+  - master:
+    - mode: 'transfer'
+    - config:
+      - enableMaster: 'true'
+      - enableDoze: 'true'
+      - debugEnable: 'false'
+      - ignoreAck: 'false'
+      - pinConfig: 'kLPI2C_2PinOpenDrain'
+      - baudRate_Hz: '100000'
+      - busIdleTimeout_ns: '0'
+      - pinLowTimeout_ns: '0'
+      - sdaGlitchFilterWidth_ns: '0'
+      - sclGlitchFilterWidth_ns: '0'
+      - hostRequest:
+        - enable: 'false'
+        - source: 'kLPI2C_HostRequestExternalPin'
+        - polarity: 'kLPI2C_HostRequestPinActiveHigh'
+      - edmaRequestSources: ''
+    - transfer:
+      - blocking: 'false'
+      - enable_custom_handle: 'false'
+      - callback:
+        - name: ''
+        - userData: ''
+      - flags: ''
+      - slaveAddress: '0'
+      - direction: 'kLPI2C_Write'
+      - subaddress: '0'
+      - subaddressSize: '1'
+      - blocking_buffer: 'false'
+      - enable_custom_buffer: 'false'
+      - dataSize: '1'
+    - quick_selection: 'qs_master_transfer'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const lpi2c_master_config_t LPI2C3_masterConfig = {
+  .enableMaster = true,
+  .enableDoze = true,
+  .debugEnable = false,
+  .ignoreAck = false,
+  .pinConfig = kLPI2C_2PinOpenDrain,
+  .baudRate_Hz = 100000UL,
+  .busIdleTimeout_ns = 0UL,
+  .pinLowTimeout_ns = 0UL,
+  .sdaGlitchFilterWidth_ns = 0U,
+  .sclGlitchFilterWidth_ns = 0U,
+  .hostRequest = {
+    .enable = false,
+    .source = kLPI2C_HostRequestExternalPin,
+    .polarity = kLPI2C_HostRequestPinActiveHigh
+  }
+};
+lpi2c_master_transfer_t LPI2C3_masterTransfer = {
+  .flags = kLPI2C_TransferDefaultFlag,
+  .slaveAddress = 0,
+  .direction = kLPI2C_Write,
+  .subaddress = 0,
+  .subaddressSize = 1,
+  .data = LPI2C3_masterBuffer,
+  .dataSize = 1
+};
+lpi2c_master_handle_t LPI2C3_masterHandle;
+uint8_t LPI2C3_masterBuffer[LPI2C3_MASTER_BUFFER_SIZE];
+
+static void LPI2C3_init(void) {
+  LPI2C_MasterInit(LPI2C3_PERIPHERAL, &LPI2C3_masterConfig, LPI2C3_CLOCK_FREQ);
+  LPI2C_MasterTransferCreateHandle(LPI2C3_PERIPHERAL, &LPI2C3_masterHandle, NULL, NULL);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 static void BOARD_InitPeripherals_CommonPostInit(void)
@@ -2269,6 +2443,8 @@ void BOARD_InitPeripherals(void)
   ADC1_init();
   ADC0_init();
   CTIMER3_init();
+  LPI2C1_init();
+  LPI2C3_init();
   /* Common post-initialization */
   BOARD_InitPeripherals_CommonPostInit();
 }

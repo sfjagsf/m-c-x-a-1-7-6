@@ -2,7 +2,9 @@
 
 const SpiTransport_t g_spi0Transport = {
     .base = LPSPI0,
-    .pcsConfigFlag = (uint32_t)kLPSPI_MasterPcs0,
+    /* W25Q command + address/dummy bytes require PCS0 low for the complete
+     * multi-byte transaction (for example: 0x9F FF FF FF). */
+    .pcsConfigFlag = (uint32_t)kLPSPI_MasterPcs0 | (uint32_t)kLPSPI_MasterPcsContinuous,
 };
 
 const SpiTransport_t g_spi1Transport = {
