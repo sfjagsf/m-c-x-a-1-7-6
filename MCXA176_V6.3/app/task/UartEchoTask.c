@@ -22,14 +22,50 @@
 #define UART1_BOARD_TEST_ADC_PHASE_MS       (333U)
 #define UART1_BOARD_TEST_FLASH_PHASE_MS     (666U)
 #define UART1_FLASH_TEST_ADDRESS             (0x00000000UL)
+#define UART1_FLASH_TEST_PAGE_SIZE           (256UL)
+#define UART1_FLASH_TEST_PAGE_COUNT          (NOR_FLASH_SECTOR_SIZE / UART1_FLASH_TEST_PAGE_SIZE)
+#define UART1_FLASH_TEST_WRITE_PERIOD_MS     (200U)
+#define UART1_FLASH_TEST_READ_PERIOD_MS      (400U)
+#define UART1_FLASH_TEST_PAYLOAD_SIZE        (32U)
 
 /*
  * WARNING: the Flash test erases the complete 4 KiB sector containing this
- * address, programs this payload, then reads and compares it.  Change the
- * address to a reserved unused sector before enabling it on a product unit.
+ * address. It then writes its 16 pages at 200 ms intervals and reads/verifies
+ * every page at 400 ms intervals. Change the address to a reserved unused
+ * sector before enabling it on a product unit.
  */
-static const uint8_t s_uart1FlashTestWriteData[] = {
-    0xA5U, 0x5AU, 'M', 'C', 'X', 'A', '1', '7', '6', '-', 'S', 'P', 'I', '-', 'O', 'K'};
+
+static bool Uart1TestIntervalElapsed(uint32_t *ticks, uint32_t intervalMs)
+{
+    (*ticks)++;
+    if (*ticks < intervalMs)
+    {
+        return false;
+    }
+
+    *ticks = 0U;
+    return true;
+}
+
+static void Uart1TestBuildFlashPayload(uint8_t page, uint8_t data[UART1_FLASH_TEST_PAYLOAD_SIZE])
+{
+    uint32_t index;
+
+    data[0] = 0xA5U;
+    data[1] = 0x5AU;
+    data[2] = 'M';
+    data[3] = 'C';
+    data[4] = 'X';
+    data[5] = 'A';
+    data[6] = 'F';
+    data[7] = 'L';
+    data[8] = page;
+    data[9] = (uint8_t)~page;
+    for (index = 10U; index < UART1_FLASH_TEST_PAYLOAD_SIZE; index++)
+    {
+        data[index] = (uint8_t)(0x3DU + page + index);
+    }
+}
 
 static bool Uart1TestPeriodElapsed(uint32_t *ticks)
 {
@@ -131,25 +167,32 @@ static void Uart1TestReportAdc(void)
 
 static void Uart1TestFlash(void)
 {
-    static uint32_t ticks = UART1_BOARD_TEST_FLASH_PHASE_MS;
-    static bool completed;
-    static bool reported;
-    static bool passed;
+    static uint32_t startupTicks = UART1_BOARD_TEST_FLASH_PHASE_MS;
+    static uint32_t writeTicks;
+    static uint32_t readTicks;
+    static bool initialized;
+    static bool eraseStarted;
+    static bool erased;
+    static bool failed;
+    static bool failureReported;
+    static const char *failureReason;
+    static bool finalReported;
+    static uint8_t writtenPages;
+    static uint8_t verifiedPages;
     static uint8_t jedecId[3];
     static uint8_t statusRegister1;
     static status_t jedecTransferStatus;
     static status_t statusTransferStatus;
-    static bool initPassed;
+    uint8_t writeData[UART1_FLASH_TEST_PAYLOAD_SIZE];
+    uint8_t readData[UART1_FLASH_TEST_PAYLOAD_SIZE];
     char message[160];
     int length;
 
-    if (!completed)
+    if (!initialized)
     {
         static const uint8_t jedecCommand = 0x9FU;
         static const uint8_t statusCommand = 0x05U;
-        uint8_t readData[sizeof(s_uart1FlashTestWriteData)] = {0U};
-
-        if (!Uart1TestPeriodElapsed(&ticks))
+        if (!Uart1TestPeriodElapsed(&startupTicks))
         {
             return;
         }
@@ -160,31 +203,112 @@ static void Uart1TestFlash(void)
          */
         jedecTransferStatus = MY_SPI0_TransmitReceive(&jedecCommand, 1U, jedecId, sizeof(jedecId));
         statusTransferStatus = MY_SPI0_TransmitReceive(&statusCommand, 1U, &statusRegister1, 1U);
-        initPassed = W25qxxInit(FLASH_SPI_MODE);
+        initialized = true;
+        failed = (jedecTransferStatus != kStatus_Success) || (statusTransferStatus != kStatus_Success) ||
+                 (jedecId[0] == 0x00U) || (jedecId[0] == 0xFFU) || !W25qxxInit(FLASH_SPI_MODE);
+        failureReason = "init";
+        if (!failed)
+        {
+            failed = !W25qxxStartEraseSector(UART1_FLASH_TEST_ADDRESS);
+            failureReason = "erase-start";
+            eraseStarted = !failed;
+        }
 
-        passed = (jedecTransferStatus == kStatus_Success) &&
-                 (jedecId[0] != 0x00U) && (jedecId[0] != 0xFFU) && initPassed &&
-                 W25qxxEraseSector(UART1_FLASH_TEST_ADDRESS) &&
-                 W25qxxPageProgram(UART1_FLASH_TEST_ADDRESS, s_uart1FlashTestWriteData,
-                                    sizeof(s_uart1FlashTestWriteData)) &&
-                 W25qxxRead(UART1_FLASH_TEST_ADDRESS, readData, sizeof(readData)) &&
-                 (memcmp(readData, s_uart1FlashTestWriteData, sizeof(readData)) == 0);
-        completed = true;
-    }
-
-    if (reported)
-    {
+        length = snprintf(message, sizeof(message),
+                          "FLASH %s start addr=%06lX jedec=%02X%02X%02X sr1=%02X\\r\\n",
+                          failed ? "FAIL" : "ERASE", (unsigned long)UART1_FLASH_TEST_ADDRESS,
+                          jedecId[0], jedecId[1], jedecId[2], statusRegister1);
+        if ((length > 0) && ((size_t)length < sizeof(message)))
+        {
+            (void)Uart1TestSend(message, (size_t)length);
+        }
         return;
     }
 
-    length = snprintf(message, sizeof(message),
-                      "FLASH %s addr=%06lX xfer=%ld/%ld jedec=%02X%02X%02X sr1=%02X init=%u\\r\\n",
-                      passed ? "PASS" : "FAIL", (unsigned long)UART1_FLASH_TEST_ADDRESS,
-                      (long)jedecTransferStatus, (long)statusTransferStatus, jedecId[0], jedecId[1], jedecId[2],
-                      statusRegister1, initPassed ? 1U : 0U);
-    if ((length > 0) && ((size_t)length < sizeof(message)))
+    if (failed)
     {
-        reported = Uart1TestSend(message, (size_t)length);
+        if (!failureReported)
+        {
+            length = snprintf(message, sizeof(message), "FLASH RW FAIL stage=%s wr=%lu rd=%lu\\r\\n",
+                              (failureReason != NULL) ? failureReason : "unknown", (unsigned long)writtenPages,
+                              (unsigned long)verifiedPages);
+            if ((length > 0) && ((size_t)length < sizeof(message)))
+            {
+                failureReported = Uart1TestSend(message, (size_t)length);
+            }
+        }
+        return;
+    }
+
+    if (!erased)
+    {
+        bool busy;
+
+        if (!eraseStarted || !W25qxxGetBusy(&busy))
+        {
+            failed = true;
+            failureReason = "erase-poll";
+            return;
+        }
+        if (!busy)
+        {
+            erased = true;
+            length = snprintf(message, sizeof(message), "FLASH ERASE PASS addr=%06lX\\r\\n",
+                              (unsigned long)UART1_FLASH_TEST_ADDRESS);
+            if ((length > 0) && ((size_t)length < sizeof(message)))
+            {
+                (void)Uart1TestSend(message, (size_t)length);
+            }
+        }
+        return;
+    }
+
+    if ((writtenPages < UART1_FLASH_TEST_PAGE_COUNT) &&
+        Uart1TestIntervalElapsed(&writeTicks, UART1_FLASH_TEST_WRITE_PERIOD_MS))
+    {
+        Uart1TestBuildFlashPayload(writtenPages, writeData);
+        if (!W25qxxPageProgram(UART1_FLASH_TEST_ADDRESS + ((uint32_t)writtenPages * UART1_FLASH_TEST_PAGE_SIZE),
+                               writeData, sizeof(writeData)))
+        {
+            failed = true;
+            failureReason = "page-program";
+            return;
+        }
+        writtenPages++;
+    }
+
+    if ((verifiedPages < writtenPages) && Uart1TestIntervalElapsed(&readTicks, UART1_FLASH_TEST_READ_PERIOD_MS))
+    {
+        Uart1TestBuildFlashPayload(verifiedPages, writeData);
+        if (!W25qxxRead(UART1_FLASH_TEST_ADDRESS + ((uint32_t)verifiedPages * UART1_FLASH_TEST_PAGE_SIZE),
+                         readData, sizeof(readData)) || (memcmp(writeData, readData, sizeof(writeData)) != 0))
+        {
+            failed = true;
+            failureReason = "read-compare";
+            return;
+        }
+
+        length = snprintf(message, sizeof(message), "FLASH RW PASS wr=%lu/%lu rd=%lu addr=%06lX\\r\\n",
+                          (unsigned long)writtenPages, (unsigned long)UART1_FLASH_TEST_PAGE_COUNT,
+                          (unsigned long)verifiedPages + 1UL,
+                          (unsigned long)(UART1_FLASH_TEST_ADDRESS +
+                                          ((uint32_t)verifiedPages * UART1_FLASH_TEST_PAGE_SIZE)));
+        verifiedPages++;
+        if ((length > 0) && ((size_t)length < sizeof(message)))
+        {
+            (void)Uart1TestSend(message, (size_t)length);
+        }
+    }
+
+    if ((writtenPages == UART1_FLASH_TEST_PAGE_COUNT) && (verifiedPages == UART1_FLASH_TEST_PAGE_COUNT) &&
+        !finalReported)
+    {
+        length = snprintf(message, sizeof(message), "FLASH RW TEST PASS pages=%lu write=200ms read=400ms\\r\\n",
+                          (unsigned long)UART1_FLASH_TEST_PAGE_COUNT);
+        if ((length > 0) && ((size_t)length < sizeof(message)))
+        {
+            finalReported = Uart1TestSend(message, (size_t)length);
+        }
     }
 }
 
