@@ -47,11 +47,14 @@ static void I2cEeprom_Release(void)
 
 static void I2cEeprom_SaveStatus(status_t status)
 {
+    const uint32_t irqMask = DisableGlobalIRQ();
+
     s_diagnostics.lastDriverStatus = status;
     if (status != kStatus_Success)
     {
         s_diagnostics.errorCount++;
     }
+    EnableGlobalIRQ(irqMask);
 }
 
 static status_t I2cEeprom_Transfer(uint16_t address,
@@ -91,7 +94,7 @@ static status_t I2cEeprom_WaitReadyLocked(uint32_t timeoutMs)
 {
     status_t status;
 
-    do
+    for (;;)
     {
         status = I2cEeprom_ProbeReady();
         if (status == kStatus_Success)
@@ -102,10 +105,14 @@ static status_t I2cEeprom_WaitReadyLocked(uint32_t timeoutMs)
         {
             return status;
         }
-        SDK_DelayAtLeastUs(1000U, SystemCoreClock);
-    } while (timeoutMs-- != 0U);
+        if (timeoutMs == 0U)
+        {
+            return kStatus_LPI2C_Timeout;
+        }
 
-    return kStatus_LPI2C_Timeout;
+        timeoutMs--;
+        SDK_DelayAtLeastUs(1000U, SystemCoreClock);
+    }
 }
 
 void I2cEeprom_Init(void)
@@ -183,6 +190,7 @@ status_t I2cEeprom_Write(uint16_t address, const uint8_t *data, size_t size)
     {
         pageRemaining = I2C_EEPROM_PAGE_SIZE - ((size_t)address % I2C_EEPROM_PAGE_SIZE);
         chunk = (size < pageRemaining) ? size : pageRemaining;
+        /* The SDK transfer descriptor lacks const correctness; TX never changes caller data. */
         status = I2cEeprom_Transfer(address, kLPI2C_Write, (uint8_t *)(uintptr_t)data, chunk);
         if (status != kStatus_Success)
         {

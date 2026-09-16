@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
 #define PCF8563_I2C_ADDRESS (0x51U)
+#define PCF8563_REGISTER_COUNT (16U)
 
 typedef struct
 {
@@ -30,6 +31,7 @@ void Pcf8563_Init(void);
 status_t Pcf8563_ReadDateTime(pcf8563_datetime_t *dateTime);
 status_t Pcf8563_SetDateTime(const pcf8563_datetime_t *dateTime);
 status_t Pcf8563_ReadRegisters(uint8_t startRegister, uint8_t *data, size_t size);
+bool Pcf8563_IsBusy(void);
 
 #ifdef __cplusplus
 }

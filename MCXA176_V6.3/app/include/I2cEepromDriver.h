@@ -14,7 +14,7 @@ extern "C" {
 
 #define I2C_EEPROM_CAPACITY_BYTES   (32768U)
 #define I2C_EEPROM_PAGE_SIZE        (64U)
-#define I2C_EEPROM_READ_CHUNK_SIZE  (1024U)
+#define I2C_EEPROM_READ_CHUNK_SIZE  (256U)
 #define I2C_EEPROM_WRITE_TIMEOUT_MS (10U)
 
 typedef struct
@@ -26,6 +26,7 @@ typedef struct
 } i2c_eeprom_diagnostics_t;
 
 void I2cEeprom_Init(void);
+/* Each bus transfer is limited to I2C_EEPROM_READ_CHUNK_SIZE bytes. */
 status_t I2cEeprom_Read(uint16_t address, uint8_t *data, size_t size);
 status_t I2cEeprom_Write(uint16_t address, const uint8_t *data, size_t size);
 status_t I2cEeprom_WaitReady(uint32_t timeoutMs);
