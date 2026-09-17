@@ -8,6 +8,7 @@
 #include "fsl_lpuart_edma.h"
 #include "peripherals.h"
 #include "pin_mux.h"
+#include "../../SmartDMA_UART/app_smartdma_lpuart0.h"
 
 #define UART_LINE_ERROR_FLAGS                                                               \
     (kLPUART_RxOverrunFlag | kLPUART_NoiseErrorFlag | kLPUART_FramingErrorFlag |            \
@@ -597,6 +598,11 @@ void UartPort_Init(uart_port_id_t port)
     {
         return;
     }
+    if (port == kUartPort0)
+    {
+        APP_SmartDMALPUART0_TransportInit();
+        return;
+    }
     config = &s_uartConfig[port];
 
     if (config->backend == kUartBackendRs485SharedDma)
@@ -636,6 +642,10 @@ void UartPort_Init(uart_port_id_t port)
 
 status_t UartPort_StartReceive(uart_port_id_t port)
 {
+    if (port == kUartPort0)
+    {
+        return APP_SmartDMALPUART0_StartReceive();
+    }
     if (!UartCore_IsValidPort(port))
     {
         return kStatus_Fail;
@@ -649,6 +659,10 @@ status_t UartPort_StartReceive(uart_port_id_t port)
 
 status_t UartPort_Send(uart_port_id_t port, const uint8_t *data, size_t size)
 {
+    if (port == kUartPort0)
+    {
+        return APP_SmartDMALPUART0_Send(data, size, false);
+    }
     if (!UartCore_IsValidPort(port))
     {
         return kStatus_Fail;
@@ -663,6 +677,14 @@ status_t UartPort_Reply(uart_port_id_t port, const uint8_t *data, size_t size)
     if (!UartCore_IsValidPort(port))
     {
         return kStatus_Fail;
+    }
+    if (port == kUartPort0)
+    {
+        if (!APP_SmartDMALPUART0_IsFrameAvailable())
+        {
+            return kStatus_NoTransferInProgress;
+        }
+        return APP_SmartDMALPUART0_Send(data, size, true);
     }
     if (s_uartRuntime[port].rxState != kUartRxFrameReady)
     {
@@ -700,6 +722,11 @@ void UartPort_Abort(uart_port_id_t port)
     {
         return;
     }
+    if (port == kUartPort0)
+    {
+        APP_SmartDMALPUART0_Abort();
+        return;
+    }
     config = &s_uartConfig[port];
     if (config->backend == kUartBackendRs485SharedDma)
     {
@@ -719,17 +746,29 @@ void UartPort_Abort(uart_port_id_t port)
 
 bool UartPort_IsBusy(uart_port_id_t port)
 {
+    if (port == kUartPort0)
+    {
+        return APP_SmartDMALPUART0_IsBusy();
+    }
     return UartCore_IsValidPort(port) && (s_uartRuntime[port].txState != kUartTxIdle);
 }
 
 bool UartPort_IsFrameAvailable(uart_port_id_t port)
 {
+    if (port == kUartPort0)
+    {
+        return APP_SmartDMALPUART0_IsFrameAvailable();
+    }
     return UartCore_IsValidPort(port) &&
            (s_uartRuntime[port].rxState == kUartRxFrameReady);
 }
 
 const uint8_t *UartPort_GetFrame(uart_port_id_t port, size_t *length)
 {
+    if (port == kUartPort0)
+    {
+        return APP_SmartDMALPUART0_GetFrame(length);
+    }
     if (length != NULL)
     {
         *length = UartPort_IsFrameAvailable(port) ? s_uartRuntime[port].rxLength : 0U;
@@ -744,6 +783,10 @@ status_t UartPort_ReleaseFrame(uart_port_id_t port)
     if (!UartCore_IsValidPort(port))
     {
         return kStatus_Fail;
+    }
+    if (port == kUartPort0)
+    {
+        return APP_SmartDMALPUART0_ReleaseFrame();
     }
     if (s_uartRuntime[port].rxState != kUartRxFrameReady)
     {
@@ -767,6 +810,10 @@ uint32_t UartPort_GetAndClearErrors(uart_port_id_t port)
     if (!UartCore_IsValidPort(port))
     {
         return 0U;
+    }
+    if (port == kUartPort0)
+    {
+        return APP_SmartDMALPUART0_GetAndClearErrors();
     }
     irqMask = DisableGlobalIRQ();
     errors = s_uartRuntime[port].errors;
@@ -861,7 +908,7 @@ void LPUART1_DMACallback(LPUART_Type *base, lpuart_edma_handle_t *handle, status
 
 void LPUART0_IRQHandler(void)
 {
-    UartCore_HandleUartIrq(kUartPort0);
+    APP_SmartDMALPUART0_HandleLpuartIrq();
     SDK_ISR_EXIT_BARRIER;
 }
 
