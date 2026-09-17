@@ -1,6 +1,7 @@
 #include "GpioInputTask.h"
 
 #include "GpioDmaFilter.h"
+#include "WatchdogDriver.h"
 #include "cmsis_os2.h"
 
 typedef struct
@@ -75,6 +76,8 @@ void GpioInputTask(void *argument)
     {
         (void)osDelay(GPIO_INPUT_TASK_PERIOD_MS);
         GpioInputProcess1ms();
+        /* Scheduler or input-task stalls therefore cause a WWDT reset in ~7 s. */
+//        (void)WatchdogDriver_Refresh();
     }
 }
 

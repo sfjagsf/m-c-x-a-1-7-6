@@ -25,6 +25,7 @@
 #include "AdcDma.h"
 #include "I2cEepromDriver.h"
 #include "Pcf8563RtcDriver.h"
+#include "WatchdogDriver.h"
 
 /* TODO: insert other definitions and declarations here. */
 
@@ -37,6 +38,13 @@ int main(void) {
     BOARD_InitBootPins();
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
+    if (!WatchdogDriver_Init())
+    {
+        for (;;)
+        {
+            __asm volatile ("nop");
+        }
+    }
     Pcf8563_Init();
     I2cEeprom_Init();
     AdcDma_Init();

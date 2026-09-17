@@ -26,6 +26,7 @@
 #include "fsl_pwm.h"
 #include "fsl_lpadc.h"
 #include "fsl_lpi2c.h"
+#include "fsl_wwdt.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -352,6 +353,19 @@ extern "C" {
 #define LPI2C3_MASTER_BUFFER_SIZE 1024
 /* Definition of follower address */
 #define LPI2C3_MASTER_SLAVE_ADDRESS 80
+/* BOARD_InitPeripherals defines for WWDT0 */
+/* Definition of peripheral ID */
+#define WWDT0_PERIPHERAL ((WWDT_Type *) WWDT0_BASE)
+/* Definition of the Watchdog Timer Window value */
+#define WWDT0_WINDOW 16777215UL
+/* Definition of the Watchdog Timer Constant value */
+#define WWDT0_TIMEOUT 1750000UL
+/* Definition of the Watchdog Timer Warning Interrupt value */
+#define WWDT0_WARNING 0UL
+/* WWDT0 interrupt vector ID (number). */
+#define WWDT0_IRQN WWDT0_IRQn
+/* WWDT0 interrupt handler identifier. */
+#define WWDT0_IRQHANDLER WWDT0_IRQHandler
 
 /***********************************************************************************************************************
  * Global variables
@@ -424,6 +438,7 @@ extern uint8_t LPI2C1_masterBuffer[LPI2C1_MASTER_BUFFER_SIZE];
 extern const lpi2c_master_config_t LPI2C3_masterConfig;
 extern lpi2c_master_transfer_t LPI2C3_masterTransfer;
 extern uint8_t LPI2C3_masterBuffer[LPI2C3_MASTER_BUFFER_SIZE];
+extern const wwdt_config_t WWDT0_config;
 
 /***********************************************************************************************************************
  * Global functions

@@ -408,6 +408,7 @@ instance:
       - 6: []
       - 7: []
       - 8: []
+      - 9: []
     - interrupts:
       - 0:
         - channelId: 'LPUART0_NVIC'
@@ -2379,6 +2380,56 @@ static void LPI2C3_init(void) {
 }
 
 /***********************************************************************************************************************
+ * WWDT0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'WWDT0'
+- type: 'wwdt'
+- mode: 'reset_mode'
+- custom_name_enabled: 'false'
+- type_id: 'wwdt_2.1.2'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'WWDT0'
+- config_sets:
+  - general:
+    - wwdt_config:
+      - clockSource: 'FunctionClock'
+      - clockSourceFreq: 'ClocksTool_DefaultInit'
+      - enableWwdt: 'true'
+      - enableWatchdogProtect: 'false'
+      - enableLockOscillator: 'false'
+      - timeoutValue_input: '0x1AB3F0'
+      - windowEnable: 'false'
+      - warningValue_input: '0'
+    - interrupt:
+      - IRQn: 'WWDT0_IRQn'
+      - enable_interrrupt: 'noInit'
+      - enable_priority: 'false'
+      - priority: '0'
+      - enable_custom_name: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const wwdt_config_t WWDT0_config = {
+  .enableWwdt = true,
+  .enableWatchdogReset = true,
+  .enableWatchdogProtect = false,
+  .enableLockOscillator = false,
+  .windowValue = WWDT0_WINDOW,
+  .timeoutValue = WWDT0_TIMEOUT,
+  .warningValue = WWDT0_WARNING,
+  .clockFreq_Hz = 250000
+};
+
+static void WWDT0_init(void) {
+  /* WWDT0 initiation  */
+  WWDT_Init(WWDT0_PERIPHERAL, &WWDT0_config);
+  /* Interrupt WWDT0_IRQN request in the NVIC is not initialized (disabled by default). */
+  /* It can be enabled later by EnableIRQ(WWDT0_IRQN); function call. */
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 static void BOARD_InitPeripherals_CommonPostInit(void)
@@ -2431,6 +2482,7 @@ void BOARD_InitPeripherals(void)
   CTIMER3_init();
   LPI2C1_init();
   LPI2C3_init();
+  WWDT0_init();
   /* Common post-initialization */
   BOARD_InitPeripherals_CommonPostInit();
 }
