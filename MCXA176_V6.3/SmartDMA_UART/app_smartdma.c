@@ -80,6 +80,8 @@ static volatile uint32_t s_smartdmaReady;
 static volatile uint32_t s_smartdmaCommand;
 static volatile uint32_t s_smartdmaActiveCommand;
 static volatile smartdma_parameter_block_t s_smartdmaParameters;
+static app_smartdma_callback_t s_applicationCallback;
+static void *s_applicationCallbackData;
 
 /* The SDK owns SMARTDMA_IRQHandler; it dispatches this callback for us. */
 static void APP_SmartDMACompletionCallback(void *param)
@@ -91,6 +93,10 @@ static void APP_SmartDMACompletionCallback(void *param)
     if ((interruptReason >= kSmartDmaCommandTx) && (interruptReason <= kSmartDmaCommandAbort))
     {
         s_smartdmaActiveCommand = kSmartDmaCommandIdle;
+        if (s_applicationCallback != NULL)
+        {
+            s_applicationCallback((app_smartdma_event_t)interruptReason, s_applicationCallbackData);
+        }
     }
 }
 
@@ -275,4 +281,16 @@ bool APP_SmartDMAIsBusy(void)
 {
     __DMB();
     return s_smartdmaActiveCommand != kSmartDmaCommandIdle;
+}
+
+uint32_t APP_SmartDMAGetRxRemaining(void)
+{
+    __DMB();
+    return s_smartdmaParameters.rxCount;
+}
+
+void APP_SmartDMASetCallback(app_smartdma_callback_t callback, void *userData)
+{
+    s_applicationCallback = callback;
+    s_applicationCallbackData = userData;
 }

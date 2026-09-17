@@ -33,6 +33,15 @@ typedef struct
     volatile uint32_t *rxDataRegister; /* LPUART DATA register used for RX. */
 } app_smartdma_config_t;
 
+typedef enum
+{
+    kAppSmartDMAEventTxComplete = 1U,
+    kAppSmartDMAEventRxComplete = 2U,
+    kAppSmartDMAEventAbortComplete = 3U,
+} app_smartdma_event_t;
+
+typedef void (*app_smartdma_callback_t)(app_smartdma_event_t event, void *userData);
+
 /* Install the firmware in SRAMX0 and start the SmartDMA command processor. */
 bool APP_SmartDMAInit(const app_smartdma_config_t *config);
 
@@ -45,5 +54,7 @@ bool APP_SmartDMAAbort(void);
 
 /* Return true until the SmartDMA completion interrupt has been handled. */
 bool APP_SmartDMAIsBusy(void);
+uint32_t APP_SmartDMAGetRxRemaining(void);
+void APP_SmartDMASetCallback(app_smartdma_callback_t callback, void *userData);
 
 #endif /* APP_SMARTDMA_H_ */
