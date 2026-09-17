@@ -1,3 +1,0 @@
-../device/system_MCXA176.c:66:29:SystemInit	8	static
-../device/system_MCXA176.c:99:6:SystemCoreClockUpdate	8	static
-../device/system_MCXA176.c:110:29:SystemInitHook	4	static
