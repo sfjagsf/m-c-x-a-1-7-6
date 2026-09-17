@@ -14,6 +14,7 @@
 #include "fsl_common.h"
 #include "fsl_device_registers.h"
 #include "fsl_reset.h"
+#include "fsl_smartdma.h"
 #include "pin_mux.h"
 
 /* Prebuilt firmware image exported by app_smartdma_firmware.c. */
@@ -79,6 +80,19 @@ static volatile uint32_t s_smartdmaReady;
 static volatile uint32_t s_smartdmaCommand;
 static volatile uint32_t s_smartdmaActiveCommand;
 static volatile smartdma_parameter_block_t s_smartdmaParameters;
+
+/* The SDK owns SMARTDMA_IRQHandler; it dispatches this callback for us. */
+static void APP_SmartDMACompletionCallback(void *param)
+{
+    uint32_t interruptReason;
+
+    (void)param;
+    interruptReason = SMARTDMA0->EZH2ARM;
+    if ((interruptReason >= kSmartDmaCommandTx) && (interruptReason <= kSmartDmaCommandAbort))
+    {
+        s_smartdmaActiveCommand = kSmartDmaCommandIdle;
+    }
+}
 
 /*
  * SRAMX0 is the SmartDMA code memory. The image is position dependent: word 0
@@ -151,6 +165,7 @@ bool APP_SmartDMAInit(const app_smartdma_config_t *config)
     DisableIRQ(SMARTDMA_IRQn);
     CLOCK_EnableClock(kCLOCK_Smartdma);
     RESET_PeripheralReset(kSMART_DMA_RST_SHIFT_RSTn);
+    SMARTDMA_InstallCallback(APP_SmartDMACompletionCallback, NULL);
 
     s_smartdmaParameters.stack = &s_smartdmaStack[32];
     s_smartdmaParameters.debugBuffer = s_smartdmaDebug;
@@ -260,16 +275,4 @@ bool APP_SmartDMAIsBusy(void)
 {
     __DMB();
     return s_smartdmaActiveCommand != kSmartDmaCommandIdle;
-}
-
-void SMARTDMA_IRQHandler(void)
-{
-    uint32_t interruptReason = SMARTDMA0->EZH2ARM;
-
-    if ((interruptReason >= kSmartDmaCommandTx) && (interruptReason <= kSmartDmaCommandAbort))
-    {
-        s_smartdmaActiveCommand = kSmartDmaCommandIdle;
-    }
-
-    SDK_ISR_EXIT_BARRIER;
 }

@@ -14,6 +14,8 @@
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
+#include "fsl_clock.h"
+#include "fsl_common.h"
 //#include "fsl_debug_console.h"
 #include "cmsis_os2.h"
 #include "GpioDmaFilter.h"
@@ -25,9 +27,13 @@
 #include "AdcDma.h"
 #include "I2cEepromDriver.h"
 #include "Pcf8563RtcDriver.h"
-#include "WatchdogDriver.h"
+/* #include "WatchdogDriver.h" */ /* Watchdog disabled for current build. */
+#include "../SmartDMA_UART/app_smartdma_lpuart0.h"
 
 /* TODO: insert other definitions and declarations here. */
+
+/* Keep the target in a minimal state briefly after each reset for SWD attach. */
+#define BOOT_DEBUG_HOLD_US (2000000U)
 
 /*
  * @brief   Application entry point.
@@ -36,15 +42,35 @@ int main(void) {
 
     /* Init board hardware. */
     BOARD_InitBootPins();
+//#if defined(DEBUG)
+    /*
+     * The generated 180 MHz profile waits indefinitely for an 8 MHz external
+     * oscillator/PLL lock. Use the internal 45 MHz FRO while debugging so SWD
+     * remains attached even when that external clock is unavailable.
+     */
+//#else
     BOARD_InitBootClocks();
+//#endif
+
+    /*
+     * The core clock is now stable.  Do not initialise board peripherals or
+     * start application tasks during this interval, so LinkServer has a
+     * predictable two-second window to attach after power-on/reset.
+     */
+//    SDK_DelayAtLeastUs(BOOT_DEBUG_HOLD_US, CLOCK_GetCoreSysClkFreq());
+
     BOARD_InitBootPeripherals();
-    if (!WatchdogDriver_Init())
-    {
-        for (;;)
-        {
-            __asm volatile ("nop");
-        }
-    }
+    /* Firmware is resident but idle; UART0 remains owned by eDMA until its backend is replaced. */
+//#if defined(DEBUG)
+//    /* Stop here before the unverified SmartDMA image is started. */
+//    __asm volatile ("bkpt #0");
+//#endif
+	if (!APP_SmartDMALPUART0_Init()) {
+		for (;;) {
+			__asm volatile ("nop");
+		}
+	}
+//	APP_SmartDMALPUART0_Init();
     Pcf8563_Init();
     I2cEeprom_Init();
     AdcDma_Init();

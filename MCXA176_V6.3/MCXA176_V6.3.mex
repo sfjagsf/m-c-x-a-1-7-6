@@ -854,16 +854,6 @@
                   <data type="Version" maxValue="2.6.9">2.2.0</data>
                </feature>
             </dependency>
-            <dependency resourceType="SWComponent" resourceId="platform.drivers.wwdt" description="工具链/IDE工程中未找到WWDT Driver。工程不会被编译！" problem_level="2" source="Peripherals">
-               <feature name="enabled" evaluation="equal">
-                  <data type="Boolean">true</data>
-               </feature>
-            </dependency>
-            <dependency resourceType="SWComponent" resourceId="platform.drivers.wwdt" description="工具链/IDE工程不支持WWDT Driver版本。所需值: ${required_value}, 实际值: ${actual_value}. 工程可能没有被正确编译。" problem_level="1" source="Peripherals">
-               <feature name="version" evaluation="equivalent">
-                  <data type="Version">2.1.2</data>
-               </feature>
-            </dependency>
             <dependency resourceType="Tool" resourceId="Pins" description="外围设备工具需要 Pins 工具，但它已被禁用。" problem_level="2" source="Peripherals">
                <feature name="enabled" evaluation="equal">
                   <data>true</data>
@@ -1147,11 +1137,6 @@
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="ClockOutput" resourceId="WWDT0_clock" description="WWDT0_clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="frequency" evaluation="greaterThan">
-                        <data type="Frequency" unit="Hz">0</data>
-                     </feature>
-                  </dependency>
                </dependencies>
                <instances>
                   <instance name="NVIC" uuid="f9d970ff-8e91-4728-af1f-06d28b1b9ac4" type="nvic" type_id="nvic" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
@@ -1166,7 +1151,6 @@
                            <struct name="6"/>
                            <struct name="7"/>
                            <struct name="8"/>
-                           <struct name="9"/>
                         </array>
                         <array name="interrupts">
                            <struct name="0">
@@ -2486,7 +2470,7 @@
                         </struct>
                      </config_set>
                   </instance>
-                  <instance name="WWDT0" uuid="66743082-05a7-442e-b2c6-af2127a84ea3" type="wwdt" type_id="wwdt_2.1.2" mode="reset_mode" peripheral="WWDT0" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                  <instance name="WWDT0" uuid="66743082-05a7-442e-b2c6-af2127a84ea3" type="wwdt" type_id="wwdt_2.1.2" mode="reset_mode" peripheral="WWDT0" enabled="false" comment="" custom_name_enabled="false" editing_lock="false">
                      <config_set name="general">
                         <struct name="wwdt_config">
                            <setting name="clockSource" value="FunctionClock"/>
