@@ -30,6 +30,9 @@
 /* #include "WatchdogDriver.h" */ /* Watchdog disabled for current build. */
 #include "../SmartDMA_UART/app_smartdma_lpuart0.h"
 
+/* Set to 0U to restore the normal UART0 Modbus RTU application. */
+#define APP_UART0_SMARTDMA_ECHO_TEST (1U)
+
 /* TODO: insert other definitions and declarations here. */
 
 /* Keep the target in a minimal state briefly after each reset for SWD attach. */
@@ -60,7 +63,7 @@ int main(void) {
     SDK_DelayAtLeastUs(BOOT_DEBUG_HOLD_US, CLOCK_GetCoreSysClkFreq());
 
     BOARD_InitBootPeripherals();
-    /* Firmware is resident but idle; UART0 remains owned by eDMA until its backend is replaced. */
+    /* Install the SmartDMA LPUART firmware before Uart0_Init starts its transport. */
 //#if defined(DEBUG)
 //    /* Stop here before the unverified SmartDMA image is started. */
 //    __asm volatile ("bkpt #0");
@@ -85,6 +88,7 @@ int main(void) {
     Uart0_Init();
     Uart1_Init();
 
+#if (APP_UART0_SMARTDMA_ECHO_TEST == 0U)
     if (!ModbusApp_Init())
     {
         for (;;)
@@ -92,6 +96,7 @@ int main(void) {
             __asm volatile ("nop");
         }
     }
+#endif
 
     if (!GpioDmaFilterStart())
     {
@@ -120,8 +125,12 @@ int main(void) {
         }
     }
 
-    /* UART0 is owned by the Modbus RTU service; do not also start its echo task. */
+#if (APP_UART0_SMARTDMA_ECHO_TEST != 0U)
+    /* RX frame (4T idle) -> SmartDMA TX echo -> TC -> return to RX. */
+    if (!UartEchoTask_Create())
+#else
     if (!ModbusApp_Create())
+#endif
     {
         for (;;)
         {
