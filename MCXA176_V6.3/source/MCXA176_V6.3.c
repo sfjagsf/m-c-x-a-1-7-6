@@ -57,7 +57,7 @@ int main(void) {
      * start application tasks during this interval, so LinkServer has a
      * predictable two-second window to attach after power-on/reset.
      */
-//    SDK_DelayAtLeastUs(BOOT_DEBUG_HOLD_US, CLOCK_GetCoreSysClkFreq());
+    SDK_DelayAtLeastUs(BOOT_DEBUG_HOLD_US, CLOCK_GetCoreSysClkFreq());
 
     BOARD_InitBootPeripherals();
     /* Firmware is resident but idle; UART0 remains owned by eDMA until its backend is replaced. */
