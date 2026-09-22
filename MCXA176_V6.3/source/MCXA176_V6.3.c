@@ -138,13 +138,14 @@ int main(void) {
         }
     }
 
-    if (!Uart1EchoTask_Create())
-    {
-        for (;;)
-        {
-            __asm volatile ("nop");
-        }
-    }
+    /* UART1 is reserved for the UART0/SmartDMA diagnostic stream. */
+//    if (!Uart1EchoTask_Create())
+//    {
+//        for (;;)
+//        {
+//            __asm volatile ("nop");
+//        }
+//    }
 
     (void)osKernelStart();
 

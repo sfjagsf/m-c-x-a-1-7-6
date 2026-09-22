@@ -294,3 +294,31 @@ void APP_SmartDMASetCallback(app_smartdma_callback_t callback, void *userData)
     s_applicationCallback = callback;
     s_applicationCallbackData = userData;
 }
+
+void APP_SmartDMAGetDebugSnapshot(app_smartdma_debug_snapshot_t *snapshot)
+{
+    uint32_t irqMask;
+
+    if (snapshot == NULL)
+    {
+        return;
+    }
+
+    irqMask = DisableGlobalIRQ();
+    snapshot->ready = s_smartdmaReady;
+    snapshot->command = s_smartdmaCommand;
+    snapshot->activeCommand = s_smartdmaActiveCommand;
+    snapshot->txRemaining = s_smartdmaParameters.txCount;
+    snapshot->rxRemaining = s_smartdmaParameters.rxCount;
+    snapshot->lastCommand = s_smartdmaDebug[kDebugLastCommand];
+    snapshot->txLastStatus = s_smartdmaDebug[kDebugTxLastStatus];
+    snapshot->txLastData = s_smartdmaDebug[kDebugTxLastData];
+    snapshot->txComplete = s_smartdmaDebug[kDebugTxComplete];
+    snapshot->rxLastStatus = s_smartdmaDebug[kDebugRxLastStatus];
+    snapshot->rxLastData = s_smartdmaDebug[kDebugRxLastData];
+    snapshot->rxComplete = s_smartdmaDebug[kDebugRxComplete];
+    snapshot->abortComplete = s_smartdmaDebug[kDebugAbortComplete];
+    snapshot->smartdmaCtrl = SMARTDMA0->CTRL;
+    snapshot->smartdmaPc = SMARTDMA0->PC;
+    EnableGlobalIRQ(irqMask);
+}

@@ -24,6 +24,13 @@ static volatile size_t s_rxLength;
 static volatile size_t s_pendingTxLength;
 static volatile bool s_restartAfterAbort;
 static volatile uint32_t s_errors;
+static volatile uint32_t s_rxStartCount;
+static volatile uint32_t s_rxFrameCount;
+static volatile uint32_t s_txRequestCount;
+static volatile uint32_t s_txStartCount;
+static volatile uint32_t s_txCompleteCount;
+static volatile uint32_t s_txWireCompleteCount;
+static volatile uint32_t s_abortCompleteCount;
 
 static void SetDirection(bool transmit)
 {
@@ -37,6 +44,7 @@ static status_t BeginRx(void)
     s_rxLength = 0U;
     if (!APP_SmartDMAStartRx(s_rx, APP_SMARTDMA_LPUART0_BUFFER_SIZE)) return kStatus_Busy;
     s_rxState = kRxRunning;
+    s_rxStartCount++;
     return kStatus_Success;
 }
 
@@ -46,6 +54,7 @@ static void FinishRx(void)
     if (remaining > APP_SMARTDMA_LPUART0_BUFFER_SIZE) remaining = APP_SMARTDMA_LPUART0_BUFFER_SIZE;
     s_rxLength = APP_SMARTDMA_LPUART0_BUFFER_SIZE - remaining;
     s_rxState = (s_rxLength != 0U) ? kRxFrameReady : kRxStopped;
+    if (s_rxState == kRxFrameReady) s_rxFrameCount++;
     if (s_rxState == kRxStopped) (void)BeginRx();
 }
 
@@ -58,6 +67,7 @@ static void BeginPendingTx(void)
         SetDirection(false); s_txState = kTxIdle; (void)BeginRx(); return;
     }
     s_txState = kTxRunning;
+    s_txStartCount++;
 }
 
 static void SmartDmaDone(app_smartdma_event_t event, void *userData)
@@ -65,9 +75,11 @@ static void SmartDmaDone(app_smartdma_event_t event, void *userData)
     (void)userData;
     if (event == kAppSmartDMAEventTxComplete)
     {
+        s_txCompleteCount++;
         s_txState = kTxDraining;
         if ((LPUART_GetStatusFlags(LPUART0) & kLPUART_TransmissionCompleteFlag) != 0U)
         {
+            s_txWireCompleteCount++;
             SetDirection(false); s_txState = kTxIdle; (void)BeginRx();
         }
         else LPUART_EnableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable);
@@ -75,6 +87,7 @@ static void SmartDmaDone(app_smartdma_event_t event, void *userData)
     else if (event == kAppSmartDMAEventRxComplete) FinishRx();
     else if (event == kAppSmartDMAEventAbortComplete)
     {
+        s_abortCompleteCount++;
         if (s_rxState == kRxAbortFrame) FinishRx();
         else if (s_rxState == kRxAbortTx) { s_rxState = kRxStopped; BeginPendingTx(); }
         else { s_rxState = kRxStopped; if (s_restartAfterAbort) { s_restartAfterAbort = false; (void)BeginRx(); } }
@@ -105,6 +118,8 @@ void APP_SmartDMALPUART0_TransportInit(void)
     LPUART_ClearStatusFlags(LPUART0, kLPUART_AllClearFlags);
     LPUART_SetRxFifoWatermark(LPUART0, 0U);
     SetDirection(false); s_rxState = kRxStopped; s_txState = kTxIdle; s_errors = 0U;
+    s_rxStartCount = 0U; s_rxFrameCount = 0U; s_txRequestCount = 0U;
+    s_txStartCount = 0U; s_txCompleteCount = 0U; s_txWireCompleteCount = 0U; s_abortCompleteCount = 0U;
     NVIC_ClearPendingIRQ(LPUART0_IRQn); NVIC_SetPriority(LPUART0_IRQn, 5U); EnableIRQ(LPUART0_IRQn);
     LPUART_EnableInterrupts(LPUART0, kLPUART_IdleLineInterruptEnable | kLPUART_RxOverrunInterruptEnable |
         kLPUART_NoiseErrorInterruptEnable | kLPUART_FramingErrorInterruptEnable | kLPUART_ParityErrorInterruptEnable);
@@ -123,7 +138,7 @@ status_t APP_SmartDMALPUART0_Send(const uint8_t *data, size_t size, bool reply)
 {
     (void)reply;
     if (!s_initialized || !data || !size || size > sizeof(s_tx) || s_txState != kTxIdle) return kStatus_Busy;
-    (void)memcpy(s_tx, data, size); s_pendingTxLength = size; s_txState = kTxPending;
+    (void)memcpy(s_tx, data, size); s_pendingTxLength = size; s_txState = kTxPending; s_txRequestCount++;
     if (s_rxState == kRxRunning)
     {
         s_rxState = kRxAbortTx;
@@ -147,11 +162,40 @@ status_t APP_SmartDMALPUART0_ReleaseFrame(void)
 { if (s_rxState != kRxFrameReady) return kStatus_NoTransferInProgress; s_rxState = kRxStopped; return BeginRx(); }
 uint32_t APP_SmartDMALPUART0_GetAndClearErrors(void) { uint32_t value=s_errors; s_errors=0U; return value; }
 
+void APP_SmartDMALPUART0_GetDebugSnapshot(app_smartdma_lpuart0_debug_snapshot_t *snapshot)
+{
+    uint32_t irqMask;
+
+    if (snapshot == NULL) return;
+
+    irqMask = DisableGlobalIRQ();
+    snapshot->initialized = s_initialized ? 1U : 0U;
+    snapshot->rxState = (uint32_t)s_rxState;
+    snapshot->txState = (uint32_t)s_txState;
+    snapshot->rxLength = (uint32_t)s_rxLength;
+    snapshot->pendingTxLength = (uint32_t)s_pendingTxLength;
+    snapshot->errors = s_errors;
+    snapshot->rxStartCount = s_rxStartCount;
+    snapshot->rxFrameCount = s_rxFrameCount;
+    snapshot->txRequestCount = s_txRequestCount;
+    snapshot->txStartCount = s_txStartCount;
+    snapshot->txCompleteCount = s_txCompleteCount;
+    snapshot->txWireCompleteCount = s_txWireCompleteCount;
+    snapshot->abortCompleteCount = s_abortCompleteCount;
+    snapshot->lpuartStat = LPUART0->STAT;
+    snapshot->lpuartCtrl = LPUART0->CTRL;
+    snapshot->lpuartBaud = LPUART0->BAUD;
+    snapshot->lpuartFifo = LPUART0->FIFO;
+    snapshot->lpuartWater = LPUART0->WATER;
+    EnableGlobalIRQ(irqMask);
+    APP_SmartDMAGetDebugSnapshot(&snapshot->smartdma);
+}
+
 void APP_SmartDMALPUART0_HandleLpuartIrq(void)
 {
     const uint32_t flags = LPUART_GetStatusFlags(LPUART0);
     const uint32_t errors = flags & (kLPUART_RxOverrunFlag | kLPUART_NoiseErrorFlag | kLPUART_FramingErrorFlag | kLPUART_ParityErrorFlag);
     if (errors) { LPUART_ClearStatusFlags(LPUART0, errors); s_errors |= errors; if (s_rxState == kRxRunning) { s_rxState=kRxStopped; s_restartAfterAbort=true; (void)APP_SmartDMAAbort(); } }
     if ((flags & kLPUART_IdleLineFlag) != 0U) { LPUART_ClearStatusFlags(LPUART0, kLPUART_IdleLineFlag); if (s_rxState == kRxRunning) { s_rxState=kRxAbortFrame; if (!APP_SmartDMAAbort()) FinishRx(); } }
-    if ((flags & kLPUART_TransmissionCompleteFlag) && s_txState == kTxDraining) { LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable); SetDirection(false); s_txState=kTxIdle; (void)BeginRx(); }
+    if ((flags & kLPUART_TransmissionCompleteFlag) && s_txState == kTxDraining) { LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable); s_txWireCompleteCount++; SetDirection(false); s_txState=kTxIdle; (void)BeginRx(); }
 }

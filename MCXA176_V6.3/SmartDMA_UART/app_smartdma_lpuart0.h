@@ -7,9 +7,33 @@
 #include <stdint.h>
 
 #include "fsl_common.h"
+#include "app_smartdma.h"
 
 /* TX and RX each own one buffer.  The firmware permits 1 through 512 bytes. */
 #define APP_SMARTDMA_LPUART0_BUFFER_SIZE (256U)
+
+typedef struct
+{
+    uint32_t initialized;
+    uint32_t rxState;
+    uint32_t txState;
+    uint32_t rxLength;
+    uint32_t pendingTxLength;
+    uint32_t errors;
+    uint32_t rxStartCount;
+    uint32_t rxFrameCount;
+    uint32_t txRequestCount;
+    uint32_t txStartCount;
+    uint32_t txCompleteCount;
+    uint32_t txWireCompleteCount;
+    uint32_t abortCompleteCount;
+    uint32_t lpuartStat;
+    uint32_t lpuartCtrl;
+    uint32_t lpuartBaud;
+    uint32_t lpuartFifo;
+    uint32_t lpuartWater;
+    app_smartdma_debug_snapshot_t smartdma;
+} app_smartdma_lpuart0_debug_snapshot_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,6 +51,7 @@ bool APP_SmartDMALPUART0_IsFrameAvailable(void);
 const uint8_t *APP_SmartDMALPUART0_GetFrame(size_t *length);
 status_t APP_SmartDMALPUART0_ReleaseFrame(void);
 uint32_t APP_SmartDMALPUART0_GetAndClearErrors(void);
+void APP_SmartDMALPUART0_GetDebugSnapshot(app_smartdma_lpuart0_debug_snapshot_t *snapshot);
 void APP_SmartDMALPUART0_HandleLpuartIrq(void);
 
 #ifdef __cplusplus

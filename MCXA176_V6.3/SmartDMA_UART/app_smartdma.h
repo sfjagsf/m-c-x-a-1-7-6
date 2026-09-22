@@ -42,6 +42,26 @@ typedef enum
 
 typedef void (*app_smartdma_callback_t)(app_smartdma_event_t event, void *userData);
 
+/* Read-only snapshot used by the UART1 diagnostic logger. */
+typedef struct
+{
+    uint32_t ready;
+    uint32_t command;
+    uint32_t activeCommand;
+    uint32_t txRemaining;
+    uint32_t rxRemaining;
+    uint32_t lastCommand;
+    uint32_t txLastStatus;
+    uint32_t txLastData;
+    uint32_t txComplete;
+    uint32_t rxLastStatus;
+    uint32_t rxLastData;
+    uint32_t rxComplete;
+    uint32_t abortComplete;
+    uint32_t smartdmaCtrl;
+    uint32_t smartdmaPc;
+} app_smartdma_debug_snapshot_t;
+
 /* Install the firmware in SRAMX0 and start the SmartDMA command processor. */
 bool APP_SmartDMAInit(const app_smartdma_config_t *config);
 
@@ -56,5 +76,6 @@ bool APP_SmartDMAAbort(void);
 bool APP_SmartDMAIsBusy(void);
 uint32_t APP_SmartDMAGetRxRemaining(void);
 void APP_SmartDMASetCallback(app_smartdma_callback_t callback, void *userData);
+void APP_SmartDMAGetDebugSnapshot(app_smartdma_debug_snapshot_t *snapshot);
 
 #endif /* APP_SMARTDMA_H_ */
