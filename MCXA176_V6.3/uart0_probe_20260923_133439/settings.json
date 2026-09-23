@@ -1,0 +1,13 @@
+{
+  "port0": "COM4",
+  "port1": "COM11",
+  "baud0": 115200,
+  "baud1": 115200,
+  "interval": 1.0,
+  "timeout": 0.7,
+  "length": 16,
+  "duration": 0.0,
+  "split_after": 0,
+  "split_gap_ms": 0.0,
+  "output": null
+}

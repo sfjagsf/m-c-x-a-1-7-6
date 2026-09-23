@@ -45,14 +45,19 @@ def main() -> int:
     parser.add_argument("--timeout", type=float, default=0.7, help="echo timeout in seconds")
     parser.add_argument("--length", type=int, default=16, help="test frame length, 16..256")
     parser.add_argument("--duration", type=float, default=0.0, help="seconds; 0 runs until Ctrl-C")
+    parser.add_argument("--ready-timeout", type=float, default=10.0,
+                        help="seconds to wait for UART1 to report UART0 RX ready")
+    parser.add_argument("--settle", type=float, default=0.5,
+                        help="seconds to wait after the first ready status")
     parser.add_argument("--split-after", type=int, default=0,
                         help="optional byte offset for deliberate inter-byte gap")
     parser.add_argument("--split-gap-ms", type=float, default=0.0)
     parser.add_argument("--output", type=pathlib.Path)
     args = parser.parse_args()
 
-    if not 16 <= args.length <= 256 or args.interval <= 0 or args.timeout <= 0:
-        parser.error("length must be 16..256; interval and timeout must be positive")
+    if (not 16 <= args.length <= 256 or args.interval <= 0 or args.timeout <= 0 or
+            args.ready_timeout <= 0 or args.settle < 0):
+        parser.error("length must be 16..256; interval, timeout and ready-timeout must be positive")
     if args.split_after and not 0 < args.split_after < args.length:
         parser.error("split-after must be within the frame")
     if args.split_gap_ms < 0:
@@ -80,7 +85,9 @@ def main() -> int:
 
         record("start", port0=args.port0, port1=args.port1, baud0=args.baud0, baud1=args.baud1)
         start = time.monotonic()
-        next_send = start
+        next_send = float("inf")
+        ready_at = None
+        failed_ready = False
         sequence = 0
         pending = None
         diag_buffer = bytearray()
@@ -99,6 +106,12 @@ def main() -> int:
                         diag_buffer = bytearray(remainder)
                         message = line.rstrip(b"\r").decode("ascii", errors="replace")
                         record("uart1", text=message)
+                        if (ready_at is None and message.startswith("U0SD I1 R1 T0 ") and
+                                " CMD2/2/" in message and " rem256/" in message):
+                            ready_at = time.monotonic() + args.settle
+                            next_send = ready_at
+                            record("ready", settle_seconds=args.settle, status=message)
+                            print(f"[{utc_now()}] UART0 RX ready; first probe in {args.settle:g} s", flush=True)
                         if message.startswith("U0EV ") and any(
                             marker in message for marker in (" K3 ", " K4 ", " K6 ")
                         ):
@@ -133,6 +146,12 @@ def main() -> int:
                             pending = None
 
                 now = time.monotonic()
+                if ready_at is None and now - start >= args.ready_timeout:
+                    failed_ready = True
+                    record("ready_timeout", seconds=args.ready_timeout)
+                    print(f"[{utc_now()}] UART0 ready status not seen on {args.port1}; "
+                          "check UART1 wiring, baud rate and firmware", flush=True)
+                    break
                 if pending is not None and now >= pending["deadline"]:
                     totals["timeout"] += 1
                     record("result", seq=pending["seq"], result="timeout",
@@ -170,7 +189,7 @@ def main() -> int:
                        partial=bytes(pending["received"]).hex().upper())
             record("stop", totals=totals)
             print(f"Stopped. Totals: {totals}; logs: {directory.resolve()}", flush=True)
-    return 0
+    return 1 if failed_ready else 0
 
 
 if __name__ == "__main__":

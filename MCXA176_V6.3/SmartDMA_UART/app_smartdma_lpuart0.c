@@ -236,12 +236,15 @@ status_t APP_SmartDMALPUART0_StartReceive(void)
 
 status_t APP_SmartDMALPUART0_Send(const uint8_t *data, size_t size, bool reply)
 {
-    (void)reply;
     if (!s_initialized || !data || !size || size > sizeof(s_tx) || s_txState != kTxIdle) return kStatus_Busy;
+    if (reply && s_rxState != kRxFrameReady) return kStatus_NoTransferInProgress;
+    if (!reply && s_rxState == kRxFrameReady) return kStatus_Busy;
     (void)memcpy(s_tx, data, size);
     s_lastTxLength = size;
     (void)memcpy(s_lastTxBytes, s_tx, (size < sizeof(s_lastTxBytes)) ? size : sizeof(s_lastTxBytes));
     s_pendingTxLength = size; s_txState = kTxPending; s_txRequestCount++;
+    /* TX owns a copy now: do not expose the same RX frame again while the wire is busy. */
+    if (reply) s_rxState = kRxStopped;
     if (s_rxState == kRxRunning)
     {
         s_rxState = kRxAbortTx;
