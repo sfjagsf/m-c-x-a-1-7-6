@@ -13,6 +13,33 @@
 #define APP_SMARTDMA_LPUART0_BUFFER_SIZE (256U)
 #define APP_SMARTDMA_LPUART0_DEBUG_BYTES (16U)
 
+typedef enum
+{
+    kAppUart0EventRx = 1U,
+    kAppUart0EventTx = 2U,
+    kAppUart0EventError = 3U,
+    kAppUart0EventRecovery = 4U,
+    kAppUart0EventTxWireComplete = 5U,
+    kAppUart0EventReplyFailure = 6U,
+} app_uart0_event_kind_t;
+
+typedef struct
+{
+    uint32_t id;
+    uint32_t kind;
+    uint32_t rxFrameCount;
+    uint32_t txRequestCount;
+    uint32_t recoveryCount;
+    uint32_t rxState;
+    uint32_t txState;
+    uint32_t length;
+    uint32_t flags;
+    uint32_t status;
+    uint32_t rxRemaining;
+    uint32_t direction;
+    uint8_t bytes[APP_SMARTDMA_LPUART0_DEBUG_BYTES];
+} app_uart0_event_t;
+
 typedef struct
 {
     uint32_t initialized;
@@ -35,6 +62,8 @@ typedef struct
     uint32_t breakCount;
     uint32_t rxRecoveryCount;
     uint32_t recoveryPending;
+    uint32_t eventDropCount;
+    uint32_t replyFailureCount;
     uint32_t lpuartStat;
     uint32_t lpuartCtrl;
     uint32_t lpuartBaud;
@@ -60,6 +89,8 @@ const uint8_t *APP_SmartDMALPUART0_GetFrame(size_t *length);
 status_t APP_SmartDMALPUART0_ReleaseFrame(void);
 uint32_t APP_SmartDMALPUART0_GetAndClearErrors(void);
 void APP_SmartDMALPUART0_GetDebugSnapshot(app_smartdma_lpuart0_debug_snapshot_t *snapshot);
+bool APP_SmartDMALPUART0_PopEvent(app_uart0_event_t *event);
+void APP_SmartDMALPUART0_RecordReplyFailure(status_t status);
 void APP_SmartDMALPUART0_Service(void);
 void APP_SmartDMALPUART0_HandleLpuartIrq(void);
 
