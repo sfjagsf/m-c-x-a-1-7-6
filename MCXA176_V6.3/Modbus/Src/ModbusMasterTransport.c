@@ -58,28 +58,45 @@ void ModbusMasterTransport_Poll(modbus_master_transport_t *transport,
     size_t frameLength;
     modbus_master_result_t result;
     status_t status;
+    uart_tx_result_t txResult;
 
     if (transport == NULL)
     {
         return;
     }
     UartPort_Service(transport->port);
-    if (transport->state == kModbusMasterBroadcastSending)
+    if ((transport->state == kModbusMasterBroadcastSending) ||
+        (transport->state == kModbusMasterTransmitting))
     {
-        if (!UartPort_IsBusy(transport->port))
+        txResult = UartPort_GetTxResult(transport->port);
+        if (txResult == kUartTxFailed)
         {
-            transport->state = kModbusMasterComplete;
-            transport->completedCount++;
+            transport->lastTransportStatus = kStatus_Fail;
+            transport->transportErrorCount++;
+            transport->state = kModbusMasterTransportError;
+            (void)UartPort_AbortAndReceive(transport->port);
         }
-        return;
-    }
-    if (transport->state == kModbusMasterTransmitting)
-    {
-        /* libmodbus starts response_timeout after the complete request is sent. */
-        if (!UartPort_IsBusy(transport->port))
+        else if (txResult == kUartTxComplete)
         {
-            transport->startTick = currentTick;
-            transport->state = kModbusMasterWaitingResponse;
+            if (transport->state == kModbusMasterBroadcastSending)
+            {
+                transport->state = kModbusMasterComplete;
+                transport->completedCount++;
+            }
+            else
+            {
+                /* Start the response timer only after the final stop bit. */
+                transport->startTick = currentTick;
+                transport->state = kModbusMasterWaitingResponse;
+            }
+        }
+        else if ((uint32_t)(currentTick - transport->startTick) >= transport->timeoutTicks)
+        {
+            /* Bound DMA, TC and Abort waits as well as the response wait. */
+            transport->lastTransportStatus = kStatus_Timeout;
+            transport->timeoutCount++;
+            transport->state = kModbusMasterTimeout;
+            (void)UartPort_AbortAndReceive(transport->port);
         }
         return;
     }
@@ -119,8 +136,8 @@ void ModbusMasterTransport_Poll(modbus_master_transport_t *transport,
     {
         transport->timeoutCount++;
         transport->state = kModbusMasterTimeout;
-        UartPort_Abort(transport->port);
-        transport->lastTransportStatus = UartPort_StartReceive(transport->port);
+        transport->lastTransportStatus = kStatus_Timeout;
+        (void)UartPort_AbortAndReceive(transport->port);
     }
 }
 

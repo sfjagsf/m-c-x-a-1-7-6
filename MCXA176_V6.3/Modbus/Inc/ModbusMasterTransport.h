@@ -35,7 +35,8 @@ typedef struct
 bool ModbusMasterTransport_Init(modbus_master_transport_t *transport,
                                 uart_port_id_t port);
 
-/* Call a ModbusMaster_Build* function, then submit its prepared request. */
+/* timeoutTicks bounds both TX completion and response wait, in currentTick units.
+ * Set it longer than the worst-case wire time for the complete request. */
 status_t ModbusMasterTransport_Submit(modbus_master_transport_t *transport,
                                      uint32_t currentTick, uint32_t timeoutTicks);
 void ModbusMasterTransport_Poll(modbus_master_transport_t *transport,

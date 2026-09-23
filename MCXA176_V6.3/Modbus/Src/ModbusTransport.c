@@ -53,7 +53,6 @@ void ModbusTransport_Poll(modbus_transport_t *transport)
     if (status != kStatus_Success)
     {
         transport->transportErrorCount++;
-        UartPort_Abort(transport->port);
-        (void)UartPort_StartReceive(transport->port);
+        (void)UartPort_AbortAndReceive(transport->port);
     }
 }

@@ -129,6 +129,7 @@ void UartEchoTask(void *argument)
         size_t length;
 
         UartPort_Service(kUartPort0);
+        UartPort_Service(kUartPort1);
         frame = Uart0_GetFrame(&length);
         if ((frame != NULL) && (length != 0U))
         {

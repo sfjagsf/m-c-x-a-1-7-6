@@ -24,6 +24,15 @@ typedef enum
     kUartPort3,
 } uart_port_id_t;
 
+/* A successful Send/Reply means accepted, not that the last bit reached the wire. */
+typedef enum
+{
+    kUartTxNone = 0U,
+    kUartTxPending,
+    kUartTxComplete,
+    kUartTxFailed,
+} uart_tx_result_t;
+
 typedef struct
 {
     uint32_t uartErrors;       /* Accumulated kLPUART_* line-error flags. */
@@ -46,9 +55,11 @@ status_t UartPort_StartReceive(uart_port_id_t port);
 status_t UartPort_Send(uart_port_id_t port, const uint8_t *data, size_t size);
 status_t UartPort_Reply(uart_port_id_t port, const uint8_t *data, size_t size);
 void UartPort_Abort(uart_port_id_t port);
-/* Poll deferred SmartDMA completion/recovery; harmless for other ports. */
+status_t UartPort_AbortAndReceive(uart_port_id_t port);
+/* Call approximately every 1 ms: drives RX retry and TX/Abort stall watchdogs. */
 void UartPort_Service(uart_port_id_t port);
 bool UartPort_IsBusy(uart_port_id_t port);
+uart_tx_result_t UartPort_GetTxResult(uart_port_id_t port);
 bool UartPort_IsFrameAvailable(uart_port_id_t port);
 /* Returned RX data is valid until ReleaseFrame/Reply starts the next receive. */
 const uint8_t *UartPort_GetFrame(uart_port_id_t port, size_t *length);

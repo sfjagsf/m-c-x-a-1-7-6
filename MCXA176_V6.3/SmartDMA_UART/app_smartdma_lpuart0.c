@@ -17,14 +17,21 @@ typedef enum { kTxIdle, kTxPending, kTxRunning, kTxDraining } tx_state_t;
     kLPUART_NoiseErrorInterruptEnable | kLPUART_FramingErrorInterruptEnable | \
     kLPUART_ParityErrorInterruptEnable)
 #define UART0_EVENT_QUEUE_SIZE (32U)
+/* UartPort_Service is called once per application tick (1 ms in the current tasks). */
+#define UART0_STALL_SERVICE_LIMIT (500U)
 
 _Static_assert(APP_SMARTDMA_LPUART0_BUFFER_SIZE <= APP_SMARTDMA_MAX_TRANSFER_SIZE,
                "LPUART0 buffer exceeds SmartDMA firmware limit");
 static uint8_t s_tx[APP_SMARTDMA_LPUART0_BUFFER_SIZE];
 static uint8_t s_rx[APP_SMARTDMA_LPUART0_BUFFER_SIZE];
+static const app_smartdma_config_t s_smartdmaConfig = {
+    .txBuffer = s_tx, .txBufferSize = sizeof(s_tx), .txDataRegister = &LPUART0->DATA,
+    .rxBuffer = s_rx, .rxBufferSize = sizeof(s_rx), .rxDataRegister = &LPUART0->DATA,
+};
 static volatile bool s_initialized;
 static volatile rx_state_t s_rxState;
 static volatile tx_state_t s_txState;
+static volatile app_smartdma_tx_result_t s_txResult;
 static volatile size_t s_rxLength;
 static volatile size_t s_pendingTxLength;
 static size_t s_lastRxLength;
@@ -33,6 +40,7 @@ static uint8_t s_lastRxBytes[APP_SMARTDMA_LPUART0_DEBUG_BYTES];
 static uint8_t s_lastTxBytes[APP_SMARTDMA_LPUART0_DEBUG_BYTES];
 static volatile bool s_restartAfterAbort;
 static volatile uint32_t s_errors;
+static volatile uint32_t s_lineErrorCount;
 static volatile uint32_t s_rxStartCount;
 static volatile uint32_t s_rxFrameCount;
 static volatile uint32_t s_txRequestCount;
@@ -45,6 +53,8 @@ static volatile uint32_t s_rxRecoveryCount;
 static volatile bool s_rxErrorInterruptsMasked;
 static volatile bool s_recoveryPending;
 static volatile bool s_abortPending;
+static uint32_t s_watchPhase;
+static uint32_t s_watchPolls;
 static app_uart0_event_t s_events[UART0_EVENT_QUEUE_SIZE];
 static volatile uint32_t s_eventRead;
 static volatile uint32_t s_eventWrite;
@@ -183,6 +193,7 @@ static status_t BeginPendingTx(void)
     if (!APP_SmartDMAStartTx(s_tx, (uint32_t)s_pendingTxLength))
     {
         s_txState = kTxIdle;
+        s_txResult = kAppSmartDmaTxFailed;
         PushEvent(kAppUart0EventTxStartFailure, (uint32_t)s_pendingTxLength,
                   (uint32_t)kStatus_Fail, s_tx);
         EnableReceivePath();
@@ -199,6 +210,7 @@ static void CompleteTransmit(void)
 {
     LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable);
     s_txWireCompleteCount++;
+    s_txResult = kAppSmartDmaTxComplete;
     PushEvent(kAppUart0EventTxWireComplete, (uint32_t)s_pendingTxLength, 0U, NULL);
     s_txState = kTxIdle;
     EnableReceivePath();
@@ -254,12 +266,8 @@ static void SmartDmaDone(app_smartdma_event_t event, void *userData)
 
 bool APP_SmartDMALPUART0_Init(void)
 {
-    const app_smartdma_config_t config = {
-        .txBuffer = s_tx, .txBufferSize = sizeof(s_tx), .txDataRegister = &LPUART0->DATA,
-        .rxBuffer = s_rx, .rxBufferSize = sizeof(s_rx), .rxDataRegister = &LPUART0->DATA,
-    };
     if (s_initialized) return true;
-    s_initialized = APP_SmartDMAInit(&config);
+    s_initialized = APP_SmartDMAInit(&s_smartdmaConfig);
     if (s_initialized) APP_SmartDMASetCallback(SmartDmaDone, NULL);
     return s_initialized;
 }
@@ -276,11 +284,13 @@ void APP_SmartDMALPUART0_TransportInit(void)
     LPUART_ClearStatusFlags(LPUART0, kLPUART_AllClearFlags);
     FlushRxFifo();
     LPUART_SetRxFifoWatermark(LPUART0, 0U);
-    SetDirection(false); s_rxState = kRxStopped; s_txState = kTxIdle; s_errors = 0U;
+    SetDirection(false); s_rxState = kRxStopped; s_txState = kTxIdle;
+    s_txResult = kAppSmartDmaTxNone; s_errors = 0U; s_lineErrorCount = 0U;
     s_rxStartCount = 0U; s_rxFrameCount = 0U; s_txRequestCount = 0U;
     s_txStartCount = 0U; s_txCompleteCount = 0U; s_txWireCompleteCount = 0U; s_abortCompleteCount = 0U;
     s_breakCount = 0U; s_rxRecoveryCount = 0U; s_rxErrorInterruptsMasked = false;
     s_recoveryPending = false; s_restartAfterAbort = false; s_abortPending = false;
+    s_watchPhase = 0U; s_watchPolls = 0U;
     s_lastRxLength = 0U; s_lastTxLength = 0U;
     (void)memset(s_lastRxBytes, 0, sizeof(s_lastRxBytes));
     (void)memset(s_lastTxBytes, 0, sizeof(s_lastTxBytes));
@@ -309,7 +319,8 @@ status_t APP_SmartDMALPUART0_Send(const uint8_t *data, size_t size, bool reply)
     (void)memcpy(s_tx, data, size);
     s_lastTxLength = size;
     (void)memcpy(s_lastTxBytes, s_tx, (size < sizeof(s_lastTxBytes)) ? size : sizeof(s_lastTxBytes));
-    s_pendingTxLength = size; s_txState = kTxPending; s_txRequestCount++;
+    s_pendingTxLength = size; s_txState = kTxPending;
+    s_txResult = kAppSmartDmaTxPending; s_txRequestCount++;
     /* TX owns a copy now: do not expose the same RX frame again while the wire is busy. */
     if (reply) s_rxState = kRxStopped;
     if (s_rxState == kRxRunning)
@@ -332,6 +343,7 @@ void APP_SmartDMALPUART0_Abort(void)
 
     if (!s_initialized) return;
     irqMask = DisableGlobalIRQ();
+    if (s_txResult == kAppSmartDmaTxPending) s_txResult = kAppSmartDmaTxFailed;
     s_restartAfterAbort = false; s_recoveryPending = false;
     s_rxState = kRxStopped; s_txState = kTxIdle; s_rxLength = 0U;
     DisableReceivePath();
@@ -344,6 +356,7 @@ void APP_SmartDMALPUART0_Abort(void)
     if (!abortStarted) RecoverRx();
 }
 bool APP_SmartDMALPUART0_IsBusy(void) { return s_txState != kTxIdle || s_abortPending; }
+app_smartdma_tx_result_t APP_SmartDMALPUART0_GetTxResult(void) { return s_txResult; }
 bool APP_SmartDMALPUART0_IsFrameAvailable(void) { return s_rxState == kRxFrameReady; }
 const uint8_t *APP_SmartDMALPUART0_GetFrame(size_t *length)
 { if (length) *length = APP_SmartDMALPUART0_IsFrameAvailable() ? s_rxLength : 0U; return APP_SmartDMALPUART0_IsFrameAvailable() ? s_rx : NULL; }
@@ -368,6 +381,7 @@ void APP_SmartDMALPUART0_GetDebugSnapshot(app_smartdma_lpuart0_debug_snapshot_t 
     (void)memcpy(snapshot->lastRxBytes, s_lastRxBytes, sizeof(s_lastRxBytes));
     (void)memcpy(snapshot->lastTxBytes, s_lastTxBytes, sizeof(s_lastTxBytes));
     snapshot->errors = s_errors;
+    snapshot->lineErrorCount = s_lineErrorCount;
     snapshot->rxStartCount = s_rxStartCount;
     snapshot->rxFrameCount = s_rxFrameCount;
     snapshot->txRequestCount = s_txRequestCount;
@@ -387,6 +401,17 @@ void APP_SmartDMALPUART0_GetDebugSnapshot(app_smartdma_lpuart0_debug_snapshot_t 
     snapshot->lpuartWater = LPUART0->WATER;
     EnableGlobalIRQ(irqMask);
     APP_SmartDMAGetDebugSnapshot(&snapshot->smartdma);
+}
+
+void APP_SmartDMALPUART0_ClearDiagnostics(void)
+{
+    const uint32_t irqMask = DisableGlobalIRQ();
+    s_errors = 0U;
+    s_lineErrorCount = 0U;
+    s_breakCount = 0U;
+    s_rxRecoveryCount = 0U;
+    s_eventDropCount = 0U;
+    EnableGlobalIRQ(irqMask);
 }
 
 bool APP_SmartDMALPUART0_PopEvent(app_uart0_event_t *event)
@@ -413,9 +438,67 @@ void APP_SmartDMALPUART0_RecordReplyFailure(status_t status)
     }
 }
 
+static void RestartStalledSmartDma(void)
+{
+    uint32_t fifo;
+    const uint32_t irqMask = DisableGlobalIRQ();
+
+    /* APP_SmartDMAInit is the firmware reset path. Stop the UART shifter and
+     * discard a partial TX before reusing the shared parameter block. */
+    DisableReceivePath();
+    LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable);
+    LPUART_EnableTx(LPUART0, false);
+    fifo = LPUART0->FIFO & ~(LPUART_FIFO_TXFLUSH_MASK | LPUART_FIFO_RXFLUSH_MASK |
+                              LPUART_FIFO_TXOF_MASK | LPUART_FIFO_RXUF_MASK);
+    LPUART0->FIFO = fifo | LPUART_FIFO_TXFLUSH_MASK;
+    SetDirection(false);
+    s_txState = kTxIdle;
+    s_rxState = kRxStopped;
+    s_abortPending = false;
+    s_restartAfterAbort = false;
+    s_recoveryPending = true;
+    s_txResult = kAppSmartDmaTxFailed;
+    s_initialized = APP_SmartDMAInit(&s_smartdmaConfig);
+    if (s_initialized)
+    {
+        APP_SmartDMASetCallback(SmartDmaDone, NULL);
+        LPUART_EnableTx(LPUART0, true);
+        EnableReceivePath();
+        (void)BeginRx();
+    }
+    EnableGlobalIRQ(irqMask);
+}
+
 void APP_SmartDMALPUART0_Service(void)
 {
-    if (!s_initialized || (LPUART_GetStatusFlags(LPUART0) & kLPUART_RxActiveFlag) != 0U) return;
+    uint32_t phase;
+
+    if (!s_initialized)
+    {
+        /* A failed firmware restart must not leave the port permanently idle. */
+        if (s_recoveryPending && ++s_watchPolls >= UART0_STALL_SERVICE_LIMIT)
+        {
+            s_watchPolls = 0U;
+            RestartStalledSmartDma();
+        }
+        return;
+    }
+    phase = s_abortPending ? 4U : (uint32_t)s_txState;
+    if (phase != s_watchPhase)
+    {
+        s_watchPhase = phase;
+        s_watchPolls = 0U;
+    }
+    else if (phase != 0U && ++s_watchPolls >= UART0_STALL_SERVICE_LIMIT)
+    {
+        s_watchPolls = 0U;
+        PushEvent(kAppUart0EventWatchdog, 0U, phase, NULL);
+        if ((s_abortPending ? 4U : (uint32_t)s_txState) != phase) return;
+        if (s_abortPending) RestartStalledSmartDma();
+        else APP_SmartDMALPUART0_Abort();
+        return;
+    }
+    if ((LPUART_GetStatusFlags(LPUART0) & kLPUART_RxActiveFlag) != 0U) return;
 
     if (s_txState == kTxPending && s_rxState == kRxStopped && !s_abortPending &&
         !APP_SmartDMAIsBusy())
@@ -446,6 +529,7 @@ void APP_SmartDMALPUART0_HandleLpuartIrq(void)
         kLPUART_NoiseErrorFlag | kLPUART_FramingErrorFlag | kLPUART_ParityErrorFlag);
     if (errors)
     {
+        s_lineErrorCount++;
         PushEvent(kAppUart0EventError, 0U, errors, NULL);
         if ((errors & kLPUART_LinBreakFlag) != 0U) s_breakCount++;
         s_rxErrorInterruptsMasked = true;

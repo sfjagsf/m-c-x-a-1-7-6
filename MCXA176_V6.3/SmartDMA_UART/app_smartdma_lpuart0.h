@@ -22,7 +22,16 @@ typedef enum
     kAppUart0EventTxWireComplete = 5U,
     kAppUart0EventReplyFailure = 6U,
     kAppUart0EventTxStartFailure = 7U,
+    kAppUart0EventWatchdog = 8U,
 } app_uart0_event_kind_t;
+
+typedef enum
+{
+    kAppSmartDmaTxNone,
+    kAppSmartDmaTxPending,
+    kAppSmartDmaTxComplete,
+    kAppSmartDmaTxFailed,
+} app_smartdma_tx_result_t;
 
 typedef struct
 {
@@ -53,6 +62,7 @@ typedef struct
     uint8_t lastRxBytes[APP_SMARTDMA_LPUART0_DEBUG_BYTES];
     uint8_t lastTxBytes[APP_SMARTDMA_LPUART0_DEBUG_BYTES];
     uint32_t errors;
+    uint32_t lineErrorCount;
     uint32_t rxStartCount;
     uint32_t rxFrameCount;
     uint32_t txRequestCount;
@@ -85,11 +95,13 @@ status_t APP_SmartDMALPUART0_StartReceive(void);
 status_t APP_SmartDMALPUART0_Send(const uint8_t *data, size_t size, bool reply);
 void APP_SmartDMALPUART0_Abort(void);
 bool APP_SmartDMALPUART0_IsBusy(void);
+app_smartdma_tx_result_t APP_SmartDMALPUART0_GetTxResult(void);
 bool APP_SmartDMALPUART0_IsFrameAvailable(void);
 const uint8_t *APP_SmartDMALPUART0_GetFrame(size_t *length);
 status_t APP_SmartDMALPUART0_ReleaseFrame(void);
 uint32_t APP_SmartDMALPUART0_GetAndClearErrors(void);
 void APP_SmartDMALPUART0_GetDebugSnapshot(app_smartdma_lpuart0_debug_snapshot_t *snapshot);
+void APP_SmartDMALPUART0_ClearDiagnostics(void);
 bool APP_SmartDMALPUART0_PopEvent(app_uart0_event_t *event);
 void APP_SmartDMALPUART0_RecordReplyFailure(status_t status);
 void APP_SmartDMALPUART0_Service(void);
