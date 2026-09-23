@@ -128,7 +128,7 @@ void UartEchoTask(void *argument)
         const uint8_t *frame;
         size_t length;
 
-        APP_SmartDMALPUART0_Service();
+        UartPort_Service(kUartPort0);
         frame = Uart0_GetFrame(&length);
         if ((frame != NULL) && (length != 0U))
         {

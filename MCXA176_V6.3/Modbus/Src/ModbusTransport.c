@@ -27,6 +27,7 @@ void ModbusTransport_Poll(modbus_transport_t *transport)
     {
         return;
     }
+    UartPort_Service(transport->port);
     request = UartPort_GetFrame(transport->port, &requestLength);
     if ((request == NULL) || (requestLength == 0U))
     {

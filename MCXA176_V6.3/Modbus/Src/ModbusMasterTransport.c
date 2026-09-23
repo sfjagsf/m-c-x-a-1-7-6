@@ -63,6 +63,7 @@ void ModbusMasterTransport_Poll(modbus_master_transport_t *transport,
     {
         return;
     }
+    UartPort_Service(transport->port);
     if (transport->state == kModbusMasterBroadcastSending)
     {
         if (!UartPort_IsBusy(transport->port))

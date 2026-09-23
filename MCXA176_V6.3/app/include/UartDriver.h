@@ -46,6 +46,8 @@ status_t UartPort_StartReceive(uart_port_id_t port);
 status_t UartPort_Send(uart_port_id_t port, const uint8_t *data, size_t size);
 status_t UartPort_Reply(uart_port_id_t port, const uint8_t *data, size_t size);
 void UartPort_Abort(uart_port_id_t port);
+/* Poll deferred SmartDMA completion/recovery; harmless for other ports. */
+void UartPort_Service(uart_port_id_t port);
 bool UartPort_IsBusy(uart_port_id_t port);
 bool UartPort_IsFrameAvailable(uart_port_id_t port);
 /* Returned RX data is valid until ReleaseFrame/Reply starts the next receive. */

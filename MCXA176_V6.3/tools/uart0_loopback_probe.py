@@ -113,7 +113,7 @@ def main() -> int:
                             record("ready", settle_seconds=args.settle, status=message)
                             print(f"[{utc_now()}] UART0 RX ready; first probe in {args.settle:g} s", flush=True)
                         if message.startswith("U0EV ") and any(
-                            marker in message for marker in (" K3 ", " K4 ", " K6 ")
+                            marker in message for marker in (" K3 ", " K4 ", " K6 ", " K7 ")
                         ):
                             print(f"[{utc_now()}] {message}", flush=True)
                     if len(diag_buffer) > 4096:

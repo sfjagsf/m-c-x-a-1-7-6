@@ -21,6 +21,7 @@ typedef enum
     kAppUart0EventRecovery = 4U,
     kAppUart0EventTxWireComplete = 5U,
     kAppUart0EventReplyFailure = 6U,
+    kAppUart0EventTxStartFailure = 7U,
 } app_uart0_event_kind_t;
 
 typedef struct

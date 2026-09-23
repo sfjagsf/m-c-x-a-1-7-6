@@ -744,6 +744,11 @@ void UartPort_Abort(uart_port_id_t port)
     s_uartRuntime[port].rxLength = 0U;
 }
 
+void UartPort_Service(uart_port_id_t port)
+{
+    if (port == kUartPort0) APP_SmartDMALPUART0_Service();
+}
+
 bool UartPort_IsBusy(uart_port_id_t port)
 {
     if (port == kUartPort0)
