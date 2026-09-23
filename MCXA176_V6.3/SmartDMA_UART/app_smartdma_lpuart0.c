@@ -26,6 +26,10 @@ static volatile rx_state_t s_rxState;
 static volatile tx_state_t s_txState;
 static volatile size_t s_rxLength;
 static volatile size_t s_pendingTxLength;
+static size_t s_lastRxLength;
+static size_t s_lastTxLength;
+static uint8_t s_lastRxBytes[APP_SMARTDMA_LPUART0_DEBUG_BYTES];
+static uint8_t s_lastTxBytes[APP_SMARTDMA_LPUART0_DEBUG_BYTES];
 static volatile bool s_restartAfterAbort;
 static volatile uint32_t s_errors;
 static volatile uint32_t s_rxStartCount;
@@ -84,6 +88,12 @@ static void FinishRx(void)
     uint32_t remaining = APP_SmartDMAGetRxRemaining();
     if (remaining > APP_SMARTDMA_LPUART0_BUFFER_SIZE) remaining = APP_SMARTDMA_LPUART0_BUFFER_SIZE;
     s_rxLength = APP_SMARTDMA_LPUART0_BUFFER_SIZE - remaining;
+    if (s_rxLength != 0U)
+    {
+        const size_t sampleLength = (s_rxLength < sizeof(s_lastRxBytes)) ? s_rxLength : sizeof(s_lastRxBytes);
+        s_lastRxLength = s_rxLength;
+        (void)memcpy(s_lastRxBytes, s_rx, sampleLength);
+    }
     s_rxState = (s_rxLength != 0U) ? kRxFrameReady : kRxStopped;
     if (s_rxState == kRxFrameReady) s_rxFrameCount++;
     if (s_rxState == kRxStopped) (void)BeginRx();
@@ -154,6 +164,9 @@ void APP_SmartDMALPUART0_TransportInit(void)
     s_txStartCount = 0U; s_txCompleteCount = 0U; s_txWireCompleteCount = 0U; s_abortCompleteCount = 0U;
     s_breakCount = 0U; s_rxRecoveryCount = 0U; s_rxErrorInterruptsMasked = false;
     s_recoveryPending = false; s_restartAfterAbort = false;
+    s_lastRxLength = 0U; s_lastTxLength = 0U;
+    (void)memset(s_lastRxBytes, 0, sizeof(s_lastRxBytes));
+    (void)memset(s_lastTxBytes, 0, sizeof(s_lastTxBytes));
     NVIC_ClearPendingIRQ(LPUART0_IRQn); NVIC_SetPriority(LPUART0_IRQn, 5U); EnableIRQ(LPUART0_IRQn);
     LPUART_EnableInterrupts(LPUART0, kLPUART_IdleLineInterruptEnable | UART0_RX_ERROR_INTERRUPTS);
     (void)BeginRx();
@@ -172,7 +185,10 @@ status_t APP_SmartDMALPUART0_Send(const uint8_t *data, size_t size, bool reply)
 {
     (void)reply;
     if (!s_initialized || !data || !size || size > sizeof(s_tx) || s_txState != kTxIdle) return kStatus_Busy;
-    (void)memcpy(s_tx, data, size); s_pendingTxLength = size; s_txState = kTxPending; s_txRequestCount++;
+    (void)memcpy(s_tx, data, size);
+    s_lastTxLength = size;
+    (void)memcpy(s_lastTxBytes, s_tx, (size < sizeof(s_lastTxBytes)) ? size : sizeof(s_lastTxBytes));
+    s_pendingTxLength = size; s_txState = kTxPending; s_txRequestCount++;
     if (s_rxState == kRxRunning)
     {
         s_rxState = kRxAbortTx;
@@ -209,6 +225,10 @@ void APP_SmartDMALPUART0_GetDebugSnapshot(app_smartdma_lpuart0_debug_snapshot_t 
     snapshot->txState = (uint32_t)s_txState;
     snapshot->rxLength = (uint32_t)s_rxLength;
     snapshot->pendingTxLength = (uint32_t)s_pendingTxLength;
+    snapshot->lastRxLength = (uint32_t)s_lastRxLength;
+    snapshot->lastTxLength = (uint32_t)s_lastTxLength;
+    (void)memcpy(snapshot->lastRxBytes, s_lastRxBytes, sizeof(s_lastRxBytes));
+    (void)memcpy(snapshot->lastTxBytes, s_lastTxBytes, sizeof(s_lastTxBytes));
     snapshot->errors = s_errors;
     snapshot->rxStartCount = s_rxStartCount;
     snapshot->rxFrameCount = s_rxFrameCount;

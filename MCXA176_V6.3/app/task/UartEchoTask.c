@@ -12,10 +12,27 @@
 /* Keep diagnostic storage out of the 1 KB UART task stack. */
 static app_smartdma_lpuart0_debug_snapshot_t s_uart0DebugSnapshot;
 static char s_uart0DebugLine[240];
+static char s_uart0RxHex[2U * APP_SMARTDMA_LPUART0_DEBUG_BYTES + 1U];
+static char s_uart0TxHex[2U * APP_SMARTDMA_LPUART0_DEBUG_BYTES + 1U];
+
+static void Uart0_FormatHexSample(char *output, const uint8_t *bytes, uint32_t frameLength)
+{
+    static const char hex[] = "0123456789ABCDEF";
+    const uint32_t count = (frameLength < APP_SMARTDMA_LPUART0_DEBUG_BYTES) ?
+                           frameLength : APP_SMARTDMA_LPUART0_DEBUG_BYTES;
+
+    for (uint32_t i = 0U; i < count; i++)
+    {
+        output[2U * i] = hex[bytes[i] >> 4U];
+        output[2U * i + 1U] = hex[bytes[i] & 0x0FU];
+    }
+    output[2U * count] = '\0';
+}
 
 static void Uart0_LogSmartDmaStatus(void)
 {
     static uint32_t nextLogTick;
+    static bool dataNext;
     int length;
 
     if ((int32_t)(osKernelGetTickCount() - nextLogTick) < 0) return;
@@ -23,7 +40,22 @@ static void Uart0_LogSmartDmaStatus(void)
     if (Uart1_IsBusy()) return;
 
     APP_SmartDMALPUART0_GetDebugSnapshot(&s_uart0DebugSnapshot);
-    length = snprintf(s_uart0DebugLine, sizeof(s_uart0DebugLine),
+    if (dataNext)
+    {
+        Uart0_FormatHexSample(s_uart0RxHex, s_uart0DebugSnapshot.lastRxBytes,
+                              s_uart0DebugSnapshot.lastRxLength);
+        Uart0_FormatHexSample(s_uart0TxHex, s_uart0DebugSnapshot.lastTxBytes,
+                              s_uart0DebugSnapshot.lastTxLength);
+        length = snprintf(s_uart0DebugLine, sizeof(s_uart0DebugLine),
+                          "U0DATA C%lu/%lu RX%lu:%s TX%lu:%s (first 16 bytes)\r\n",
+                          (unsigned long)s_uart0DebugSnapshot.rxFrameCount,
+                          (unsigned long)s_uart0DebugSnapshot.txRequestCount,
+                          (unsigned long)s_uart0DebugSnapshot.lastRxLength, s_uart0RxHex,
+                          (unsigned long)s_uart0DebugSnapshot.lastTxLength, s_uart0TxHex);
+    }
+    else
+    {
+        length = snprintf(s_uart0DebugLine, sizeof(s_uart0DebugLine),
                       "U0SD I%lu R%lu T%lu L%lu E%08lX C[%lu/%lu %lu/%lu/%lu/%lu A%lu] "
                        "B%lu/%lu/%lu CMD%lu/%lu FW%lu rem%lu/%lu done%lu/%lu/%lu TX%08lX/%02lX RX%08lX/%02lX "
                        "ST%08lX CT%08lX BD%08lX F%08lX W%08lX PC%08lX\r\n",
@@ -53,6 +85,8 @@ static void Uart0_LogSmartDmaStatus(void)
                       (unsigned long)s_uart0DebugSnapshot.lpuartFifo,
                       (unsigned long)s_uart0DebugSnapshot.lpuartWater,
                       (unsigned long)s_uart0DebugSnapshot.smartdma.smartdmaPc);
+    }
+    dataNext = !dataNext;
     if ((length > 0) && ((size_t)length < sizeof(s_uart0DebugLine)))
     {
         (void)Uart1_Send((const uint8_t *)s_uart0DebugLine, (size_t)length);

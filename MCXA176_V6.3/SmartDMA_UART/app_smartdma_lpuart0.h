@@ -11,6 +11,7 @@
 
 /* TX and RX each own one buffer.  The firmware permits 1 through 512 bytes. */
 #define APP_SMARTDMA_LPUART0_BUFFER_SIZE (256U)
+#define APP_SMARTDMA_LPUART0_DEBUG_BYTES (16U)
 
 typedef struct
 {
@@ -19,6 +20,10 @@ typedef struct
     uint32_t txState;
     uint32_t rxLength;
     uint32_t pendingTxLength;
+    uint32_t lastRxLength;
+    uint32_t lastTxLength;
+    uint8_t lastRxBytes[APP_SMARTDMA_LPUART0_DEBUG_BYTES];
+    uint8_t lastTxBytes[APP_SMARTDMA_LPUART0_DEBUG_BYTES];
     uint32_t errors;
     uint32_t rxStartCount;
     uint32_t rxFrameCount;
