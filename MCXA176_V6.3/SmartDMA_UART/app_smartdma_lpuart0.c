@@ -13,6 +13,10 @@
 typedef enum { kRxStopped, kRxRunning, kRxFrameReady, kRxAbortFrame, kRxAbortTx } rx_state_t;
 typedef enum { kTxIdle, kTxPending, kTxRunning, kTxDraining } tx_state_t;
 
+#define UART0_RX_ERROR_INTERRUPTS (kLPUART_LinBreakInterruptEnable | kLPUART_RxOverrunInterruptEnable | \
+    kLPUART_NoiseErrorInterruptEnable | kLPUART_FramingErrorInterruptEnable | \
+    kLPUART_ParityErrorInterruptEnable)
+
 _Static_assert(APP_SMARTDMA_LPUART0_BUFFER_SIZE <= APP_SMARTDMA_MAX_TRANSFER_SIZE,
                "LPUART0 buffer exceeds SmartDMA firmware limit");
 static uint8_t s_tx[APP_SMARTDMA_LPUART0_BUFFER_SIZE];
@@ -31,6 +35,33 @@ static volatile uint32_t s_txStartCount;
 static volatile uint32_t s_txCompleteCount;
 static volatile uint32_t s_txWireCompleteCount;
 static volatile uint32_t s_abortCompleteCount;
+static volatile uint32_t s_breakCount;
+static volatile uint32_t s_rxRecoveryCount;
+static volatile bool s_rxErrorInterruptsMasked;
+static volatile bool s_recoveryPending;
+
+static status_t BeginRx(void);
+
+static void FlushRxFifo(void)
+{
+    /* RXFLUSH is W1S; do not accidentally clear the FIFO W1C flags. */
+    uint32_t fifo = LPUART0->FIFO;
+    fifo &= ~(LPUART_FIFO_TXFLUSH_MASK | LPUART_FIFO_RXFLUSH_MASK |
+              LPUART_FIFO_TXOF_MASK | LPUART_FIFO_RXUF_MASK);
+    LPUART0->FIFO = fifo | LPUART_FIFO_RXFLUSH_MASK;
+    (void)LPUART_ClearStatusFlags(LPUART0,
+                                  kLPUART_LinBreakFlag | kLPUART_IdleLineFlag |
+                                  kLPUART_RxOverrunFlag | kLPUART_NoiseErrorFlag |
+                                  kLPUART_FramingErrorFlag | kLPUART_ParityErrorFlag);
+}
+
+static void RecoverRx(void)
+{
+    FlushRxFifo();
+    s_rxRecoveryCount++;
+    s_rxState = kRxStopped;
+    s_recoveryPending = true;
+}
 
 static void SetDirection(bool transmit)
 {
@@ -90,7 +121,7 @@ static void SmartDmaDone(app_smartdma_event_t event, void *userData)
         s_abortCompleteCount++;
         if (s_rxState == kRxAbortFrame) FinishRx();
         else if (s_rxState == kRxAbortTx) { s_rxState = kRxStopped; BeginPendingTx(); }
-        else { s_rxState = kRxStopped; if (s_restartAfterAbort) { s_restartAfterAbort = false; (void)BeginRx(); } }
+        else { s_rxState = kRxStopped; if (s_restartAfterAbort) { s_restartAfterAbort = false; RecoverRx(); } }
     }
 }
 
@@ -116,19 +147,22 @@ void APP_SmartDMALPUART0_TransportInit(void)
     EDMA_SetChannelMux(DMA0, DMA0_CH0_DMA_CHANNEL, kDma0RequestDisabled);
     LPUART_DisableInterrupts(LPUART0, kLPUART_AllInterruptEnable);
     LPUART_ClearStatusFlags(LPUART0, kLPUART_AllClearFlags);
+    FlushRxFifo();
     LPUART_SetRxFifoWatermark(LPUART0, 0U);
     SetDirection(false); s_rxState = kRxStopped; s_txState = kTxIdle; s_errors = 0U;
     s_rxStartCount = 0U; s_rxFrameCount = 0U; s_txRequestCount = 0U;
     s_txStartCount = 0U; s_txCompleteCount = 0U; s_txWireCompleteCount = 0U; s_abortCompleteCount = 0U;
+    s_breakCount = 0U; s_rxRecoveryCount = 0U; s_rxErrorInterruptsMasked = false;
+    s_recoveryPending = false; s_restartAfterAbort = false;
     NVIC_ClearPendingIRQ(LPUART0_IRQn); NVIC_SetPriority(LPUART0_IRQn, 5U); EnableIRQ(LPUART0_IRQn);
-    LPUART_EnableInterrupts(LPUART0, kLPUART_IdleLineInterruptEnable | kLPUART_RxOverrunInterruptEnable |
-        kLPUART_NoiseErrorInterruptEnable | kLPUART_FramingErrorInterruptEnable | kLPUART_ParityErrorInterruptEnable);
+    LPUART_EnableInterrupts(LPUART0, kLPUART_IdleLineInterruptEnable | UART0_RX_ERROR_INTERRUPTS);
     (void)BeginRx();
 }
 
 status_t APP_SmartDMALPUART0_StartReceive(void)
 {
     if (!s_initialized) return kStatus_Fail;
+    if (s_recoveryPending) return kStatus_Busy;
     if (s_rxState == kRxStopped) return BeginRx();
     if (s_rxState == kRxRunning) return kStatus_Success;
     return kStatus_Busy;
@@ -150,7 +184,8 @@ status_t APP_SmartDMALPUART0_Send(const uint8_t *data, size_t size, bool reply)
 
 void APP_SmartDMALPUART0_Abort(void)
 {
-    s_restartAfterAbort = false; s_rxState = kRxStopped; s_txState = kTxIdle; s_rxLength = 0U;
+    s_restartAfterAbort = false; s_recoveryPending = false;
+    s_rxState = kRxStopped; s_txState = kTxIdle; s_rxLength = 0U;
     if (APP_SmartDMAIsBusy()) (void)APP_SmartDMAAbort();
     LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable); SetDirection(false);
 }
@@ -182,6 +217,9 @@ void APP_SmartDMALPUART0_GetDebugSnapshot(app_smartdma_lpuart0_debug_snapshot_t 
     snapshot->txCompleteCount = s_txCompleteCount;
     snapshot->txWireCompleteCount = s_txWireCompleteCount;
     snapshot->abortCompleteCount = s_abortCompleteCount;
+    snapshot->breakCount = s_breakCount;
+    snapshot->rxRecoveryCount = s_rxRecoveryCount;
+    snapshot->recoveryPending = s_recoveryPending ? 1U : 0U;
     snapshot->lpuartStat = LPUART0->STAT;
     snapshot->lpuartCtrl = LPUART0->CTRL;
     snapshot->lpuartBaud = LPUART0->BAUD;
@@ -191,11 +229,50 @@ void APP_SmartDMALPUART0_GetDebugSnapshot(app_smartdma_lpuart0_debug_snapshot_t 
     APP_SmartDMAGetDebugSnapshot(&snapshot->smartdma);
 }
 
+void APP_SmartDMALPUART0_Service(void)
+{
+    if (!s_initialized || (LPUART_GetStatusFlags(LPUART0) & kLPUART_RxActiveFlag) != 0U) return;
+
+    if (s_recoveryPending && !APP_SmartDMAIsBusy())
+    {
+        /* Discard anything received while SmartDMA RX was stopped. */
+        FlushRxFifo();
+        if (BeginRx() == kStatus_Success) s_recoveryPending = false;
+    }
+    if (s_rxErrorInterruptsMasked && !s_recoveryPending && !s_restartAfterAbort &&
+        (s_rxState == kRxRunning))
+    {
+        (void)LPUART_ClearStatusFlags(LPUART0,
+            kLPUART_LinBreakFlag | kLPUART_RxOverrunFlag |
+            kLPUART_NoiseErrorFlag | kLPUART_FramingErrorFlag | kLPUART_ParityErrorFlag);
+        s_rxErrorInterruptsMasked = false;
+        LPUART_EnableInterrupts(LPUART0, UART0_RX_ERROR_INTERRUPTS);
+    }
+}
+
 void APP_SmartDMALPUART0_HandleLpuartIrq(void)
 {
     const uint32_t flags = LPUART_GetStatusFlags(LPUART0);
-    const uint32_t errors = flags & (kLPUART_RxOverrunFlag | kLPUART_NoiseErrorFlag | kLPUART_FramingErrorFlag | kLPUART_ParityErrorFlag);
-    if (errors) { LPUART_ClearStatusFlags(LPUART0, errors); s_errors |= errors; if (s_rxState == kRxRunning) { s_rxState=kRxStopped; s_restartAfterAbort=true; (void)APP_SmartDMAAbort(); } }
+    const uint32_t errors = flags & (kLPUART_LinBreakFlag | kLPUART_RxOverrunFlag |
+        kLPUART_NoiseErrorFlag | kLPUART_FramingErrorFlag | kLPUART_ParityErrorFlag);
+    if (errors)
+    {
+        if ((errors & kLPUART_LinBreakFlag) != 0U) s_breakCount++;
+        s_rxErrorInterruptsMasked = true;
+        LPUART_DisableInterrupts(LPUART0, UART0_RX_ERROR_INTERRUPTS);
+        (void)LPUART_ClearStatusFlags(LPUART0, errors);
+        s_errors |= errors;
+        if ((s_rxState == kRxRunning) || (s_rxState == kRxAbortFrame))
+        {
+            s_rxState = kRxStopped;
+            s_restartAfterAbort = true;
+            if (!APP_SmartDMAAbort())
+            {
+                s_restartAfterAbort = false;
+                if (!APP_SmartDMAIsBusy()) RecoverRx();
+            }
+        }
+    }
     if ((flags & kLPUART_IdleLineFlag) != 0U) { LPUART_ClearStatusFlags(LPUART0, kLPUART_IdleLineFlag); if (s_rxState == kRxRunning) { s_rxState=kRxAbortFrame; if (!APP_SmartDMAAbort()) FinishRx(); } }
     if ((flags & kLPUART_TransmissionCompleteFlag) && s_txState == kTxDraining) { LPUART_DisableInterrupts(LPUART0, kLPUART_TransmissionCompleteInterruptEnable); s_txWireCompleteCount++; SetDirection(false); s_txState=kTxIdle; (void)BeginRx(); }
 }

@@ -27,6 +27,9 @@ typedef struct
     uint32_t txCompleteCount;
     uint32_t txWireCompleteCount;
     uint32_t abortCompleteCount;
+    uint32_t breakCount;
+    uint32_t rxRecoveryCount;
+    uint32_t recoveryPending;
     uint32_t lpuartStat;
     uint32_t lpuartCtrl;
     uint32_t lpuartBaud;
@@ -52,6 +55,7 @@ const uint8_t *APP_SmartDMALPUART0_GetFrame(size_t *length);
 status_t APP_SmartDMALPUART0_ReleaseFrame(void);
 uint32_t APP_SmartDMALPUART0_GetAndClearErrors(void);
 void APP_SmartDMALPUART0_GetDebugSnapshot(app_smartdma_lpuart0_debug_snapshot_t *snapshot);
+void APP_SmartDMALPUART0_Service(void);
 void APP_SmartDMALPUART0_HandleLpuartIrq(void);
 
 #ifdef __cplusplus

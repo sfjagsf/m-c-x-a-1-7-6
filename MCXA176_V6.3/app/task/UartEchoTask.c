@@ -25,15 +25,19 @@ static void Uart0_LogSmartDmaStatus(void)
     APP_SmartDMALPUART0_GetDebugSnapshot(&s_uart0DebugSnapshot);
     length = snprintf(s_uart0DebugLine, sizeof(s_uart0DebugLine),
                       "U0SD I%lu R%lu T%lu L%lu E%08lX C[%lu/%lu %lu/%lu/%lu/%lu A%lu] "
-                       "CMD%lu/%lu FW%lu rem%lu/%lu done%lu/%lu/%lu TX%08lX/%02lX RX%08lX/%02lX "
-                       "ST%08lX CT%08lX BD%08lX PC%08lX\r\n",
+                       "B%lu/%lu/%lu CMD%lu/%lu FW%lu rem%lu/%lu done%lu/%lu/%lu TX%08lX/%02lX RX%08lX/%02lX "
+                       "ST%08lX CT%08lX BD%08lX F%08lX W%08lX PC%08lX\r\n",
                       (unsigned long)s_uart0DebugSnapshot.initialized, (unsigned long)s_uart0DebugSnapshot.rxState,
                       (unsigned long)s_uart0DebugSnapshot.txState, (unsigned long)s_uart0DebugSnapshot.rxLength,
                       (unsigned long)s_uart0DebugSnapshot.errors, (unsigned long)s_uart0DebugSnapshot.rxStartCount,
                       (unsigned long)s_uart0DebugSnapshot.rxFrameCount, (unsigned long)s_uart0DebugSnapshot.txRequestCount,
                       (unsigned long)s_uart0DebugSnapshot.txStartCount, (unsigned long)s_uart0DebugSnapshot.txCompleteCount,
                       (unsigned long)s_uart0DebugSnapshot.txWireCompleteCount,
-                       (unsigned long)s_uart0DebugSnapshot.abortCompleteCount, (unsigned long)s_uart0DebugSnapshot.smartdma.command,
+                       (unsigned long)s_uart0DebugSnapshot.abortCompleteCount,
+                       (unsigned long)s_uart0DebugSnapshot.breakCount,
+                       (unsigned long)s_uart0DebugSnapshot.rxRecoveryCount,
+                       (unsigned long)s_uart0DebugSnapshot.recoveryPending,
+                       (unsigned long)s_uart0DebugSnapshot.smartdma.command,
                        (unsigned long)s_uart0DebugSnapshot.smartdma.activeCommand, (unsigned long)s_uart0DebugSnapshot.smartdma.lastCommand,
                       (unsigned long)s_uart0DebugSnapshot.smartdma.rxRemaining,
                       (unsigned long)s_uart0DebugSnapshot.smartdma.txRemaining,
@@ -45,7 +49,10 @@ static void Uart0_LogSmartDmaStatus(void)
                        (unsigned long)s_uart0DebugSnapshot.smartdma.rxLastStatus,
                        (unsigned long)s_uart0DebugSnapshot.smartdma.rxLastData,
                       (unsigned long)s_uart0DebugSnapshot.lpuartStat, (unsigned long)s_uart0DebugSnapshot.lpuartCtrl,
-                      (unsigned long)s_uart0DebugSnapshot.lpuartBaud, (unsigned long)s_uart0DebugSnapshot.smartdma.smartdmaPc);
+                      (unsigned long)s_uart0DebugSnapshot.lpuartBaud,
+                      (unsigned long)s_uart0DebugSnapshot.lpuartFifo,
+                      (unsigned long)s_uart0DebugSnapshot.lpuartWater,
+                      (unsigned long)s_uart0DebugSnapshot.smartdma.smartdmaPc);
     if ((length > 0) && ((size_t)length < sizeof(s_uart0DebugLine)))
     {
         (void)Uart1_Send((const uint8_t *)s_uart0DebugLine, (size_t)length);
@@ -61,6 +68,7 @@ void UartEchoTask(void *argument)
         const uint8_t *frame;
         size_t length;
 
+        APP_SmartDMALPUART0_Service();
         frame = Uart0_GetFrame(&length);
         if ((frame != NULL) && (length != 0U))
         {
