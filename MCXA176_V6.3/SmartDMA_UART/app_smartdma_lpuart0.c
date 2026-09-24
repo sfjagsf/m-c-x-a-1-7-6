@@ -24,9 +24,9 @@ _Static_assert(APP_SMARTDMA_LPUART0_BUFFER_SIZE <= APP_SMARTDMA_MAX_TRANSFER_SIZ
                "LPUART0 buffer exceeds SmartDMA firmware limit");
 static uint8_t s_tx[APP_SMARTDMA_LPUART0_BUFFER_SIZE];
 static uint8_t s_rx[APP_SMARTDMA_LPUART0_BUFFER_SIZE];
-static const app_smartdma_config_t s_smartdmaConfig = {
-    .txBuffer = s_tx, .txBufferSize = sizeof(s_tx), .txDataRegister = &LPUART0->DATA,
-    .rxBuffer = s_rx, .rxBufferSize = sizeof(s_rx), .rxDataRegister = &LPUART0->DATA,
+static app_smartdma_config_t s_smartdmaConfig = {
+    .txBuffer = s_tx, .txBufferSize = sizeof(s_tx),
+    .rxBuffer = s_rx, .rxBufferSize = sizeof(s_rx),
 };
 static volatile bool s_initialized;
 static volatile rx_state_t s_rxState;
@@ -86,7 +86,7 @@ static void PushEvent(app_uart0_event_kind_t kind, uint32_t length, uint32_t fla
     event->txState = (uint32_t)s_txState;
     event->length = length;
     event->flags = flags;
-    event->status = LPUART0->STAT;
+    event->status = LPUART_GetStatusFlags(LPUART0);
     event->rxRemaining = APP_SmartDMAGetRxRemaining();
     event->direction = GPIO_PinRead(BOARD_INITPINS_RS485_EN_GPIO, BOARD_INITPINS_RS485_EN_GPIO_PIN);
     (void)memset(event->bytes, 0, sizeof(event->bytes));
@@ -267,6 +267,10 @@ static void SmartDmaDone(app_smartdma_event_t event, void *userData)
 bool APP_SmartDMALPUART0_Init(void)
 {
     if (s_initialized) return true;
+    s_smartdmaConfig.txDataRegister =
+        (volatile uint32_t *)LPUART_GetDataRegisterAddress(LPUART0);
+    s_smartdmaConfig.rxDataRegister =
+        (volatile uint32_t *)LPUART_GetDataRegisterAddress(LPUART0);
     s_initialized = APP_SmartDMAInit(&s_smartdmaConfig);
     if (s_initialized) APP_SmartDMASetCallback(SmartDmaDone, NULL);
     return s_initialized;

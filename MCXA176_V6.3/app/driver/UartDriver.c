@@ -487,7 +487,8 @@ static void UartCore_HandleUartIrq(uart_port_id_t port)
         }
     }
     else if (((flags & kLPUART_TransmissionCompleteFlag) != 0U) &&
-             ((config->base->CTRL & LPUART_CTRL_TCIE_MASK) != 0U))
+             ((LPUART_GetEnabledInterrupts(config->base) &
+               kLPUART_TransmissionCompleteInterruptEnable) != 0U))
     {
         /* Continue NXP's eDMA TX chain; this produces kStatus_LPUART_TxIdle. */
         LPUART_TransferEdmaHandleIRQ(config->base, config->lpuartEdmaHandle);

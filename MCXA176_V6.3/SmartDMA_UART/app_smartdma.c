@@ -10,10 +10,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "fsl_clock.h"
 #include "fsl_common.h"
 #include "fsl_device_registers.h"
-#include "fsl_reset.h"
 #include "fsl_smartdma.h"
 #include "pin_mux.h"
 
@@ -25,9 +23,6 @@ extern const uint32_t g_appSmartDMAFirmwareSize;
 #define SMARTDMA_FIRMWARE_API     0U
 #define SMARTDMA_SRAMX0_SIZE      8192U
 #define SMARTDMA_START_WAIT_LIMIT 1000000U
-
-#define SMARTDMA_CTRL_SYNC (SMARTDMA_CTRL_WKEY(0xC0DEU) | SMARTDMA_CTRL_SYNCEN_MASK)
-#define SMARTDMA_CTRL_RUN  (SMARTDMA_CTRL_SYNC | SMARTDMA_CTRL_START_MASK)
 
 /* Command values are part of the interface between the Arm core and the firmware. */
 enum
@@ -169,8 +164,9 @@ bool APP_SmartDMAInit(const app_smartdma_config_t *config)
 
     /* This function is also the recovery path, so stop any running instance first. */
     DisableIRQ(SMARTDMA_IRQn);
-    CLOCK_EnableClock(kCLOCK_Smartdma);
-    RESET_PeripheralReset(kSMART_DMA_RST_SHIFT_RSTn);
+    /* Let the SDK reset the peripheral, install the image, and retain its API table. */
+    SMARTDMA_Init((uint32_t)s_smartdmaCodeRegion, g_appSmartDMAFirmware,
+                  g_appSmartDMAFirmwareSize);
     SMARTDMA_InstallCallback(APP_SmartDMACompletionCallback, NULL);
 
     s_smartdmaParameters.stack = &s_smartdmaStack[32];
@@ -194,8 +190,7 @@ bool APP_SmartDMAInit(const app_smartdma_config_t *config)
 
     APP_SmartDMAInitObservationPins();
 
-    /* Install the image in SRAMX0, then read API entry zero from the copied table. */
-    (void)memcpy(s_smartdmaCodeRegion, g_appSmartDMAFirmware, g_appSmartDMAFirmwareSize);
+    /* Verify API entry zero in the image installed by the SDK. */
     __DSB();
     __ISB();
 
@@ -206,15 +201,11 @@ bool APP_SmartDMAInit(const app_smartdma_config_t *config)
         return false;
     }
 
-    /* Enable synchronized Arm/SmartDMA access and completion interrupts. */
-    SMARTDMA0->CTRL = SMARTDMA_CTRL_SYNC;
-    SMARTDMA0->PENDTRAP = 0U;
+    /* The SDK configured synchronized access while installing the firmware. */
     NVIC_ClearPendingIRQ(SMARTDMA_IRQn);
     NVIC_SetPriority(SMARTDMA_IRQn, 3U);
     EnableIRQ(SMARTDMA_IRQn);
-    SMARTDMA0->ARM2EZH = (((uint32_t)&s_smartdmaParameters) & ~0x3U) | 0x2U;
-    SMARTDMA0->BOOTADR = firmwareEntry;
-    SMARTDMA0->CTRL = SMARTDMA_CTRL_RUN;
+    SMARTDMA_Boot(SMARTDMA_FIRMWARE_API, (void *)&s_smartdmaParameters, 0x2U);
 
     while ((s_smartdmaReady == 0U) && (waitCount > 0U))
     {
